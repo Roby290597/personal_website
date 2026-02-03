@@ -13,11 +13,20 @@
   <header class="sticky top-0 z-50 border-b border-slate-800/60 bg-slate-950/70 backdrop-blur">
     <div class="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
       <div class="font-semibold tracking-tight">Brandon Hank</div>
-      <nav class="flex gap-4 text-sm text-slate-300">
-        <a class="hover:text-white" href="#projects">Projekte</a>
-        <a class="hover:text-white" href="#skills">Skills</a>
-        <a class="hover:text-white" href="#contact">Kontakt</a>
-      </nav>
+
+      <div class="flex items-center gap-4">
+        <nav class="flex gap-4 text-sm text-slate-300">
+          <a class="hover:text-white" href="#projects" data-i18n="nav_projects">Projekte</a>
+          <a class="hover:text-white" href="#skills" data-i18n="nav_skills">Skills</a>
+          <a class="hover:text-white" href="#contact" data-i18n="nav_contact">Kontakt</a>
+        </nav>
+
+        <!-- Language Toggle -->
+        <div class="flex items-center gap-1 rounded-xl border border-slate-800 bg-slate-900/40 p-1 text-xs text-slate-200">
+          <button id="btn-de" class="rounded-lg px-2 py-1 hover:bg-slate-800/60" type="button">DE</button>
+          <button id="btn-en" class="rounded-lg px-2 py-1 hover:bg-slate-800/60" type="button">EN</button>
+        </div>
+      </div>
     </div>
   </header>
 
@@ -28,22 +37,31 @@
         <div>
           <p class="mb-3 inline-flex items-center gap-2 rounded-full border border-slate-800 bg-slate-900/40 px-3 py-1 text-xs text-slate-300">
             <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
-            Offen für Data Science / ML Rollen (Düsseldorf & remote)
+            <span data-i18n="hero_badge">
+              Offen für Data Science / ML Rollen (Düsseldorf & remote)
+            </span>
           </p>
+
           <h1 class="text-4xl font-semibold leading-tight tracking-tight md:text-5xl">
-            Data Scientist mit Fokus auf <span class="text-emerald-300">NLP</span> & <span class="text-emerald-300">ML Engineering</span>
+            <span data-i18n="hero_title_prefix">Data Scientist mit Fokus auf</span>
+            <span class="text-emerald-300" data-i18n="hero_title_nlp">NLP</span>
+            <span data-i18n="hero_title_mid">&amp;</span>
+            <span class="text-emerald-300" data-i18n="hero_title_mle">ML Engineering</span>
           </h1>
-          <p class="mt-4 text-slate-300">
-            Ich baue praxisnahe ML-Projekte (Python, SQL, Transformers) – aktuell ein Open-Source Projekt zur Analyse & Summarization von Bundestagsreden.
+
+          <p class="mt-4 text-slate-300" data-i18n="hero_subtitle">
+            Ich baue praxisnahe ML-Projekte (Python, SQL, Transformers) – aktuell ein Open-Source Projekt zur Analyse &amp; Summarization von Bundestagsreden.
           </p>
 
           <div class="mt-6 flex flex-wrap gap-3">
             <a class="rounded-xl bg-emerald-400 px-4 py-2 text-sm font-medium text-slate-950 hover:bg-emerald-300"
                href="https://github.com/Roby290597" target="_blank" rel="noreferrer">GitHub</a>
+
             <a class="rounded-xl border border-slate-700 bg-slate-900/40 px-4 py-2 text-sm font-medium hover:border-slate-500"
                href="https://www.linkedin.com/in/brandon-roby-hank-4a4865248/" target="_blank" rel="noreferrer">LinkedIn</a>
+
             <a class="rounded-xl border border-slate-700 bg-slate-900/40 px-4 py-2 text-sm font-medium hover:border-slate-500"
-               href="#projects">Projekte ansehen</a>
+               href="#projects" data-i18n="hero_cta_projects">Projekte ansehen</a>
           </div>
 
           <div class="mt-6 flex flex-wrap gap-2 text-xs text-slate-300">
@@ -57,39 +75,38 @@
 
         <!-- Card -->
         <div class="rounded-3xl border border-slate-800 bg-gradient-to-b from-slate-900/50 to-slate-900/20 p-6 shadow-lg">
-          <h2 class="text-lg font-semibold">Aktuelles Highlight</h2>
-          <p class="mt-2 text-sm text-slate-300">
+          <h2 class="text-lg font-semibold" data-i18n="highlight_title">Aktuelles Highlight</h2>
+
+          <p class="mt-2 text-sm text-slate-300" data-i18n="highlight_subtitle">
             Open-Source NLP Pipeline: XML-Parsing → Speaker-Meta → Summarization (T5) → ROUGE Evaluation → Gradio UI.
           </p>
 
           <div class="mt-4 grid gap-3">
             <div class="rounded-2xl border border-slate-800 bg-slate-950/40 p-4">
-              <div class="text-xs text-slate-400">Projekt</div>
+              <div class="text-xs text-slate-400" data-i18n="highlight_project_label">Projekt</div>
               <div class="mt-1 font-medium">Bundestag Speeches NLP</div>
-              <div class="mt-2 text-sm text-slate-300">
-                Summaries, Qualitätsmetriken & UI – später: Fine-Tuning (MLSUM) + Retrieval/Fact-Check.
+              <div class="mt-2 text-sm text-slate-300" data-i18n="highlight_project_desc">
+                Summaries, Qualitätsmetriken &amp; UI – später: Fine-Tuning (MLSUM) + Retrieval/Fact-Check.
               </div>
             </div>
 
             <div class="grid grid-cols-3 gap-3">
               <div class="rounded-2xl border border-slate-800 bg-slate-950/40 p-4">
-                <div class="text-xs text-slate-400">Fokus</div>
-                <div class="mt-1 text-sm font-medium">NLP</div>
+                <div class="text-xs text-slate-400" data-i18n="highlight_focus_label">Fokus</div>
+                <div class="mt-1 text-sm font-medium" data-i18n="highlight_focus_value">NLP</div>
               </div>
               <div class="rounded-2xl border border-slate-800 bg-slate-950/40 p-4">
-                <div class="text-xs text-slate-400">Stack</div>
-                <div class="mt-1 text-sm font-medium">HF + Gradio</div>
+                <div class="text-xs text-slate-400" data-i18n="highlight_stack_label">Stack</div>
+                <div class="mt-1 text-sm font-medium" data-i18n="highlight_stack_value">HF + Gradio</div>
               </div>
               <div class="rounded-2xl border border-slate-800 bg-slate-950/40 p-4">
-                <div class="text-xs text-slate-400">Next</div>
-                <div class="mt-1 text-sm font-medium">Fine-Tune</div>
+                <div class="text-xs text-slate-400" data-i18n="highlight_next_label">Next</div>
+                <div class="mt-1 text-sm font-medium" data-i18n="highlight_next_value">Fine-Tune</div>
               </div>
             </div>
           </div>
 
-          <p class="mt-4 text-xs text-slate-400">
-            
-          </p>
+          <p class="mt-4 text-xs text-slate-400"></p>
         </div>
       </div>
     </section>
@@ -98,8 +115,8 @@
     <section id="projects" class="py-10 md:py-14">
       <div class="flex items-end justify-between gap-4">
         <div>
-          <h2 class="text-2xl font-semibold tracking-tight">Projekte</h2>
-          <p class="mt-2 text-slate-300">Auswahl – mit klaren Ergebnissen & Tech Stack.</p>
+          <h2 class="text-2xl font-semibold tracking-tight" data-i18n="projects_title">Projekte</h2>
+          <p class="mt-2 text-slate-300" data-i18n="projects_subtitle">Auswahl – mit klaren Ergebnissen &amp; Tech Stack.</p>
         </div>
       </div>
 
@@ -108,9 +125,9 @@
         <article class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6 hover:border-slate-600">
           <div class="flex items-center justify-between">
             <h3 class="font-semibold">Bundestag Speeches NLP</h3>
-            <span class="text-xs text-slate-400">NLP · OSS</span>
+            <span class="text-xs text-slate-400" data-i18n="projects_tag_oss">NLP · OSS</span>
           </div>
-          <p class="mt-2 text-sm text-slate-300">
+          <p class="mt-2 text-sm text-slate-300" data-i18n="projects_1_desc">
             XML-Parsing, Speaker-Mapping, Summarization (T5), ROUGE-Scoring, Gradio UI.
           </p>
           <div class="mt-4 flex flex-wrap gap-2 text-xs text-slate-300">
@@ -119,27 +136,29 @@
             <span class="rounded-full border border-slate-800 bg-slate-950/40 px-3 py-1">Gradio</span>
           </div>
           <div class="mt-5 flex gap-3">
-            <a class="text-sm text-emerald-300 hover:text-emerald-200" href="https://github.com/Roby290597/bundestag_speeches" target="_blank" rel="noreferrer">Repo →</a>
-            <a class="text-sm text-slate-300 hover:text-white" href="#" title="Optional: Demo-Link">Demo</a>
+            <a class="text-sm text-emerald-300 hover:text-emerald-200"
+               href="https://github.com/Roby290597/bundestag_speeches" target="_blank" rel="noreferrer"
+               data-i18n="projects_repo">Repo →</a>
+            <a class="text-sm text-slate-300 hover:text-white" href="#" title="Optional: Demo-Link" data-i18n="projects_demo">Demo</a>
           </div>
         </article>
 
         <!-- Project Card 2 -->
         <article class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6 hover:border-slate-600">
           <div class="flex items-center justify-between">
-            <h3 class="font-semibold">Graph Similarity Learning</h3>
-            <span class="text-xs text-slate-400">ML · Graphs</span>
+            <h3 class="font-semibold" data-i18n="projects_2_title">Graph Similarity Learning</h3>
+            <span class="text-xs text-slate-400" data-i18n="projects_2_tag">ML · Graphs</span>
           </div>
-          <p class="mt-2 text-sm text-slate-300">
+          <p class="mt-2 text-sm text-slate-300" data-i18n="projects_2_desc">
             Masterarbeit: Evaluation von Graph Similarity Learning – Experimente, Metriken, Analyse.
           </p>
           <div class="mt-4 flex flex-wrap gap-2 text-xs text-slate-300">
             <span class="rounded-full border border-slate-800 bg-slate-950/40 px-3 py-1">NetworkX</span>
             <span class="rounded-full border border-slate-800 bg-slate-950/40 px-3 py-1">Python</span>
-            <span class="rounded-full border border-slate-800 bg-slate-950/40 px-3 py-1">Evaluation</span>
+            <span class="rounded-full border border-slate-800 bg-slate-950/40 px-3 py-1" data-i18n="projects_2_chip">Evaluation</span>
           </div>
           <div class="mt-5 flex gap-3">
-            <a class="text-sm text-emerald-300 hover:text-emerald-200" href="#" title="Optional: Paper/PDF Link">Details →</a>
+            <a class="text-sm text-emerald-300 hover:text-emerald-200" href="#" title="Optional: Paper/PDF Link" data-i18n="projects_details">Details →</a>
           </div>
         </article>
       </div>
@@ -147,12 +166,12 @@
 
     <!-- Skills -->
     <section id="skills" class="py-10 md:py-14">
-      <h2 class="text-2xl font-semibold tracking-tight">Skills</h2>
-      <p class="mt-2 text-slate-300"> Qualifikationen</p>
+      <h2 class="text-2xl font-semibold tracking-tight" data-i18n="skills_title">Skills</h2>
+      <p class="mt-2 text-slate-300" data-i18n="skills_subtitle">Qualifikationen</p>
 
       <div class="mt-6 grid gap-4 md:grid-cols-3">
         <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
-          <h3 class="font-semibold">Data & ML</h3>
+          <h3 class="font-semibold" data-i18n="skills_col1_title">Data &amp; ML</h3>
           <ul class="mt-3 space-y-2 text-sm text-slate-300">
             <li>Python, Pandas, NumPy</li>
             <li>Scikit-learn, XGBoost</li>
@@ -161,21 +180,21 @@
           </ul>
         </div>
         <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
-          <h3 class="font-semibold">Engineering</h3>
+          <h3 class="font-semibold" data-i18n="skills_col2_title">Engineering</h3>
           <ul class="mt-3 space-y-2 text-sm text-slate-300">
             <li>SQL (PostgreSQL, SQLite)</li>
             <li>Docker, Linux, Bash</li>
             <li>GitHub/GitLab</li>
-            <li>APIs & Pipelines</li>
+            <li data-i18n="skills_col2_li4">APIs &amp; Pipelines</li>
           </ul>
         </div>
         <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
-          <h3 class="font-semibold">Visualization</h3>
+          <h3 class="font-semibold" data-i18n="skills_col3_title">Visualization</h3>
           <ul class="mt-3 space-y-2 text-sm text-slate-300">
             <li>Matplotlib</li>
             <li>Seaborn</li>
             <li>Gradio UIs</li>
-            <li>Dashboards (basic)</li>
+            <li data-i18n="skills_col3_li4">Dashboards (basic)</li>
           </ul>
         </div>
       </div>
@@ -184,16 +203,18 @@
     <!-- Contact -->
     <section id="contact" class="py-10 md:py-14">
       <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6 md:p-8">
-        <h2 class="text-2xl font-semibold tracking-tight">Kontakt</h2>
-        <p class="mt-2 text-slate-300">
+        <h2 class="text-2xl font-semibold tracking-tight" data-i18n="contact_title">Kontakt</h2>
+        <p class="mt-2 text-slate-300" data-i18n="contact_subtitle">
           Schreib mir für Rollen im Bereich Data Science / ML / NLP. Ich antworte zuverlässig.
         </p>
 
         <div class="mt-5 flex flex-wrap gap-3">
           <a class="rounded-xl bg-emerald-400 px-4 py-2 text-sm font-medium text-slate-950 hover:bg-emerald-300"
-             href="mailto:brhan100@hhu.de">Email</a>
+             href="mailto:brhan100@hhu.de" data-i18n="contact_email_btn">Email</a>
+
           <a class="rounded-xl border border-slate-700 bg-slate-950/40 px-4 py-2 text-sm font-medium hover:border-slate-500"
-             href="https://www.linkedin.com/in/brandon-roby-hank-4a4865248/" target="_blank" rel="noreferrer">LinkedIn</a>
+             href="https://www.linkedin.com/in/brandon-roby-hank-4a4865248/" target="_blank" rel="noreferrer"
+             data-i18n="contact_linkedin_btn">LinkedIn</a>
         </div>
       </div>
     </section>
@@ -204,7 +225,159 @@
   </main>
 
   <script>
+    // Year
     document.getElementById("y").textContent = new Date().getFullYear();
+
+    // i18n content
+    const i18n = {
+      de: {
+        nav_projects: "Projekte",
+        nav_skills: "Skills",
+        nav_contact: "Kontakt",
+
+        hero_badge: "Offen für Data Science / ML Rollen (Düsseldorf & remote)",
+        hero_title_prefix: "Data Scientist mit Fokus auf",
+        hero_title_nlp: "NLP",
+        hero_title_mid: "&",
+        hero_title_mle: "ML Engineering",
+        hero_subtitle:
+          "Ich baue praxisnahe ML-Projekte (Python, SQL, Transformers) – aktuell ein Open-Source Projekt zur Analyse & Summarization von Bundestagsreden.",
+        hero_cta_projects: "Projekte ansehen",
+
+        highlight_title: "Aktuelles Highlight",
+        highlight_subtitle:
+          "Open-Source NLP Pipeline: XML-Parsing → Speaker-Meta → Summarization (T5) → ROUGE Evaluation → Gradio UI.",
+        highlight_project_label: "Projekt",
+        highlight_project_desc:
+          "Summaries, Qualitätsmetriken & UI – später: Fine-Tuning (MLSUM) + Retrieval/Fact-Check.",
+        highlight_focus_label: "Fokus",
+        highlight_focus_value: "NLP",
+        highlight_stack_label: "Stack",
+        highlight_stack_value: "HF + Gradio",
+        highlight_next_label: "Next",
+        highlight_next_value: "Fine-Tune",
+
+        projects_title: "Projekte",
+        projects_subtitle: "Auswahl – mit klaren Ergebnissen & Tech Stack.",
+        projects_tag_oss: "NLP · OSS",
+        projects_1_desc:
+          "XML-Parsing, Speaker-Mapping, Summarization (T5), ROUGE-Scoring, Gradio UI.",
+        projects_repo: "Repo →",
+        projects_demo: "Demo",
+        projects_2_title: "Graph Similarity Learning",
+        projects_2_tag: "ML · Graphs",
+        projects_2_desc:
+          "Masterarbeit: Evaluation von Graph Similarity Learning – Experimente, Metriken, Analyse.",
+        projects_2_chip: "Evaluation",
+        projects_details: "Details →",
+
+        skills_title: "Skills",
+        skills_subtitle: "Qualifikationen",
+        skills_col1_title: "Data & ML",
+        skills_col2_title: "Engineering",
+        skills_col2_li4: "APIs & Pipelines",
+        skills_col3_title: "Visualization",
+        skills_col3_li4: "Dashboards (basic)",
+
+        contact_title: "Kontakt",
+        contact_subtitle:
+          "Schreib mir für Rollen im Bereich Data Science / ML / NLP. Ich antworte zuverlässig.",
+        contact_email_btn: "Email",
+        contact_linkedin_btn: "LinkedIn"
+      },
+
+      en: {
+        nav_projects: "Projects",
+        nav_skills: "Skills",
+        nav_contact: "Contact",
+
+        hero_badge: "Open to Data Science / ML roles (Düsseldorf & remote)",
+        hero_title_prefix: "Data Scientist focused on",
+        hero_title_nlp: "NLP",
+        hero_title_mid: "&",
+        hero_title_mle: "ML Engineering",
+        hero_subtitle:
+          "I build practical ML projects (Python, SQL, Transformers) — currently an open-source project for analyzing & summarizing German Bundestag speeches.",
+        hero_cta_projects: "View projects",
+
+        highlight_title: "Current highlight",
+        highlight_subtitle:
+          "Open-source NLP pipeline: XML parsing → speaker metadata → summarization (T5) → ROUGE evaluation → Gradio UI.",
+        highlight_project_label: "Project",
+        highlight_project_desc:
+          "Summaries, quality metrics & UI — next: fine-tuning (MLSUM) + retrieval / fact-checking.",
+        highlight_focus_label: "Focus",
+        highlight_focus_value: "NLP",
+        highlight_stack_label: "Stack",
+        highlight_stack_value: "HF + Gradio",
+        highlight_next_label: "Next",
+        highlight_next_value: "Fine-tune",
+
+        projects_title: "Projects",
+        projects_subtitle: "Selected work — clear outcomes & tech stack.",
+        projects_tag_oss: "NLP · OSS",
+        projects_1_desc:
+          "XML parsing, speaker mapping, summarization (T5), ROUGE scoring, Gradio UI.",
+        projects_repo: "Repo →",
+        projects_demo: "Demo",
+        projects_2_title: "Graph Similarity Learning",
+        projects_2_tag: "ML · Graphs",
+        projects_2_desc:
+          "Master's thesis: evaluation of graph similarity learning — experiments, metrics, analysis.",
+        projects_2_chip: "Evaluation",
+        projects_details: "Details →",
+
+        skills_title: "Skills",
+        skills_subtitle: "Qualifications",
+        skills_col1_title: "Data & ML",
+        skills_col2_title: "Engineering",
+        skills_col2_li4: "APIs & pipelines",
+        skills_col3_title: "Visualization",
+        skills_col3_li4: "Dashboards (basic)",
+
+        contact_title: "Contact",
+        contact_subtitle:
+          "Reach out for Data Science / ML / NLP roles. I reply reliably.",
+        contact_email_btn: "Email",
+        contact_linkedin_btn: "LinkedIn"
+      }
+    };
+
+    function applyLang(lang) {
+      // set html lang attribute
+      document.documentElement.lang = lang;
+
+      // update all nodes with data-i18n
+      document.querySelectorAll("[data-i18n]").forEach((el) => {
+        const key = el.getAttribute("data-i18n");
+        if (i18n[lang] && i18n[lang][key]) {
+          el.textContent = i18n[lang][key];
+        }
+      });
+
+      // button state
+      const de = document.getElementById("btn-de");
+      const en = document.getElementById("btn-en");
+
+      if (lang === "de") {
+        de.classList.add("bg-slate-800/60");
+        en.classList.remove("bg-slate-800/60");
+      } else {
+        en.classList.add("bg-slate-800/60");
+        de.classList.remove("bg-slate-800/60");
+      }
+
+      // persist
+      localStorage.setItem("lang", lang);
+    }
+
+    // init
+    const saved = localStorage.getItem("lang");
+    const initial = saved ? saved : "de";
+    applyLang(initial);
+
+    document.getElementById("btn-de").addEventListener("click", () => applyLang("de"));
+    document.getElementById("btn-en").addEventListener("click", () => applyLang("en"));
   </script>
 </body>
 </html>
