@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Brandon Hank | Data Scientist</title>
+  <meta name="description" content="Portfolio von Brandon Hank – Data Science, NLP, Machine Learning." />
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-slate-950 text-slate-100">
+  <!-- Top Bar -->
+  <header class="sticky top-0 z-50 border-b border-slate-800/60 bg-slate-950/70 backdrop-blur">
+    <div class="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
+      <div class="font-semibold tracking-tight">Brandon Hank</div>
+      <nav class="flex gap-4 text-sm text-slate-300">
+        <a class="hover:text-white" href="#projects">Projekte</a>
+        <a class="hover:text-white" href="#skills">Skills</a>
+        <a class="hover:text-white" href="#contact">Kontakt</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <main class="mx-auto max-w-5xl px-4">
+    <section class="py-14 md:py-20">
+      <div class="grid gap-8 md:grid-cols-2 md:items-center">
+        <div>
+          <p class="mb-3 inline-flex items-center gap-2 rounded-full border border-slate-800 bg-slate-900/40 px-3 py-1 text-xs text-slate-300">
+            <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
+            Offen für Data Science / ML Rollen (Düsseldorf & remote)
+          </p>
+          <h1 class="text-4xl font-semibold leading-tight tracking-tight md:text-5xl">
+            Data Scientist mit Fokus auf <span class="text-emerald-300">NLP</span> & <span class="text-emerald-300">ML Engineering</span>
+          </h1>
+          <p class="mt-4 text-slate-300">
+            Ich baue praxisnahe ML-Projekte (Python, SQL, Transformers) – aktuell ein Open-Source Projekt zur Analyse & Summarization von Bundestagsreden.
+          </p>
+
+          <div class="mt-6 flex flex-wrap gap-3">
+            <a class="rounded-xl bg-emerald-400 px-4 py-2 text-sm font-medium text-slate-950 hover:bg-emerald-300"
+               href="https://github.com/DEINUSERNAME" target="_blank" rel="noreferrer">GitHub</a>
+            <a class="rounded-xl border border-slate-700 bg-slate-900/40 px-4 py-2 text-sm font-medium hover:border-slate-500"
+               href="https://www.linkedin.com/in/DEINPROFIL" target="_blank" rel="noreferrer">LinkedIn</a>
+            <a class="rounded-xl border border-slate-700 bg-slate-900/40 px-4 py-2 text-sm font-medium hover:border-slate-500"
+               href="#projects">Projekte ansehen</a>
+          </div>
+
+          <div class="mt-6 flex flex-wrap gap-2 text-xs text-slate-300">
+            <span class="rounded-full border border-slate-800 bg-slate-900/40 px-3 py-1">Python</span>
+            <span class="rounded-full border border-slate-800 bg-slate-900/40 px-3 py-1">SQL</span>
+            <span class="rounded-full border border-slate-800 bg-slate-900/40 px-3 py-1">PyTorch</span>
+            <span class="rounded-full border border-slate-800 bg-slate-900/40 px-3 py-1">Transformers</span>
+            <span class="rounded-full border border-slate-800 bg-slate-900/40 px-3 py-1">Docker</span>
+          </div>
+        </div>
+
+        <!-- Card -->
+        <div class="rounded-3xl border border-slate-800 bg-gradient-to-b from-slate-900/50 to-slate-900/20 p-6 shadow-lg">
+          <h2 class="text-lg font-semibold">Aktuelles Highlight</h2>
+          <p class="mt-2 text-sm text-slate-300">
+            Open-Source NLP Pipeline: XML-Parsing → Speaker-Meta → Summarization (T5) → ROUGE Evaluation → Gradio UI.
+          </p>
+
+          <div class="mt-4 grid gap-3">
+            <div class="rounded-2xl border border-slate-800 bg-slate-950/40 p-4">
+              <div class="text-xs text-slate-400">Projekt</div>
+              <div class="mt-1 font-medium">Bundestag Speeches NLP</div>
+              <div class="mt-2 text-sm text-slate-300">
+                Summaries, Qualitätsmetriken & UI – später: Fine-Tuning (MLSUM) + Retrieval/Fact-Check.
+              </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-3">
+              <div class="rounded-2xl border border-slate-800 bg-slate-950/40 p-4">
+                <div class="text-xs text-slate-400">Fokus</div>
+                <div class="mt-1 text-sm font-medium">NLP</div>
+              </div>
+              <div class="rounded-2xl border border-slate-800 bg-slate-950/40 p-4">
+                <div class="text-xs text-slate-400">Stack</div>
+                <div class="mt-1 text-sm font-medium">HF + Gradio</div>
+              </div>
+              <div class="rounded-2xl border border-slate-800 bg-slate-950/40 p-4">
+                <div class="text-xs text-slate-400">Next</div>
+                <div class="mt-1 text-sm font-medium">Fine-Tune</div>
+              </div>
+            </div>
+          </div>
+
+          <p class="mt-4 text-xs text-slate-400">
+            Tipp: Ersetze DEINUSERNAME/DEINPROFIL oben – dann wirkt’s sofort “echt”.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Projects -->
+    <section id="projects" class="py-10 md:py-14">
+      <div class="flex items-end justify-between gap-4">
+        <div>
+          <h2 class="text-2xl font-semibold tracking-tight">Projekte</h2>
+          <p class="mt-2 text-slate-300">Auswahl – mit klaren Ergebnissen & Tech Stack.</p>
+        </div>
+      </div>
+
+      <div class="mt-6 grid gap-4 md:grid-cols-2">
+        <!-- Project Card 1 -->
+        <article class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6 hover:border-slate-600">
+          <div class="flex items-center justify-between">
+            <h3 class="font-semibold">Bundestag Speeches NLP</h3>
+            <span class="text-xs text-slate-400">NLP · OSS</span>
+          </div>
+          <p class="mt-2 text-sm text-slate-300">
+            XML-Parsing, Speaker-Mapping, Summarization (T5), ROUGE-Scoring, Gradio UI.
+          </p>
+          <div class="mt-4 flex flex-wrap gap-2 text-xs text-slate-300">
+            <span class="rounded-full border border-slate-800 bg-slate-950/40 px-3 py-1">Transformers</span>
+            <span class="rounded-full border border-slate-800 bg-slate-950/40 px-3 py-1">ROUGE</span>
+            <span class="rounded-full border border-slate-800 bg-slate-950/40 px-3 py-1">Gradio</span>
+          </div>
+          <div class="mt-5 flex gap-3">
+            <a class="text-sm text-emerald-300 hover:text-emerald-200" href="https://github.com/DEINUSERNAME/bundestag_speeches" target="_blank" rel="noreferrer">Repo →</a>
+            <a class="text-sm text-slate-300 hover:text-white" href="#" title="Optional: Demo-Link">Demo</a>
+          </div>
+        </article>
+
+        <!-- Project Card 2 -->
+        <article class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6 hover:border-slate-600">
+          <div class="flex items-center justify-between">
+            <h3 class="font-semibold">Graph Similarity Learning</h3>
+            <span class="text-xs text-slate-400">ML · Graphs</span>
+          </div>
+          <p class="mt-2 text-sm text-slate-300">
+            Masterarbeit: Evaluation von Graph Similarity Learning – Experimente, Metriken, Analyse.
+          </p>
+          <div class="mt-4 flex flex-wrap gap-2 text-xs text-slate-300">
+            <span class="rounded-full border border-slate-800 bg-slate-950/40 px-3 py-1">NetworkX</span>
+            <span class="rounded-full border border-slate-800 bg-slate-950/40 px-3 py-1">Python</span>
+            <span class="rounded-full border border-slate-800 bg-slate-950/40 px-3 py-1">Evaluation</span>
+          </div>
+          <div class="mt-5 flex gap-3">
+            <a class="text-sm text-emerald-300 hover:text-emerald-200" href="#" title="Optional: Paper/PDF Link">Details →</a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- Skills -->
+    <section id="skills" class="py-10 md:py-14">
+      <h2 class="text-2xl font-semibold tracking-tight">Skills</h2>
+      <p class="mt-2 text-slate-300">Kurz, glaubwürdig, relevant – keine Buzzword-Wand.</p>
+
+      <div class="mt-6 grid gap-4 md:grid-cols-3">
+        <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+          <h3 class="font-semibold">Data & ML</h3>
+          <ul class="mt-3 space-y-2 text-sm text-slate-300">
+            <li>Python, Pandas, NumPy</li>
+            <li>Scikit-learn, XGBoost</li>
+            <li>PyTorch, TensorFlow</li>
+            <li>HF Transformers</li>
+          </ul>
+        </div>
+        <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+          <h3 class="font-semibold">Engineering</h3>
+          <ul class="mt-3 space-y-2 text-sm text-slate-300">
+            <li>SQL (PostgreSQL, SQLite)</li>
+            <li>Docker, Linux, Bash</li>
+            <li>GitHub/GitLab</li>
+            <li>APIs & Pipelines</li>
+          </ul>
+        </div>
+        <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+          <h3 class="font-semibold">Visualization</h3>
+          <ul class="mt-3 space-y-2 text-sm text-slate-300">
+            <li>Matplotlib</li>
+            <li>Seaborn</li>
+            <li>Gradio UIs</li>
+            <li>Dashboards (basic)</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact -->
+    <section id="contact" class="py-10 md:py-14">
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6 md:p-8">
+        <h2 class="text-2xl font-semibold tracking-tight">Kontakt</h2>
+        <p class="mt-2 text-slate-300">
+          Schreib mir für Rollen im Bereich Data Science / ML / NLP. Ich antworte zuverlässig.
+        </p>
+
+        <div class="mt-5 flex flex-wrap gap-3">
+          <a class="rounded-xl bg-emerald-400 px-4 py-2 text-sm font-medium text-slate-950 hover:bg-emerald-300"
+             href="mailto:DEINEMAIL@example.com">Email</a>
+          <a class="rounded-xl border border-slate-700 bg-slate-950/40 px-4 py-2 text-sm font-medium hover:border-slate-500"
+             href="https://www.linkedin.com/in/DEINPROFIL" target="_blank" rel="noreferrer">LinkedIn</a>
+        </div>
+      </div>
+    </section>
+
+    <footer class="py-10 text-center text-xs text-slate-500">
+      © <span id="y"></span> Brandon Hank · Düsseldorf
+    </footer>
+  </main>
+
+  <script>
+    document.getElementById("y").textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
