@@ -1,0 +1,36 @@
+/* Erlaubt weiches Scrollen zu den Ankern (#projects etc.) */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom Scrollbar für den Dark Mode */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #020617; /* slate-950 */
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1e293b; /* slate-800 */
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #334155; /* slate-700 */
+}
+
+/* Eigene Klasse für einen Glow-Effekt (Beispiel für ML-Highlight) */
+.card-glow {
+  transition: box-shadow 0.3s ease-in-out;
+}
+
+.card-glow:hover {
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.1); /* Smaragd-Glow */
+}
+
+/* Verhindert Text-Sprünge beim Sprachwechsel */
+[data-i18n] {
+  transition: opacity 0.2s ease-in-out;
+}
