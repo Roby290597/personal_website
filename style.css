@@ -3,13 +3,15 @@ html {
   scroll-behavior: smooth;
 }
 
+
+
 /* Custom Scrollbar für den Dark Mode */
 ::-webkit-scrollbar {
   width: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #020617; /* slate-950 */
+  background: #171818; /* slate-950 */
 }
 
 ::-webkit-scrollbar-thumb {
