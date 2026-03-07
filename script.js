@@ -47,6 +47,10 @@ const savedLang = localStorage.getItem("lang") || "de";
 applyLang(savedLang);
 
 
+const flipbox = document.querySelector(".flipbox");
+flipbox.ontouchstart=this.classList.toggle('hover');
+
+
 // --- Theme ---
 function applyTheme(theme) {
   // For your CSS variables: [data-theme="light"]
