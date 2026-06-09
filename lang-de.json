@@ -40,10 +40,11 @@
   "skills_col2_title": "Engineering",
   "skills_col2_li4": "APIs & Pipelines",
   "skills_col3_title": "Visualization",
-  "skills_col3_li4": "Dashboards (basic)",
+  "skills_col3_li4": "Dashboards",
   "contact_title": "Kontakt",
   "contact_subtitle": "Schreib mir für Rollen im Bereich Data Science / ML / NLP. Ich antworte zuverlässig.",
   "contact_email_btn": "Email",
   "contact_linkedin_btn": "LinkedIn",
-  "contact_youtube_btn": "YouTube"
+  "contact_youtube_btn": "YouTube",
+  "contact_instagram_btn": "Instagram"
 }

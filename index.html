@@ -8,7 +8,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Brandon Hank | Data Scientist</title>
-  <meta name="description" content="Portfolio von Brandon Hank – Data Science, NLP, Machine Learning." />
+  <meta name="description" content="Portfolio von Brandon Hank – Data Science, NLP, Machine Learning" />
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="style.css?v=1.0">
 </head>
@@ -16,32 +16,9 @@
 
 <body class="bg-slate-950 text-slate-100">
   <!-- Top Bar -->
-  <header class="sticky top-0 z-50 border-b border-slate-800/60 bg-slate-950/70 backdrop-blur">
-    <div class="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
-      <div class="flex items-center gap-4">
-        <img
-        src="./Nice_guy_icon1.png"
-        alt="my_icon"
-        class="h-10 w-10 rounded-2xl border border-slate-5 object-cover shadow-xl""
-        />
-        <a class="font-semibold tracking-tight" href="index.html" >Brandon Hank
-      </div>
-
-      <div class="flex items-center gap-4">
-        <nav class="flex gap-4 text-sm text-slate-300">
-          <a class="hover:text-white" href="projects.html" data-i18n="nav_projects">Projekte</a>
-          <a class="hover:text-white" href="skills.html" data-i18n="nav_skills">Skills</a>
-          <a class="hover:text-white" href="index.html#contact" data-i18n="nav_contact">Kontakt</a>
-        </nav>
-
-        <!-- Language Toggle -->
-        <div class="flex items-center gap-1 rounded-xl border border-slate-800 bg-slate-900/40 p-1 text-xs text-slate-200">
-          <button id="btn-de" class="rounded-lg px-2 py-1 hover:bg-slate-800/60" type="button">DE</button>
-          <button id="btn-en" class="rounded-lg px-2 py-1 hover:bg-slate-800/60" type="button">EN</button>
-        </div>
-      </div>
-    </div>
-  </header>
+<header class="border-b border-slate-800 bg-slate-950/80 backdrop-blur sticky top-0 z-50">
+  <div id="topbar-container"></div>
+</header>
 
   <!-- Hero -->
   <main class="mx-auto max-w-5xl px-4">
@@ -71,6 +48,10 @@
 
       <a class="rounded-xl bg-emerald-400 px-4 py-2 text-sm font-medium text-slate-950 hover:bg-emerald-300"
         href="https://www.youtube.com/@ROBY-B445" target="_blank" rel="noreferrer">YouTube</a>
+      
+      
+      <a class="rounded-xl border border-slate-700 bg-slate-900/40 px-4 py-2 text-sm font-medium hover:border-slate-500"
+        href="https://www.instagram.com/roby_hank" target="_blank" rel="noreferrer">Instagram</a>
     </div>
   </div>
    
@@ -86,83 +67,6 @@
   </div>
 </div>
 
-
-
-    <!-- Projects -->
-    <section id="projects" class="py-10 md:py-14">
-      <div class="flex items-end justify-between gap-4">
-        <div>
-          <h2 class="text-2xl font-semibold tracking-tight" data-i18n="projects_title">Projekte</h2>
-          <p class="mt-2 text-slate-300" data-i18n="projects_subtitle">Auswahl – mit klaren Ergebnissen &amp; Tech Stack.</p>
-        </div>
-      </div>
-
-      <div class="mt-6 grid gap-4 md:grid-cols-2">
-        <!-- Project Card 1 -->
-        <article class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6 hover:border-slate-600">
-          <div class="flex items-center justify-between">
-            <h3 class="font-semibold">Bundestag Speeches NLP</h3>
-            <span class="text-xs text-slate-400" data-i18n="projects_0_tag_oss">Regression Modelle</span>
-          </div>
-          <p class="mt-2 text-sm text-slate-300" data-i18n="projects_0_desc"></p>
-          <div class="mt-4 flex flex-wrap gap-2 text-xs text-slate-300">
-            <span class="rounded-full border border-slate-800 bg-slate-950/40 px-3 py-1">Transformers</span>
-            <span class="rounded-full border border-slate-800 bg-slate-950/40 px-3 py-1">ROUGE</span>
-            <span class="rounded-full border border-slate-800 bg-slate-950/40 px-3 py-1">Gradio</span>
-          </div>
-          <div class="mt-5 flex gap-3">
-            <a class="text-sm text-emerald-300 hover:text-emerald-200"
-               href="https://github.com/Roby290597/bundestag_speeches" target="_blank" rel="noreferrer"
-               data-i18n="projects_repo">Repo →</a>
-            <a class="text-sm text-slate-300 hover:text-white" href="#" title="Optional: Demo-Link" data-i18n="projects_demo">Demo</a>
-          </div>
-        </article>
-
-        <!-- Project Card 2 -->
-        <article class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6 hover:border-slate-600">
-          <div class="flex items-center justify-between">
-            <h3 class="font-semibold">Krankenversicherung Preisvorhersage</h3>
-            <span class="text-xs text-slate-400" data-i18n="projects_1_tag_oss">Regression Modelle</span>
-          </div>
-          <p class="mt-2 text-sm text-slate-300" data-i18n="projects_1_desc">
-            
-          </p>
-          <div class="mt-4 flex flex-wrap gap-2 text-xs text-slate-300">
-            <span class="rounded-full border border-slate-800 bg-slate-950/40 px-3 py-1">Neural Networks</span>
-            <span class="rounded-full border border-slate-800 bg-slate-950/40 px-3 py-1">Decision Trees</span>
-            <span class="rounded-full border border-slate-800 bg-slate-950/40 px-3 py-1">Ensemble Methods</span>
-            <span class="rounded-full border border-slate-800 bg-slate-950/40 px-3 py-1">SHAP</span>
-          </div>
-          <div class="mt-5 flex gap-3">
-            <a class="text-sm text-emerald-300 hover:text-emerald-200"
-               href="https://github.com/Roby290597/bundestag_speeches" target="_blank" rel="noreferrer"
-               data-i18n="projects_repo">Repo →</a>
-            <a class="text-sm text-slate-300 hover:text-white" href="#" title="Optional: Demo-Link" data-i18n="projects_demo">Demo</a>
-          </div>
-        </article>
-
-
-        <!-- Project Card 3 -->
-        <article class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6 hover:border-slate-600">
-          <div class="flex items-center justify-between">
-            <h3 class="font-semibold" data-i18n="projects_2_title">Graph Similarity Learning</h3>
-            <span class="text-xs text-slate-400" data-i18n="projects_2_tag">Graph Neural Networks</span>
-          </div>
-          <p class="mt-2 text-sm text-slate-300" data-i18n="projects_2_desc">
-            Masterarbeit: Evaluation von Graph Similarity Learning – Experimente, Metriken, Analyse.
-          </p>
-          <div class="mt-4 flex flex-wrap gap-2 text-xs text-slate-300">
-            <span class="rounded-full border border-slate-800 bg-slate-950/40 px-3 py-1">NetworkX</span>
-            <span class="rounded-full border border-slate-800 bg-slate-950/40 px-3 py-1">Python</span>
-            <span class="rounded-full border border-slate-800 bg-slate-950/40 px-3 py-1" data-i18n="projects_2_chip">Evaluation</span>
-            <span class="rounded-full border border-slate-800 bg-slate-950/40 px-3 py-1" >Similarity Learning</span>
-          </div>
-          <div class="mt-5 flex gap-3">
-            <a class="text-sm text-emerald-300 hover:text-emerald-200" href="#" title="Optional: Paper/PDF Link" data-i18n="projects_details">Details</a>
-          </div>
-        </article>
-      </div>
-    </section>
 
     <!-- Skills -->
     <section id="skills" class="py-10 md:py-14">
@@ -194,7 +98,7 @@
             <li>Matplotlib</li>
             <li>Seaborn</li>
             <li>Gradio UIs</li>
-            <li data-i18n="skills_col3_li4">Dashboards (basic)</li>
+            <li data-i18n="skills_col3_li4">Dashboards</li>
           </ul>
         </div>
       </div>
@@ -229,6 +133,14 @@
     </footer>
   </main>
 
-<script src="script.js"></script>
-</body>
+<script>
+  fetch('topbar.html')
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById('topbar-container').innerHTML = html;
+      const s = document.createElement('script');
+      s.src = 'script.js';
+      document.body.appendChild(s);
+    });
+</script></body>
 </html>

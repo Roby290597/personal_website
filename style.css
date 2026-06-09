@@ -1,9 +1,78 @@
+/* ── Theme-Variablen ────────────────────────────────────────── */
+:root,
+[data-theme="dark"] {
+  --bg-base:      #020617; /* slate-950 */
+  --bg-card:      rgba(15,23,42,0.3); /* slate-900/30 */
+  --bg-header:    rgba(2,6,23,0.8);
+  --border-color: #1e293b; /* slate-800 */
+  --text-base:    #f1f5f9; /* slate-100 */
+  --text-muted:   #cbd5e1; /* slate-300 */
+  --text-faint:   #64748b; /* slate-500 */
+}
+
+[data-theme="light"] {
+  --bg-base:      #f8fafc; /* slate-50 */
+  --bg-card:      rgba(255,255,255,0.7);
+  --bg-header:    rgba(248,250,252,0.85);
+  --border-color: #e2e8f0; /* slate-200 */
+  --text-base:    #0f172a; /* slate-900 */
+  --text-muted:   #475569; /* slate-600 */
+  --text-faint:   #94a3b8; /* slate-400 */
+}
+
+/* Basis-Elemente auf Variablen umstellen */
+body {
+  background-color: var(--bg-base);
+  color: var(--text-base);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+header {
+  background-color: var(--bg-header) !important;
+  border-color: var(--border-color) !important;
+}
+
+/* Cards & Panels */
+[data-theme="light"] .rounded-3xl,
+[data-theme="light"] .rounded-xl {
+  border-color: var(--border-color);
+}
+
+[data-theme="light"] [class*="bg-slate-900"] {
+  background-color: var(--bg-card) !important;
+}
+
+[data-theme="light"] [class*="bg-slate-950"] {
+  background-color: var(--bg-base) !important;
+}
+
+/* Text */
+[data-theme="light"] .text-slate-300 {
+  color: var(--text-muted) !important;
+}
+
+[data-theme="light"] .text-slate-500 {
+  color: var(--text-faint) !important;
+}
+
+[data-theme="light"] .text-slate-100 {
+  color: var(--text-base) !important;
+}
+
+/* Nav-Links */
+[data-theme="light"] .text-slate-200 {
+  color: var(--text-muted) !important;
+}
+
+/* Scrollbar */
+[data-theme="light"] ::-webkit-scrollbar-track { background: #f1f5f9; }
+[data-theme="light"] ::-webkit-scrollbar-thumb { background: #cbd5e1; }
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
 /* Erlaubt weiches Scrollen zu den Ankern (#projects etc.) */
 html {
   scroll-behavior: smooth;
 }
-
-
 
 /* Custom Scrollbar für den Dark Mode */
 ::-webkit-scrollbar {
