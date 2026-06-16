@@ -4,74 +4,378 @@
 <head>
   <link rel="icon" href="./favicon.ico">
   <link rel="manifest" href="./site.webmanifest">
-  <link rel="apple-touch-icon" href="./apple-touch-icon.png">     
+  <link rel="apple-touch-icon" href="./apple-touch-icon.png">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Brandon Hank | Data Scientist</title>
-  <meta name="description" content="Portfolio von Brandon Hank – Data Science, NLP, Machine Learning." />
+  <title>Brandon Hank | Mathe Akademie</title>
+  <meta name="description" content="Mathe lernen wie ein Profi – strukturierte Kurse von Klasse 1 bis 10." />
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="style.css?v=1.0">
 </head>
 
-
 <body class="bg-slate-950 text-slate-100">
-    <!-- Top Bar -->
-<header class="border-b border-slate-800 bg-slate-950/80 backdrop-blur sticky top-0 z-50">
-  <div id="topbar-container"></div>
-</header>
+  <!-- Top Bar -->
+  <header class="border-b border-slate-800 bg-slate-950/80 backdrop-blur sticky top-0 z-50">
+    <div id="topbar-container"></div>
+  </header>
 
+  <main class="mx-auto max-w-5xl px-4">
 
-<main class="mx-auto max-w-5xl px-4">
+    <!-- Hero -->
     <section class="py-14 md:py-20">
-</body>
-    <!-- Skills -->
-    <section id="skills" class="py-10 md:py-14">
-      <h2 class="text-2xl font-semibold tracking-tight" data-i18n="skills_title">Skills</h2>
-      <p class="mt-2 text-slate-300" data-i18n="skills_subtitle">Qualifikationen</p>
+      <span class="inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-xs font-medium text-emerald-300">
+        <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+        <span data-aca="hero_badge">Mathe · Klasse 1–10</span>
+      </span>
 
-      <div class="mt-6 grid gap-4 md:grid-cols-3">
-        <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
-          <h3 class="font-semibold" data-i18n="skills_col1_title">Data &amp; ML</h3>
-          <ul class="mt-3 space-y-2 text-sm text-slate-300">
-            <li>Python, Pandas, NumPy</li>
-            <li>Scikit-learn, XGBoost</li>
-            <li>PyTorch, TensorFlow</li>
-            <li>HF Transformers</li>
-          </ul>
+      <h1 class="mt-5 max-w-3xl text-4xl font-semibold leading-tight tracking-tight md:text-5xl">
+        <span data-aca="hero_title_a">Mathe lernen –</span>
+        <span class="text-emerald-300" data-aca="hero_title_b">wie ein Profi.</span>
+      </h1>
+
+      <p class="mt-4 max-w-2xl text-slate-300" data-aca="hero_sub">
+        Vom Zählen bis zur Trigonometrie: strukturierte Kurse, die dich Schritt für Schritt durch den
+        kompletten Schulstoff der Klassen 1 bis 10 führen.
+      </p>
+
+      <!-- Stats -->
+      <div class="mt-8 grid max-w-xl grid-cols-3 gap-4">
+        <div class="rounded-2xl border border-slate-800 bg-slate-900/30 px-4 py-4">
+          <div class="text-2xl font-semibold text-emerald-300">10</div>
+          <div class="mt-1 text-xs text-slate-400" data-aca="stat_grades">Klassenstufen</div>
         </div>
-        <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
-          <h3 class="font-semibold" data-i18n="skills_col2_title">Engineering</h3>
-          <ul class="mt-3 space-y-2 text-sm text-slate-300">
-            <li>SQL (PostgreSQL, SQLite)</li>
-            <li>Docker, Linux, Bash</li>
-            <li>GitHub/GitLab</li>
-            <li data-i18n="skills_col2_li4">APIs &amp; Pipelines</li>
-          </ul>
+        <div class="rounded-2xl border border-slate-800 bg-slate-900/30 px-4 py-4">
+          <div class="text-2xl font-semibold text-emerald-300" id="stat-topics">–</div>
+          <div class="mt-1 text-xs text-slate-400" data-aca="stat_topics">Themen</div>
         </div>
-        <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
-          <h3 class="font-semibold" data-i18n="skills_col3_title">Visualization</h3>
-          <ul class="mt-3 space-y-2 text-sm text-slate-300">
-            <li>Matplotlib</li>
-            <li>Seaborn</li>
-            <li>Gradio UIs</li>
-            <li data-i18n="skills_col3_li4">Dashboards (basic)</li>
-          </ul>
+        <div class="rounded-2xl border border-slate-800 bg-slate-900/30 px-4 py-4">
+          <div class="text-2xl font-semibold text-emerald-300" id="stat-lessons">–</div>
+          <div class="mt-1 text-xs text-slate-400" data-aca="stat_lessons">Lektionen</div>
         </div>
       </div>
     </section>
 
-<main>
+    <!-- Lernpfad / Roadmap -->
+    <section class="pb-6">
+      <h2 class="text-2xl font-semibold tracking-tight" data-aca="path_title">Dein Lernpfad</h2>
+      <p class="mt-2 text-sm text-slate-300" data-aca="path_sub">Tippe auf eine Klassenstufe, um direkt dorthin zu springen.</p>
+
+      <div class="mt-6 rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+        <!-- Stage labels -->
+        <div class="mb-3 grid grid-cols-10 gap-2 text-center text-[10px] font-medium uppercase tracking-wide text-slate-500">
+          <span class="col-span-4" data-aca="stage_1">Grundschule</span>
+          <span class="col-span-2" data-aca="stage_2">Unterstufe</span>
+          <span class="col-span-2" data-aca="stage_3">Mittelstufe</span>
+          <span class="col-span-2" data-aca="stage_4">Oberstufe</span>
+        </div>
+        <!-- Nodes -->
+        <div id="roadmap" class="relative grid grid-cols-10 gap-2"></div>
+      </div>
+    </section>
+
+    <!-- Continue learning -->
+    <section id="continue-section" class="hidden pt-6">
+      <div class="flex items-baseline justify-between">
+        <h2 class="text-2xl font-semibold tracking-tight" data-aca="continue_title">Weiter lernen</h2>
+        <button id="reset-progress" class="text-xs text-slate-400 underline-offset-4 hover:text-slate-200 hover:underline" data-aca="reset">Fortschritt zurücksetzen</button>
+      </div>
+      <div id="continue-grid" class="mt-6 grid gap-4 md:grid-cols-3"></div>
+    </section>
+
+    <!-- Catalog -->
+    <section class="py-10 md:py-14">
+      <div class="flex flex-wrap items-baseline justify-between gap-2">
+        <h2 class="text-2xl font-semibold tracking-tight" data-aca="catalog_title">Alle Kurse</h2>
+        <span id="course-count" class="text-sm text-slate-400"></span>
+      </div>
+
+      <!-- Filter pills -->
+      <div id="filters" class="mt-6 flex flex-wrap gap-2"></div>
+
+      <!-- Course grid -->
+      <div id="course-grid" class="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3"></div>
+    </section>
+
+    <!-- CTA -->
+    <section class="pb-14 md:pb-20">
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6 md:p-8">
+        <h2 class="text-2xl font-semibold tracking-tight" data-aca="cta_title">Bereit loszulegen?</h2>
+        <p class="mt-2 max-w-2xl text-slate-300" data-aca="cta_sub">
+          Wähle deine Klassenstufe und starte mit dem ersten Kurs. Dein Fortschritt wird automatisch in
+          diesem Browser gespeichert.
+        </p>
+        <div class="mt-5 flex flex-wrap gap-3">
+          <a class="rounded-xl bg-emerald-400 px-4 py-2 text-sm font-medium text-slate-950 hover:bg-emerald-300"
+             href="https://www.youtube.com/@ROBY-B445" target="_blank" rel="noreferrer" data-aca="cta_youtube">Videos ansehen</a>
+          <a class="rounded-xl border border-slate-700 bg-slate-950/40 px-4 py-2 text-sm font-medium hover:border-slate-500" href="/cdn-cgi/l/email-protection#0361716b626d323333436b6b762d6766" data-aca="cta_contact">Frage stellen</a>
+        </div>
+      </div>
+    </section>
+
     <footer class="py-10 text-center text-xs text-slate-500">
       © <span id="y"></span> Brandon Hank · Düsseldorf
     </footer>
-<script>
-  fetch('topbar.html')
-    .then(res => res.text())
-    .then(html => {
-      document.getElementById('topbar-container').innerHTML = html;
-      const s = document.createElement('script');
-      s.src = 'script.js';
-      document.body.appendChild(s);
-    });
-</script></body>
+  </main>
+
+  <!-- Topbar + base scripts (theme, language toggle, footer year) -->
+  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+    fetch('topbar.html')
+      .then(res => res.text())
+      .then(html => {
+        document.getElementById('topbar-container').innerHTML = html;
+        const s = document.createElement('script');
+        s.src = 'script.js';
+        document.body.appendChild(s);
+        // Academy init runs once topbar (and its lang buttons) exist in the DOM
+        initAcademy();
+      });
+  </script>
+
+  <!-- Academy logic -->
+  <script>
+    // ── Course data (grades 1–10, bilingual) ───────────────────────────
+    const COURSES = [
+      { g:1, lvl:'base', n:8,  t:{de:'Zahlen bis 20', en:'Numbers to 20'}, d:{de:'Zählen, vergleichen und Zahlen sicher schreiben.', en:'Count, compare and write numbers with confidence.'}, tags:['Zählen','Zahlenraum'] },
+      { g:1, lvl:'base', n:7,  t:{de:'Plus & Minus bis 20', en:'Plus & Minus to 20'}, d:{de:'Erste Addition und Subtraktion im Zahlenraum bis 20.', en:'First addition and subtraction up to 20.'}, tags:['Addition','Subtraktion'] },
+      { g:1, lvl:'base', n:6,  t:{de:'Formen & Muster', en:'Shapes & Patterns'}, d:{de:'Kreis, Dreieck und Quadrat erkennen, Muster fortsetzen.', en:'Spot circles, triangles, squares and continue patterns.'}, tags:['Geometrie','Muster'] },
+
+      { g:2, lvl:'base', n:9,  t:{de:'Zahlen bis 100', en:'Numbers to 100'}, d:{de:'Stellenwerte verstehen – Zehner und Einer.', en:'Understand place value – tens and ones.'}, tags:['Stellenwert'] },
+      { g:2, lvl:'base', n:12, t:{de:'Das kleine Einmaleins', en:'Times Tables 1–10'}, d:{de:'Die Reihen 1 bis 10 spielerisch auswendig lernen.', en:'Learn the rows 1 to 10 by heart, playfully.'}, tags:['Einmaleins'] },
+      { g:2, lvl:'base', n:8,  t:{de:'Uhrzeit & Geld', en:'Time & Money'}, d:{de:'Die Uhr lesen und mit Euro und Cent rechnen.', en:'Read the clock and calculate with euros and cents.'}, tags:['Uhrzeit','Geld'] },
+
+      { g:3, lvl:'base', n:10, t:{de:'Schriftlich Rechnen', en:'Column Arithmetic'}, d:{de:'Addieren und Subtrahieren mit Übertrag bis 1000.', en:'Add and subtract with carrying up to 1000.'}, tags:['Addition','Subtraktion'] },
+      { g:3, lvl:'base', n:11, t:{de:'Mal & Geteilt', en:'Multiply & Divide'}, d:{de:'Multiplikation und Division sicher anwenden.', en:'Apply multiplication and division confidently.'}, tags:['Multiplikation','Division'] },
+      { g:3, lvl:'base', n:7,  t:{de:'Flächen & Umfang', en:'Area & Perimeter'}, d:{de:'Rechtecke messen und den Umfang bestimmen.', en:'Measure rectangles and find the perimeter.'}, tags:['Geometrie'] },
+
+      { g:4, lvl:'base', n:10, t:{de:'Schriftlich Multiplizieren', en:'Long Multiplication'}, d:{de:'Mehrstellige Zahlen multiplizieren und dividieren.', en:'Multiply and divide multi-digit numbers.'}, tags:['Multiplikation','Division'] },
+      { g:4, lvl:'base', n:9,  t:{de:'Größen & Einheiten', en:'Units & Measures'}, d:{de:'Längen, Gewichte und Zeitspannen umrechnen.', en:'Convert lengths, weights and durations.'}, tags:['Einheiten'] },
+      { g:4, lvl:'base', n:7,  t:{de:'Symmetrie & Körper', en:'Symmetry & Solids'}, d:{de:'Spiegelachsen finden, Würfel und Quader erkunden.', en:'Find axes of symmetry, explore cubes and cuboids.'}, tags:['Geometrie'] },
+
+      { g:5, lvl:'build', n:9,  t:{de:'Große Zahlen & Stellenwert', en:'Large Numbers & Place Value'}, d:{de:'Millionen lesen, runden und ordnen.', en:'Read, round and order numbers into the millions.'}, tags:['Zahlen','Runden'] },
+      { g:5, lvl:'build', n:11, t:{de:'Grundrechenarten & Terme', en:'Operations & Terms'}, d:{de:'Rechenregeln und Klammern – Punkt vor Strich.', en:'Order of operations and brackets.'}, tags:['Terme','Rechenregeln'] },
+      { g:5, lvl:'build', n:8,  t:{de:'Flächeninhalt', en:'Area'}, d:{de:'Flächen von Rechteck und Dreieck berechnen.', en:'Calculate the area of rectangles and triangles.'}, tags:['Geometrie'] },
+
+      { g:6, lvl:'build', n:12, t:{de:'Brüche verstehen', en:'Understanding Fractions'}, d:{de:'Brüche kürzen, erweitern und vergleichen.', en:'Reduce, expand and compare fractions.'}, tags:['Brüche'] },
+      { g:6, lvl:'build', n:10, t:{de:'Dezimalzahlen', en:'Decimals'}, d:{de:'Mit dem Komma rechnen und Brüche umwandeln.', en:'Calculate with decimals and convert fractions.'}, tags:['Dezimalzahlen'] },
+      { g:6, lvl:'build', n:9,  t:{de:'Teilbarkeit & Primzahlen', en:'Divisibility & Primes'}, d:{de:'Teiler, Vielfache, ggT und kgV bestimmen.', en:'Find factors, multiples, GCD and LCM.'}, tags:['Teilbarkeit'] },
+
+      { g:7, lvl:'build', n:11, t:{de:'Prozent- & Zinsrechnung', en:'Percentages & Interest'}, d:{de:'Prozente und Zinsen im Alltag sicher berechnen.', en:'Calculate percentages and interest for everyday life.'}, tags:['Prozent','Zinsen'] },
+      { g:7, lvl:'build', n:9,  t:{de:'Negative Zahlen', en:'Negative Numbers'}, d:{de:'Mit ganzen Zahlen auf dem Zahlenstrahl rechnen.', en:'Calculate with integers on the number line.'}, tags:['Ganze Zahlen'] },
+      { g:7, lvl:'build', n:10, t:{de:'Terme & Variablen', en:'Terms & Variables'}, d:{de:'Terme aufstellen, vereinfachen und einsetzen.', en:'Build, simplify and substitute into terms.'}, tags:['Algebra'] },
+
+      { g:8, lvl:'deep', n:11, t:{de:'Lineare Gleichungen', en:'Linear Equations'}, d:{de:'Gleichungen Schritt für Schritt nach x auflösen.', en:'Solve equations for x step by step.'}, tags:['Gleichungen'] },
+      { g:8, lvl:'deep', n:12, t:{de:'Lineare Funktionen', en:'Linear Functions'}, d:{de:'Steigung, y-Achsenabschnitt und Graphen.', en:'Slope, y-intercept and graphs.'}, tags:['Funktionen'] },
+      { g:8, lvl:'deep', n:8,  t:{de:'Wahrscheinlichkeit', en:'Probability'}, d:{de:'Zufall, Baumdiagramme und Chancen berechnen.', en:'Randomness, tree diagrams and chances.'}, tags:['Stochastik'] },
+
+      { g:9, lvl:'deep', n:12, t:{de:'Quadratische Funktionen', en:'Quadratic Functions'}, d:{de:'Parabeln, Scheitelpunkt und Nullstellen.', en:'Parabolas, vertex and roots.'}, tags:['Funktionen'] },
+      { g:9, lvl:'deep', n:10, t:{de:'Satz des Pythagoras', en:'Pythagorean Theorem'}, d:{de:'Seiten im rechtwinkligen Dreieck berechnen.', en:'Find sides in a right-angled triangle.'}, tags:['Geometrie'] },
+      { g:9, lvl:'deep', n:8,  t:{de:'Strahlensätze', en:'Intercept Theorems'}, d:{de:'Ähnlichkeit und Streckenverhältnisse nutzen.', en:'Use similarity and ratios of lengths.'}, tags:['Geometrie'] },
+
+      { g:10, lvl:'deep', n:12, t:{de:'Trigonometrie', en:'Trigonometry'}, d:{de:'Sinus, Kosinus und Tangens richtig anwenden.', en:'Apply sine, cosine and tangent correctly.'}, tags:['Sin/Cos/Tan'] },
+      { g:10, lvl:'deep', n:10, t:{de:'Potenzen & Wurzeln', en:'Powers & Roots'}, d:{de:'Potenzgesetze anwenden und Wurzeln vereinfachen.', en:'Apply power laws and simplify roots.'}, tags:['Potenzen'] },
+      { g:10, lvl:'deep', n:9,  t:{de:'Exponentielles Wachstum', en:'Exponential Growth'}, d:{de:'Wachstums- und Zerfallsprozesse modellieren.', en:'Model growth and decay processes.'}, tags:['Funktionen'] },
+    ].map((c, i) => ({ ...c, id: 'k' + c.g + '-' + (i) }));
+
+    // ── UI strings ─────────────────────────────────────────────────────
+    const STR = {
+      de: {
+        hero_badge:'Mathe · Klasse 1–10', hero_title_a:'Mathe lernen –', hero_title_b:'wie ein Profi.',
+        hero_sub:'Vom Zählen bis zur Trigonometrie: strukturierte Kurse, die dich Schritt für Schritt durch den kompletten Schulstoff der Klassen 1 bis 10 führen.',
+        stat_grades:'Klassenstufen', stat_topics:'Themen', stat_lessons:'Lektionen',
+        path_title:'Dein Lernpfad', path_sub:'Tippe auf eine Klassenstufe, um direkt dorthin zu springen.',
+        stage_1:'Grundschule', stage_2:'Unterstufe', stage_3:'Mittelstufe', stage_4:'Oberstufe',
+        continue_title:'Weiter lernen', reset:'Fortschritt zurücksetzen',
+        catalog_title:'Alle Kurse', filter_all:'Alle', grade:'Klasse',
+        cta_title:'Bereit loszulegen?', cta_sub:'Wähle deine Klassenstufe und starte mit dem ersten Kurs. Dein Fortschritt wird automatisch in diesem Browser gespeichert.',
+        cta_youtube:'Videos ansehen', cta_contact:'Frage stellen',
+        lvl_base:'Grundlagen', lvl_build:'Aufbau', lvl_deep:'Vertiefung',
+        lessons:'Lektionen', start:'Kurs starten', resume:'Weiter lernen', done:'Abgeschlossen ✓',
+        count:(n)=>n+' Kurse',
+      },
+      en: {
+        hero_badge:'Maths · Grade 1–10', hero_title_a:'Learn maths –', hero_title_b:'like a pro.',
+        hero_sub:'From counting to trigonometry: structured courses that guide you step by step through the entire school syllabus for grades 1 to 10.',
+        stat_grades:'Grade levels', stat_topics:'Topics', stat_lessons:'Lessons',
+        path_title:'Your learning path', path_sub:'Tap a grade level to jump straight to it.',
+        stage_1:'Primary', stage_2:'Lower', stage_3:'Middle', stage_4:'Upper',
+        continue_title:'Continue learning', reset:'Reset progress',
+        catalog_title:'All courses', filter_all:'All', grade:'Grade',
+        cta_title:'Ready to start?', cta_sub:'Pick your grade level and start with the first course. Your progress is saved automatically in this browser.',
+        cta_youtube:'Watch videos', cta_contact:'Ask a question',
+        lvl_base:'Basics', lvl_build:'Building', lvl_deep:'Advanced',
+        lessons:'lessons', start:'Start course', resume:'Continue', done:'Completed ✓',
+        count:(n)=>n+' courses',
+      }
+    };
+
+    const PROGRESS_KEY = 'academy_progress_v1';
+    let lang = localStorage.getItem('lang') || 'de';
+    let activeGrade = 'all';
+
+    function loadProgress() {
+      try { return JSON.parse(localStorage.getItem(PROGRESS_KEY)) || {}; }
+      catch (e) { return {}; }
+    }
+    function saveProgress(p) { localStorage.setItem(PROGRESS_KEY, JSON.stringify(p)); }
+
+    // Seed a little progress on first visit so "Continue learning" is demonstrated
+    function seedProgress() {
+      if (localStorage.getItem(PROGRESS_KEY) !== null) return;
+      const p = {};
+      const a = COURSES.find(c => c.g === 5);          // Große Zahlen
+      const b = COURSES.filter(c => c.g === 6)[0];     // Brüche
+      if (a) p[a.id] = Math.min(4, a.n);
+      if (b) p[b.id] = Math.min(2, b.n);
+      saveProgress(p);
+    }
+
+    function esc(s){ return String(s).replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
+
+    function courseCard(c) {
+      const T = STR[lang];
+      const prog = loadProgress();
+      const done = prog[c.id] || 0;
+      const pct = Math.round((done / c.n) * 100);
+      const complete = done >= c.n;
+      const label = complete ? T.done : (done > 0 ? T.resume : T.start);
+      const btnClass = complete
+        ? 'border border-emerald-400/30 bg-emerald-400/10 text-emerald-300'
+        : 'bg-emerald-400 text-slate-950 hover:bg-emerald-300';
+      const tags = c.tags.map(t => '<span class="rounded-full border border-slate-800 bg-slate-950/40 px-3 py-1">'+esc(t)+'</span>').join('');
+      return ''+
+      '<article class="group flex flex-col rounded-3xl border border-slate-800 bg-slate-900/30 p-6 transition hover:border-slate-600 card-glow">'+
+        '<div class="flex items-center justify-between">'+
+          '<span class="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-xs font-medium text-emerald-300">'+T.grade+' '+c.g+'</span>'+
+          '<span class="text-xs uppercase tracking-wide text-slate-500">'+T['lvl_'+c.lvl]+'</span>'+
+        '</div>'+
+        '<h3 class="mt-4 text-lg font-semibold leading-snug">'+esc(c.t[lang])+'</h3>'+
+        '<p class="mt-2 flex-1 text-sm text-slate-300">'+esc(c.d[lang])+'</p>'+
+        '<div class="mt-4 flex flex-wrap gap-2 text-xs text-slate-300">'+tags+'</div>'+
+        '<div class="mt-5">'+
+          '<div class="mb-2 flex items-center justify-between text-xs text-slate-400">'+
+            '<span>'+done+' / '+c.n+' '+T.lessons+'</span><span>'+pct+'%</span>'+
+          '</div>'+
+          '<div class="h-1.5 w-full overflow-hidden rounded-full bg-slate-800">'+
+            '<div class="h-full rounded-full bg-emerald-400 transition-all duration-300" style="width:'+pct+'%"></div>'+
+          '</div>'+
+        '</div>'+
+        '<button data-id="'+c.id+'" class="js-progress mt-5 rounded-xl px-4 py-2 text-sm font-medium transition '+btnClass+'">'+label+'</button>'+
+      '</article>';
+    }
+
+    function renderRoadmap() {
+      const T = STR[lang];
+      const prog = loadProgress();
+      const wrap = document.getElementById('roadmap');
+      let html = '';
+      for (let g = 1; g <= 10; g++) {
+        const courses = COURSES.filter(c => c.g === g);
+        const total = courses.reduce((s,c)=>s+c.n,0);
+        const done = courses.reduce((s,c)=>s+(prog[c.id]||0),0);
+        const started = done > 0;
+        const allDone = total > 0 && done >= total;
+        const active = activeGrade === g;
+        const ring = active ? 'ring-2 ring-emerald-400 ring-offset-2 ring-offset-slate-900' : '';
+        const fill = allDone
+          ? 'bg-emerald-400 text-slate-950 border-emerald-400'
+          : started
+            ? 'bg-emerald-400/15 text-emerald-300 border-emerald-400/40'
+            : 'bg-slate-950/40 text-slate-300 border-slate-700 hover:border-slate-500';
+        html += '<button data-grade="'+g+'" title="'+T.grade+' '+g+'" class="js-node flex aspect-square items-center justify-center rounded-2xl border text-sm font-semibold transition '+fill+' '+ring+'">'+g+'</button>';
+      }
+      wrap.innerHTML = html;
+    }
+
+    function renderFilters() {
+      const T = STR[lang];
+      const wrap = document.getElementById('filters');
+      const mk = (val,label) => {
+        const on = activeGrade === val;
+        const cls = on
+          ? 'bg-emerald-400 text-slate-950'
+          : 'border border-slate-800 bg-slate-900/40 text-slate-300 hover:border-slate-600';
+        return '<button data-grade="'+val+'" class="js-filter rounded-xl px-4 py-2 text-sm font-medium transition '+cls+'">'+label+'</button>';
+      };
+      let html = mk('all', T.filter_all);
+      for (let g = 1; g <= 10; g++) html += mk(String(g), T.grade + ' ' + g);
+      wrap.innerHTML = html;
+    }
+
+    function renderGrid() {
+      const T = STR[lang];
+      const list = activeGrade === 'all' ? COURSES : COURSES.filter(c => String(c.g) === String(activeGrade));
+      document.getElementById('course-grid').innerHTML = list.map(courseCard).join('');
+      document.getElementById('course-count').textContent = T.count(list.length);
+    }
+
+    function renderContinue() {
+      const prog = loadProgress();
+      const inProgress = COURSES.filter(c => { const d = prog[c.id]||0; return d > 0 && d < c.n; });
+      const sec = document.getElementById('continue-section');
+      if (inProgress.length === 0) { sec.classList.add('hidden'); return; }
+      sec.classList.remove('hidden');
+      document.getElementById('continue-grid').innerHTML = inProgress.slice(0,3).map(courseCard).join('');
+    }
+
+    function applyStaticStrings() {
+      const T = STR[lang];
+      document.querySelectorAll('[data-aca]').forEach(el => {
+        const key = el.getAttribute('data-aca');
+        if (T[key]) el.textContent = T[key];
+      });
+      document.getElementById('stat-topics').textContent = COURSES.length;
+      document.getElementById('stat-lessons').textContent = COURSES.reduce((s,c)=>s+c.n,0);
+    }
+
+    function renderAll() {
+      applyStaticStrings();
+      renderRoadmap();
+      renderFilters();
+      renderGrid();
+      renderContinue();
+    }
+
+    function initAcademy() {
+      seedProgress();
+      renderAll();
+
+      // Course / continue progress buttons (delegated)
+      document.querySelector('main').addEventListener('click', (e) => {
+        const pBtn = e.target.closest('.js-progress');
+        if (pBtn) {
+          const id = pBtn.getAttribute('data-id');
+          const c = COURSES.find(x => x.id === id);
+          if (!c) return;
+          const prog = loadProgress();
+          const cur = prog[id] || 0;
+          prog[id] = cur >= c.n ? c.n : cur + 1; // increment one lesson, cap at total
+          saveProgress(prog);
+          renderRoadmap(); renderGrid(); renderContinue();
+          return;
+        }
+        const fBtn = e.target.closest('.js-filter');
+        if (fBtn) { activeGrade = fBtn.getAttribute('data-grade'); renderFilters(); renderGrid(); renderRoadmap(); return; }
+        const nBtn = e.target.closest('.js-node');
+        if (nBtn) {
+          activeGrade = nBtn.getAttribute('data-grade');
+          renderFilters(); renderGrid(); renderRoadmap();
+          document.getElementById('filters').scrollTo?.(0,0);
+          return;
+        }
+      });
+
+      // Reset progress
+      document.getElementById('reset-progress').addEventListener('click', () => {
+        saveProgress({});
+        renderAll();
+      });
+
+      // Hook language buttons (from topbar) to re-render in the chosen language
+      const deBtn = document.getElementById('btn-de');
+      const enBtn = document.getElementById('btn-en');
+      if (deBtn) deBtn.addEventListener('click', () => { lang = 'de'; renderAll(); });
+      if (enBtn) enBtn.addEventListener('click', () => { lang = 'en'; renderAll(); });
+    }
+  </script>
+</body>
 </html>

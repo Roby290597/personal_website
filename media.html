@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="de">
+
+<head>
+  <link rel="icon" href="./favicon.ico">
+  <link rel="manifest" href="./site.webmanifest">
+  <link rel="apple-touch-icon" href="./apple-touch-icon.png">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Brandon Hank | Medien</title>
+  <meta name="description" content="Zeichnungen & Gemälde von Brandon Hank – zum Leben erweckt mit GenAI." />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="style.css?v=1.0">
+  <style>
+    /* ── Medien-Galerie ─────────────────────────────────────── */
+    .work-media {
+      position: relative;
+      overflow: hidden;
+      border-radius: 1.25rem;
+      transition: transform .5s cubic-bezier(.2,.7,.2,1);
+    }
+    .work:hover .work-media { transform: scale(1.012); }
+
+    /* Platzhalter-„Leinwand": ruht, beim Hover beginnt sie zu „atmen" (GenAI erweckt sie) */
+    .ph {
+      position: absolute; inset: 0;
+      background-size: 200% 200%;
+      background-position: 0% 50%;
+      transition: filter .6s ease;
+      filter: saturate(.85);
+    }
+    .work:hover .ph {
+      animation: drift 7s ease-in-out infinite;
+      filter: saturate(1.15);
+    }
+    .ph::after {
+      content: "";
+      position: absolute; inset: -40%;
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.16), transparent 55%);
+      opacity: 0;
+      transition: opacity .6s ease;
+    }
+    .work:hover .ph::after {
+      opacity: 1;
+      animation: float 9s ease-in-out infinite;
+    }
+    @keyframes drift {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    @keyframes float {
+      0%   { transform: translate(0, 0); }
+      50%  { transform: translate(12%, 8%); }
+      100% { transform: translate(0, 0); }
+    }
+
+    /* Echtes Medium (falls vorhanden): Standbild + Animation kreuzblenden */
+    .work-media .still, .work-media .anim {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+    }
+    .work-media .anim { opacity: 0; transition: opacity .6s ease; }
+    .work:hover .work-media .anim { opacity: 1; }
+
+    /* Story blendet beim Hover sanft ein */
+    .work .story {
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      transition: max-height .5s ease, opacity .4s ease, margin-top .4s ease;
+      margin-top: 0;
+    }
+    .work:hover .story {
+      max-height: 7rem;
+      opacity: 1;
+      margin-top: .5rem;
+    }
+
+    /* „Hover für Bewegung"-Hinweis verschwindet beim Hover */
+    .play-hint { transition: opacity .4s ease; }
+    .work:hover .play-hint { opacity: 0; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .work:hover .ph, .work:hover .ph::after { animation: none; }
+    }
+  </style>
+</head>
+
+<body class="bg-slate-950 text-slate-100">
+  <!-- Top Bar -->
+  <header class="border-b border-slate-800 bg-slate-950/80 backdrop-blur sticky top-0 z-50">
+    <div id="topbar-container"></div>
+  </header>
+
+  <main class="mx-auto max-w-5xl px-4">
+
+    <!-- Hero -->
+    <section class="py-12 md:py-16">
+      <span class="inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-xs font-medium text-emerald-300">
+        <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+        <span data-med="badge">Zeichnungen · zum Leben erweckt mit GenAI</span>
+      </span>
+
+      <h1 class="mt-5 max-w-3xl text-4xl font-semibold leading-tight tracking-tight md:text-5xl" data-med="title">Medien</h1>
+
+      <p class="mt-4 max-w-2xl text-slate-300" data-med="sub">
+        Privat zeichne und male ich für mein Leben gern. Hier erwecke ich diese Werke mit
+        generativer KI zum Leben – fahre mit der Maus über ein Bild, um die Bewegung zu sehen.
+      </p>
+    </section>
+
+    <!-- Filter -->
+    <section>
+      <div id="filters" class="flex flex-wrap gap-2"></div>
+    </section>
+
+    <!-- Galerie -->
+    <section class="py-8 md:py-10">
+      <div id="gallery" class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3"></div>
+
+      <!-- Hinweis, wenn noch leer -->
+      <p id="empty-note" class="hidden py-16 text-center text-sm text-slate-500"></p>
+    </section>
+
+    <footer class="py-10 text-center text-xs text-slate-500">
+      © <span id="y"></span> Brandon Hank · Düsseldorf
+    </footer>
+  </main>
+
+  <!-- Topbar + Basis-Skripte -->
+  <script>
+    fetch('topbar.html')
+      .then(res => res.text())
+      .then(html => {
+        document.getElementById('topbar-container').innerHTML = html;
+        const s = document.createElement('script');
+        s.src = 'script.js';
+        document.body.appendChild(s);
+        initMedia();
+      });
+  </script>
+
+  <!-- Medien-Logik -->
+  <script>
+    // ── Kategorien (zweisprachig) ───────────────────────────────────────
+    const CATS = {
+      skizze:     { de:'Bleistift / Skizzen', en:'Pencil / Sketches' },
+      aquarell:   { de:'Aquarell / Malerei', en:'Watercolor / Painting' },
+      digital:    { de:'Digital',            en:'Digital' },
+      charakter:  { de:'Charakter-Design',   en:'Character Design' },
+      landschaft: { de:'Landschaften',       en:'Landscapes' },
+    };
+
+    // ── Werke ────────────────────────────────────────────────────────────
+    // Echte Dateien später eintragen: still:'media/<name>.jpg', anim:'media/<name>.mp4'
+    // Solange leer, wird eine elegante Platzhalter-Leinwand gezeigt.
+    const WORKS = [
+      { id:'wanderer', cat:'charakter', animated:true,
+        t:{de:'Der Wanderer', en:'The Wanderer'},
+        tech:{de:'Bleistift', en:'Pencil'},
+        s:{de:'Eine Figur, die ich auf einer langen Zugfahrt skizziert habe – jetzt setzt sie sich in Bewegung.',
+           en:'A figure I sketched on a long train ride — now it starts to move.'},
+        g:['#9a3412','#b45309'] },
+
+      { id:'nebeltal', cat:'landschaft', animated:true,
+        t:{de:'Nebeltal', en:'Misty Valley'},
+        tech:{de:'Aquarell', en:'Watercolor'},
+        s:{de:'Ein Aquarell aus den Bergen. Der Nebel beginnt langsam durch das Tal zu ziehen.',
+           en:'A watercolor from the mountains. The mist slowly drifts through the valley.'},
+        g:['#065f46','#047857'] },
+
+      { id:'neon', cat:'digital', animated:true,
+        t:{de:'Neon-Porträt', en:'Neon Portrait'},
+        tech:{de:'Digital', en:'Digital'},
+        s:{de:'Ein digitales Porträt, dessen Lichter beim Erwachen flackern und pulsieren.',
+           en:'A digital portrait whose lights flicker and pulse as it awakens.'},
+        g:['#4338ca','#6d28d9'] },
+
+      { id:'kreatur', cat:'charakter', animated:true,
+        t:{de:'Die Kreatur', en:'The Creature'},
+        tech:{de:'Digital', en:'Digital'},
+        s:{de:'Charakter-Design für eine Fantasie-Welt – atmet und blinzelt, sobald man hinsieht.',
+           en:'Character design for a fantasy world — it breathes and blinks when you look.'},
+        g:['#7c2d12','#a16207'] },
+
+      { id:'stillleben', cat:'aquarell', animated:false,
+        t:{de:'Stillleben in Blau', en:'Still Life in Blue'},
+        tech:{de:'Aquarell', en:'Watercolor'},
+        s:{de:'Eine ruhige Studie in Blautönen. Animation folgt bald.',
+           en:'A calm study in blue tones. Animation coming soon.'},
+        g:['#155e75','#0f766e'] },
+
+      { id:'haende', cat:'skizze', animated:false,
+        t:{de:'Hände', en:'Hands Study'},
+        tech:{de:'Bleistift', en:'Pencil'},
+        s:{de:'Eine klassische Handstudie aus meinem Skizzenbuch.',
+           en:'A classic hand study from my sketchbook.'},
+        g:['#334155','#475569'] },
+    ];
+
+    // ── UI-Strings ─────────────────────────────────────────────────────
+    const STR = {
+      de: {
+        badge:'Zeichnungen · zum Leben erweckt mit GenAI', title:'Medien',
+        sub:'Privat zeichne und male ich für mein Leben gern. Hier erwecke ich diese Werke mit generativer KI zum Leben – fahre mit der Maus über ein Bild, um die Bewegung zu sehen.',
+        all:'Alle', genai:'Animiert mit GenAI', soon:'Animation folgt', hint:'Hover für Bewegung',
+        empty:'In dieser Kategorie ist noch nichts dabei – bald mehr!',
+      },
+      en: {
+        badge:'Drawings · brought to life with GenAI', title:'Media',
+        sub:'I love to draw and paint in my free time. Here I bring those works to life with generative AI — hover over an image to see it move.',
+        all:'All', genai:'Animated with GenAI', soon:'Animation coming', hint:'Hover to animate',
+        empty:'Nothing here yet — more coming soon!',
+      }
+    };
+
+    let lang = localStorage.getItem('lang') || 'de';
+    let activeCat = 'all';
+
+    function esc(s){ return String(s).replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
+
+    function workCard(w) {
+      const T = STR[lang];
+      // Echtes Medium falls vorhanden, sonst Platzhalter-Leinwand
+      let canvas;
+      if (w.still) {
+        canvas = '<img class="still" src="'+esc(w.still)+'" alt="'+esc(w.t[lang])+'">' +
+                 (w.anim ? '<video class="anim" src="'+esc(w.anim)+'" muted loop playsinline preload="none"></video>' : '');
+      } else {
+        canvas = '<div class="ph" style="background-image:linear-gradient(135deg,'+w.g[0]+','+w.g[1]+')"></div>';
+      }
+      const badge = w.animated
+        ? '<span class="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-slate-950/70 px-2.5 py-1 text-[10px] font-medium text-emerald-300 backdrop-blur">✦ '+T.genai+'</span>'
+        : '<span class="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-slate-950/60 px-2.5 py-1 text-[10px] font-medium text-slate-400 backdrop-blur">'+T.soon+'</span>';
+      const hint = w.animated
+        ? '<span class="play-hint absolute bottom-3 left-3 inline-flex items-center gap-1 rounded-full bg-slate-950/60 px-2.5 py-1 text-[10px] text-slate-300 backdrop-blur">▶ '+T.hint+'</span>'
+        : '';
+
+      return ''+
+      '<article class="work group" data-cat="'+w.cat+'">'+
+        '<div class="work-media aspect-[4/5] border border-slate-800 bg-slate-900/40">'+
+          canvas + badge + hint +
+        '</div>'+
+        '<div class="px-1 pt-3">'+
+          '<div class="flex items-baseline justify-between gap-3">'+
+            '<h3 class="text-base font-semibold leading-snug">'+esc(w.t[lang])+'</h3>'+
+            '<span class="shrink-0 text-xs uppercase tracking-wide text-slate-500">'+esc(w.tech[lang])+'</span>'+
+          '</div>'+
+          '<p class="story text-sm text-slate-300">'+esc(w.s[lang])+'</p>'+
+        '</div>'+
+      '</article>';
+    }
+
+    function renderFilters() {
+      const T = STR[lang];
+      const wrap = document.getElementById('filters');
+      const mk = (val,label) => {
+        const on = activeCat === val;
+        const cls = on
+          ? 'bg-emerald-400 text-slate-950'
+          : 'border border-slate-800 bg-slate-900/40 text-slate-300 hover:border-slate-600';
+        return '<button data-cat="'+val+'" class="js-filter rounded-xl px-4 py-2 text-sm font-medium transition '+cls+'">'+esc(label)+'</button>';
+      };
+      let html = mk('all', T.all);
+      Object.keys(CATS).forEach(k => { html += mk(k, CATS[k][lang]); });
+      wrap.innerHTML = html;
+    }
+
+    function renderGallery() {
+      const T = STR[lang];
+      const list = activeCat === 'all' ? WORKS : WORKS.filter(w => w.cat === activeCat);
+      const grid = document.getElementById('gallery');
+      const note = document.getElementById('empty-note');
+      grid.innerHTML = list.map(workCard).join('');
+      if (list.length === 0) { note.textContent = T.empty; note.classList.remove('hidden'); }
+      else { note.classList.add('hidden'); }
+
+      // Echte Videos bei Hover abspielen (nur wenn vorhanden)
+      grid.querySelectorAll('.work').forEach(card => {
+        const vid = card.querySelector('video.anim');
+        if (!vid) return;
+        card.addEventListener('mouseenter', () => { vid.play().catch(()=>{}); });
+        card.addEventListener('mouseleave', () => { vid.pause(); vid.currentTime = 0; });
+      });
+    }
+
+    function applyStatic() {
+      const T = STR[lang];
+      document.querySelectorAll('[data-med]').forEach(el => {
+        const key = el.getAttribute('data-med');
+        if (T[key]) el.textContent = T[key];
+      });
+    }
+
+    function renderAll() { applyStatic(); renderFilters(); renderGallery(); }
+
+    function initMedia() {
+      renderAll();
+
+      document.getElementById('filters').addEventListener('click', (e) => {
+        const btn = e.target.closest('.js-filter');
+        if (!btn) return;
+        activeCat = btn.getAttribute('data-cat');
+        renderFilters(); renderGallery();
+      });
+
+      const deBtn = document.getElementById('btn-de');
+      const enBtn = document.getElementById('btn-en');
+      if (deBtn) deBtn.addEventListener('click', () => { lang = 'de'; renderAll(); });
+      if (enBtn) enBtn.addEventListener('click', () => { lang = 'en'; renderAll(); });
+    }
+  </script>
+</body>
+
+</html>
