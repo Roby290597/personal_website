@@ -25,6 +25,7 @@
   "PROJEKT": "PROJEKT !!!!!!!!!!!!!",
   "projects_title": "Projects",
   "projects_subtitle": "Selected work — clear outcomes & tech stack.",
+  "projects_section_header": "Private Projects with Machine Learning Focus",
   "projects_tag_oss": "NLP · OSS",
   "projects_1_desc": "XML parsing, speaker mapping, summarization (T5), ROUGE scoring, Gradio UI.",
   "projects_repo": "Repo →",

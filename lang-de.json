@@ -24,6 +24,7 @@
   "highlight_next_value": "Fine-Tune",
   "PROJEKT": "PROJEKT !!!!!!!!!!!!!",
   "projects_title": "Projekte",
+  "projects_section_header": "Private Projekte mit Machine-Learning Bezug",
   "projects_subtitle": "Auswahl – mit klaren Ergebnissen & Tech Stack.",
   "projects_0_tag_oss": "NLP · Transformers ",
   "projects_1_tag_oss": "Regression Methoden",
