@@ -41,6 +41,8 @@ function applyTheme(theme) {
   if (btn) btn.textContent = theme === "light" ? "☀️" : "🌙";
 }
 
+
+
 function detectPreferredTheme() {
   return window.matchMedia?.("(prefers-color-scheme: light)")?.matches ? "light" : "dark";
 }
@@ -54,6 +56,7 @@ if (flipbox) {
 // Event Listener – Buttons sind jetzt garantiert im DOM (script wird nach topbar-fetch geladen)
 document.getElementById("btn-de").addEventListener("click", () => applyLang("de"));
 document.getElementById("btn-en").addEventListener("click", () => applyLang("en"));
+
 
 document.getElementById("themeToggle").addEventListener("click", () => {
   const current = document.documentElement.getAttribute("data-theme") || "dark";

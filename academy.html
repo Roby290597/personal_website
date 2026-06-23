@@ -61,14 +61,12 @@
       <p class="mt-2 text-sm text-slate-300" data-aca="path_sub">Tippe auf eine Klassenstufe, um direkt dorthin zu springen.</p>
 
       <div class="mt-6 rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
-        <!-- Stage labels -->
         <div class="mb-3 grid grid-cols-10 gap-2 text-center text-[10px] font-medium uppercase tracking-wide text-slate-500">
           <span class="col-span-4" data-aca="stage_1">Grundschule</span>
           <span class="col-span-2" data-aca="stage_2">Unterstufe</span>
           <span class="col-span-2" data-aca="stage_3">Mittelstufe</span>
           <span class="col-span-2" data-aca="stage_4">Oberstufe</span>
         </div>
-        <!-- Nodes -->
         <div id="roadmap" class="relative grid grid-cols-10 gap-2"></div>
       </div>
     </section>
@@ -88,11 +86,7 @@
         <h2 class="text-2xl font-semibold tracking-tight" data-aca="catalog_title">Alle Kurse</h2>
         <span id="course-count" class="text-sm text-slate-400"></span>
       </div>
-
-      <!-- Filter pills -->
       <div id="filters" class="mt-6 flex flex-wrap gap-2"></div>
-
-      <!-- Course grid -->
       <div id="course-grid" class="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3"></div>
     </section>
 
@@ -107,7 +101,8 @@
         <div class="mt-5 flex flex-wrap gap-3">
           <a class="rounded-xl bg-emerald-400 px-4 py-2 text-sm font-medium text-slate-950 hover:bg-emerald-300"
              href="https://www.youtube.com/@ROBY-B445" target="_blank" rel="noreferrer" data-aca="cta_youtube">Videos ansehen</a>
-          <a class="rounded-xl border border-slate-700 bg-slate-950/40 px-4 py-2 text-sm font-medium hover:border-slate-500" href="/cdn-cgi/l/email-protection#0361716b626d323333436b6b762d6766" data-aca="cta_contact">Frage stellen</a>
+          <a class="rounded-xl border border-slate-700 bg-slate-950/40 px-4 py-2 text-sm font-medium hover:border-slate-500"
+             href="mailto:brhan100@hhu.de" data-aca="cta_contact">Frage stellen</a>
         </div>
       </div>
     </section>
@@ -117,8 +112,7 @@
     </footer>
   </main>
 
-  <!-- Topbar + base scripts (theme, language toggle, footer year) -->
-  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  <script>
     fetch('topbar.html')
       .then(res => res.text())
       .then(html => {
@@ -126,14 +120,11 @@
         const s = document.createElement('script');
         s.src = 'script.js';
         document.body.appendChild(s);
-        // Academy init runs once topbar (and its lang buttons) exist in the DOM
         initAcademy();
       });
   </script>
 
-  <!-- Academy logic -->
   <script>
-    // ── Course data (grades 1–10, bilingual) ───────────────────────────
     const COURSES = [
       { g:1, lvl:'base', n:8,  t:{de:'Zahlen bis 20', en:'Numbers to 20'}, d:{de:'Zählen, vergleichen und Zahlen sicher schreiben.', en:'Count, compare and write numbers with confidence.'}, tags:['Zählen','Zahlenraum'] },
       { g:1, lvl:'base', n:7,  t:{de:'Plus & Minus bis 20', en:'Plus & Minus to 20'}, d:{de:'Erste Addition und Subtraktion im Zahlenraum bis 20.', en:'First addition and subtraction up to 20.'}, tags:['Addition','Subtraktion'] },
@@ -163,7 +154,7 @@
       { g:7, lvl:'build', n:9,  t:{de:'Negative Zahlen', en:'Negative Numbers'}, d:{de:'Mit ganzen Zahlen auf dem Zahlenstrahl rechnen.', en:'Calculate with integers on the number line.'}, tags:['Ganze Zahlen'] },
       { g:7, lvl:'build', n:10, t:{de:'Terme & Variablen', en:'Terms & Variables'}, d:{de:'Terme aufstellen, vereinfachen und einsetzen.', en:'Build, simplify and substitute into terms.'}, tags:['Algebra'] },
 
-      { g:8, lvl:'deep', n:11, t:{de:'Lineare Gleichungen', en:'Linear Equations'}, d:{de:'Gleichungen Schritt für Schritt nach x auflösen.', en:'Solve equations for x step by step.'}, tags:['Gleichungen'] },
+      { g:8, lvl:'deep', n:11, t:{de:'Lineare Gleichungen', en:'Linear Equations'}, d:{de:'Gleichungen Schritt für Schritt nach x auflösen.', en:'Solve equations for x step by step.'}, tags:['Gleichungen'], url:'lineare_funktion.html' },
       { g:8, lvl:'deep', n:12, t:{de:'Lineare Funktionen', en:'Linear Functions'}, d:{de:'Steigung, y-Achsenabschnitt und Graphen.', en:'Slope, y-intercept and graphs.'}, tags:['Funktionen'] },
       { g:8, lvl:'deep', n:8,  t:{de:'Wahrscheinlichkeit', en:'Probability'}, d:{de:'Zufall, Baumdiagramme und Chancen berechnen.', en:'Randomness, tree diagrams and chances.'}, tags:['Stochastik'] },
 
@@ -176,7 +167,6 @@
       { g:10, lvl:'deep', n:9,  t:{de:'Exponentielles Wachstum', en:'Exponential Growth'}, d:{de:'Wachstums- und Zerfallsprozesse modellieren.', en:'Model growth and decay processes.'}, tags:['Funktionen'] },
     ].map((c, i) => ({ ...c, id: 'k' + c.g + '-' + (i) }));
 
-    // ── UI strings ─────────────────────────────────────────────────────
     const STR = {
       de: {
         hero_badge:'Mathe · Klasse 1–10', hero_title_a:'Mathe lernen –', hero_title_b:'wie ein Profi.',
@@ -218,18 +208,17 @@
     }
     function saveProgress(p) { localStorage.setItem(PROGRESS_KEY, JSON.stringify(p)); }
 
-    // Seed a little progress on first visit so "Continue learning" is demonstrated
     function seedProgress() {
       if (localStorage.getItem(PROGRESS_KEY) !== null) return;
       const p = {};
-      const a = COURSES.find(c => c.g === 5);          // Große Zahlen
-      const b = COURSES.filter(c => c.g === 6)[0];     // Brüche
+      const a = COURSES.find(c => c.g === 5);
+      const b = COURSES.filter(c => c.g === 6)[0];
       if (a) p[a.id] = Math.min(4, a.n);
       if (b) p[b.id] = Math.min(2, b.n);
       saveProgress(p);
     }
 
-    function esc(s){ return String(s).replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
+    function esc(s) { return String(s).replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
 
     function courseCard(c) {
       const T = STR[lang];
@@ -242,25 +231,31 @@
         ? 'border border-emerald-400/30 bg-emerald-400/10 text-emerald-300'
         : 'bg-emerald-400 text-slate-950 hover:bg-emerald-300';
       const tags = c.tags.map(t => '<span class="rounded-full border border-slate-800 bg-slate-950/40 px-3 py-1">'+esc(t)+'</span>').join('');
+      const demoBtn = c.url
+        ? '<a href="'+c.url+'" class="rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-3 py-2 text-sm font-medium text-emerald-300 hover:bg-emerald-400/20 transition">Demo</a>'
+        : '';
       return ''+
-      '<article class="group flex flex-col rounded-3xl border border-slate-800 bg-slate-900/30 p-6 transition hover:border-slate-600 card-glow">'+
-        '<div class="flex items-center justify-between">'+
-          '<span class="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-xs font-medium text-emerald-300">'+T.grade+' '+c.g+'</span>'+
-          '<span class="text-xs uppercase tracking-wide text-slate-500">'+T['lvl_'+c.lvl]+'</span>'+
-        '</div>'+
-        '<h3 class="mt-4 text-lg font-semibold leading-snug">'+esc(c.t[lang])+'</h3>'+
-        '<p class="mt-2 flex-1 text-sm text-slate-300">'+esc(c.d[lang])+'</p>'+
-        '<div class="mt-4 flex flex-wrap gap-2 text-xs text-slate-300">'+tags+'</div>'+
-        '<div class="mt-5">'+
-          '<div class="mb-2 flex items-center justify-between text-xs text-slate-400">'+
-            '<span>'+done+' / '+c.n+' '+T.lessons+'</span><span>'+pct+'%</span>'+
+        '<article class="group flex flex-col rounded-3xl border border-slate-800 bg-slate-900/30 p-6 transition hover:border-slate-600 card-glow">'+
+          '<div class="flex items-center justify-between">'+
+            '<span class="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-xs font-medium text-emerald-300">'+T.grade+' '+c.g+'</span>'+
+            '<span class="text-xs uppercase tracking-wide text-slate-500">'+T['lvl_'+c.lvl]+'</span>'+
           '</div>'+
-          '<div class="h-1.5 w-full overflow-hidden rounded-full bg-slate-800">'+
-            '<div class="h-full rounded-full bg-emerald-400 transition-all duration-300" style="width:'+pct+'%"></div>'+
+          '<h3 class="mt-4 text-lg font-semibold leading-snug">'+esc(c.t[lang])+'</h3>'+
+          '<p class="mt-2 flex-1 text-sm text-slate-300">'+esc(c.d[lang])+'</p>'+
+          '<div class="mt-4 flex flex-wrap gap-2 text-xs text-slate-300">'+tags+'</div>'+
+          '<div class="mt-5">'+
+            '<div class="mb-2 flex items-center justify-between text-xs text-slate-400">'+
+              '<span>'+done+' / '+c.n+' '+T.lessons+'</span><span>'+pct+'%</span>'+
+            '</div>'+
+            '<div class="h-1.5 w-full overflow-hidden rounded-full bg-slate-800">'+
+              '<div class="h-full rounded-full bg-emerald-400 transition-all duration-300" style="width:'+pct+'%"></div>'+
+            '</div>'+
           '</div>'+
-        '</div>'+
-        '<button data-id="'+c.id+'" class="js-progress mt-5 rounded-xl px-4 py-2 text-sm font-medium transition '+btnClass+'">'+label+'</button>'+
-      '</article>';
+          '<div class="mt-5 flex gap-2">'+
+            '<button data-id="'+c.id+'" class="js-progress flex-1 rounded-xl px-4 py-2 text-sm font-medium transition '+btnClass+'">'+label+'</button>'+
+            demoBtn+
+          '</div>'+
+        '</article>';
     }
 
     function renderRoadmap() {
@@ -274,7 +269,7 @@
         const done = courses.reduce((s,c)=>s+(prog[c.id]||0),0);
         const started = done > 0;
         const allDone = total > 0 && done >= total;
-        const active = activeGrade === g;
+        const active = String(activeGrade) === String(g);
         const ring = active ? 'ring-2 ring-emerald-400 ring-offset-2 ring-offset-slate-900' : '';
         const fill = allDone
           ? 'bg-emerald-400 text-slate-950 border-emerald-400'
@@ -289,7 +284,7 @@
     function renderFilters() {
       const T = STR[lang];
       const wrap = document.getElementById('filters');
-      const mk = (val,label) => {
+      const mk = (val, label) => {
         const on = activeGrade === val;
         const cls = on
           ? 'bg-emerald-400 text-slate-950'
@@ -339,7 +334,6 @@
       seedProgress();
       renderAll();
 
-      // Course / continue progress buttons (delegated)
       document.querySelector('main').addEventListener('click', (e) => {
         const pBtn = e.target.closest('.js-progress');
         if (pBtn) {
@@ -348,7 +342,7 @@
           if (!c) return;
           const prog = loadProgress();
           const cur = prog[id] || 0;
-          prog[id] = cur >= c.n ? c.n : cur + 1; // increment one lesson, cap at total
+          prog[id] = cur >= c.n ? c.n : cur + 1;
           saveProgress(prog);
           renderRoadmap(); renderGrid(); renderContinue();
           return;
@@ -364,13 +358,11 @@
         }
       });
 
-      // Reset progress
       document.getElementById('reset-progress').addEventListener('click', () => {
         saveProgress({});
         renderAll();
       });
 
-      // Hook language buttons (from topbar) to re-render in the chosen language
       const deBtn = document.getElementById('btn-de');
       const enBtn = document.getElementById('btn-en');
       if (deBtn) deBtn.addEventListener('click', () => { lang = 'de'; renderAll(); });

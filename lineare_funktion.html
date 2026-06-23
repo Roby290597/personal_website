@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="de">
+
+<head>
+  <link rel="icon" href="./favicon.ico">
+  <link rel="manifest" href="./site.webmanifest">
+  <link rel="apple-touch-icon" href="./apple-touch-icon.png">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Brandon Hank | Lineare Gleichungen</title>
+  <meta name="description" content="Lineare Gleichungen interaktiv verstehen – y = mx + b" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="style.css?v=1.0">
+</head>
+
+<body class="bg-slate-950 text-slate-100">
+
+  <header class="border-b border-slate-800 bg-slate-950/80 backdrop-blur sticky top-0 z-50">
+    <div id="topbar-container"></div>
+  </header>
+
+  <main class="mx-auto max-w-5xl px-4">
+
+    <!-- Hero -->
+    <section class="py-14 md:py-20">
+      <a href="academy.html" class="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-200 mb-6 transition">
+        ← Zurück zur Akademie
+      </a>
+      <div class="flex flex-wrap items-center gap-2 mb-4">
+        <span class="inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-xs font-medium text-emerald-300">
+          <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+          Klasse 8 · Algebra
+        </span>
+        <span class="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-400">Lineare Funktionen</span>
+      </div>
+      <h1 class="max-w-3xl text-4xl font-semibold leading-tight tracking-tight md:text-5xl">
+        Lineare Gleichungen –
+        <span class="text-emerald-300">interaktiv.</span>
+      </h1>
+      <p class="mt-4 max-w-2xl text-slate-300">
+        Bewege die Schieberegler und beobachte live wie sich die Gerade verändert. Verstehe Steigung <span class="font-mono text-emerald-300">m</span> und y-Achsenabschnitt <span class="font-mono text-emerald-300">b</span> durch eigenes Ausprobieren.
+      </p>
+    </section>
+
+    <!-- Main Interactive -->
+    <section class="pb-10">
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6 md:p-8 card-glow">
+
+        <!-- Live Equation -->
+        <div class="mb-8 text-center">
+          <div class="text-xs font-medium uppercase tracking-widest text-slate-500 mb-2">Gleichung</div>
+          <div id="equation" class="text-4xl font-semibold tracking-tight text-emerald-300 transition-all duration-150">y = 1x + 0</div>
+        </div>
+
+        <div class="flex flex-col gap-8 lg:flex-row lg:items-start">
+
+          <!-- Coordinate System -->
+          <div class="flex justify-center lg:flex-1">
+            <div class="relative w-full max-w-sm">
+              <svg id="coord-svg" viewBox="0 0 400 400"
+                class="w-full rounded-2xl border border-slate-800 bg-slate-950/70">
+                <g id="g-grid"></g>
+                <g id="g-axes"></g>
+                <g id="g-labels"></g>
+                <g id="g-triangle"></g>
+                <line id="g-line" stroke="#10b981" stroke-width="2.5" stroke-linecap="round"
+                  x1="0" y1="0" x2="0" y2="0"/>
+                <g id="g-points"></g>
+              </svg>
+              <!-- Legend dots -->
+              <div class="mt-3 flex flex-wrap justify-center gap-4 text-xs text-slate-400">
+                <span class="flex items-center gap-1.5"><span class="inline-block h-2.5 w-2.5 rounded-full bg-emerald-400"></span>y-Achsenabschnitt (b)</span>
+                <span class="flex items-center gap-1.5"><span class="inline-block h-2.5 w-2.5 rounded-full bg-amber-400"></span>Nullstelle</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Controls -->
+          <div class="flex flex-col gap-5 lg:w-72">
+
+            <!-- m slider -->
+            <div class="rounded-2xl border border-slate-800 bg-slate-950/50 p-5">
+              <div class="flex items-center justify-between mb-4">
+                <div>
+                  <div class="text-sm font-medium">Steigung</div>
+                  <div class="text-xs text-slate-400 mt-0.5">Wie steil ist die Gerade?</div>
+                </div>
+                <span id="m-badge"
+                  class="min-w-[2.5rem] text-center rounded-lg border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 font-mono text-sm text-emerald-300">1</span>
+              </div>
+              <div class="flex items-center gap-2 text-xs text-slate-500 mb-1">
+                <span class="font-mono">m =</span>
+              </div>
+              <input type="range" id="sl-m" min="-5" max="5" step="0.01" value="1"
+                class="w-full accent-emerald-400 cursor-pointer">
+              <div class="mt-1.5 flex justify-between text-xs text-slate-600 font-mono">
+                <span>−5</span><span>0</span><span>+5</span>
+              </div>
+            </div>
+
+            <!-- b slider -->
+            <div class="rounded-2xl border border-slate-800 bg-slate-950/50 p-5">
+              <div class="flex items-center justify-between mb-4">
+                <div>
+                  <div class="text-sm font-medium">y-Achsenabschnitt</div>
+                  <div class="text-xs text-slate-400 mt-0.5">Wo schneidet die y-Achse?</div>
+                </div>
+                <span id="b-badge"
+                  class="min-w-[2.5rem] text-center rounded-lg border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 font-mono text-sm text-emerald-300">0</span>
+              </div>
+              <div class="flex items-center gap-2 text-xs text-slate-500 mb-1">
+                <span class="font-mono">b =</span>
+              </div>
+              <input type="range" id="sl-b" min="-5" max="5" step="0.1" value="0"
+                class="w-full accent-emerald-400 cursor-pointer">
+              <div class="mt-1.5 flex justify-between text-xs text-slate-600 font-mono">
+                <span>−5</span><span>0</span><span>+5</span>
+              </div>
+            </div>
+
+            <!-- Toggle -->
+            <button id="btn-triangle"
+              class="rounded-xl border border-slate-700 bg-slate-950/40 px-4 py-2.5 text-sm font-medium hover:border-emerald-400/40 hover:text-emerald-300 transition text-left flex items-center gap-2">
+              <span id="triangle-icon" class="text-base">△</span>
+              Steigungsdreieck anzeigen
+            </button>
+
+          </div>
+        </div>
+
+        <!-- Info row -->
+        <div class="mt-8 grid gap-3 sm:grid-cols-3">
+          <div class="rounded-2xl border border-slate-800 bg-slate-950/50 p-4">
+            <div class="text-[10px] font-medium uppercase tracking-widest text-slate-500 mb-1">Nullstelle</div>
+            <div id="info-null" class="font-mono text-lg font-semibold text-emerald-300">x = 0</div>
+            <div class="text-xs text-slate-400 mt-1">Schnittpunkt mit x-Achse</div>
+          </div>
+          <div class="rounded-2xl border border-slate-800 bg-slate-950/50 p-4">
+            <div class="text-[10px] font-medium uppercase tracking-widest text-slate-500 mb-1">Steigungsdreieck</div>
+            <div id="info-triangle" class="font-mono text-lg font-semibold text-emerald-300">Δy/Δx = 1</div>
+            <div class="text-xs text-slate-400 mt-1">1 Schritt rechts → m hoch</div>
+          </div>
+          <div class="rounded-2xl border border-slate-800 bg-slate-950/50 p-4">
+            <div class="text-[10px] font-medium uppercase tracking-widest text-slate-500 mb-1">Verlauf</div>
+            <div id="info-type" class="text-lg font-semibold text-emerald-300">Steigend</div>
+            <div class="text-xs text-slate-400 mt-1">m &gt; 0 steigend · m &lt; 0 fallend</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Theory -->
+    <section class="pb-10">
+      <h2 class="text-2xl font-semibold tracking-tight mb-6">Merksätze</h2>
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+          <div class="text-2xl font-mono font-semibold text-emerald-300 mb-3">y = mx + b</div>
+          <ul class="space-y-2 text-sm text-slate-300">
+            <li class="flex gap-2"><span class="text-emerald-400">m</span><span>ist die <strong class="text-slate-100">Steigung</strong> — gibt an, wie steil die Gerade ist</span></li>
+            <li class="flex gap-2"><span class="text-emerald-400">b</span><span>ist der <strong class="text-slate-100">y-Achsenabschnitt</strong> — wo die Gerade die y-Achse schneidet</span></li>
+          </ul>
+        </div>
+        <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+          <div class="text-sm font-medium text-slate-400 mb-3">Spezialfälle</div>
+          <ul class="space-y-2 text-sm text-slate-300 font-mono">
+            <li><span class="text-emerald-300">m = 0</span> <span class="text-slate-500 font-sans">→</span> waagerechte Gerade</li>
+            <li><span class="text-emerald-300">b = 0</span> <span class="text-slate-500 font-sans">→</span> Gerade geht durch Ursprung</li>
+            <li><span class="text-emerald-300">m = 1</span> <span class="text-slate-500 font-sans">→</span> 45°-Winkel zur x-Achse</li>
+            <li><span class="text-emerald-300">m &lt; 0</span> <span class="text-slate-500 font-sans">→</span> fallende Gerade</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Quiz -->
+    <section class="pb-14">
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6 md:p-8">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+          <div class="flex items-center gap-3">
+            <span class="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-xs font-medium text-emerald-300">Aufgabe</span>
+            <h2 class="text-xl font-semibold">Teste dein Wissen</h2>
+          </div>
+          <div class="flex items-center gap-3 text-sm text-slate-400">
+            <span>Punkte:</span>
+            <span id="score" class="font-mono text-lg font-semibold text-emerald-300">0</span>
+          </div>
+        </div>
+
+        <p class="text-slate-300 mb-4">Stelle mit den Schiebereglern die folgende Gleichung ein und klicke auf <em>Überprüfen</em>:</p>
+
+        <div id="quiz-target"
+          class="text-3xl font-semibold font-mono text-center py-5 rounded-2xl border border-emerald-400/20 bg-emerald-400/10 text-emerald-300 mb-6 tracking-tight">
+          y = 2x + 1
+        </div>
+
+        <div class="flex flex-wrap gap-3">
+          <button id="btn-check"
+            class="rounded-xl bg-emerald-400 px-5 py-2.5 text-sm font-medium text-slate-950 hover:bg-emerald-300 transition">
+            Überprüfen
+          </button>
+          <button id="btn-new"
+            class="rounded-xl border border-slate-700 bg-slate-950/40 px-5 py-2.5 text-sm font-medium hover:border-slate-500 transition">
+            Neue Aufgabe
+          </button>
+        </div>
+
+        <div id="quiz-feedback" class="hidden mt-4 rounded-2xl px-4 py-3 text-sm font-medium"></div>
+      </div>
+    </section>
+
+    <footer class="py-10 text-center text-xs text-slate-500">
+      © <span id="y"></span> Brandon Hank · Düsseldorf
+    </footer>
+  </main>
+
+  <script>
+    fetch('topbar.html')
+      .then(r => r.text())
+      .then(html => {
+        document.getElementById('topbar-container').innerHTML = html;
+        const s = document.createElement('script');
+        s.src = 'script.js';
+        document.body.appendChild(s);
+        initPage();
+      });
+  </script>
+
+  <script>
+    // ── SVG constants ───────────────────────────────────────────────────
+    const W = 400, H = 400;
+    const OX = 200, OY = 200; // origin in SVG pixels
+    const SC = 30;             // px per math unit
+    const RNG = 6;             // show -6…+6
+
+    function px(mx, my) { return { x: OX + mx * SC, y: OY - my * SC }; }
+
+    function n(v) {
+      const r = Math.round(v * 10) / 10;
+      return r % 1 === 0 ? String(r | 0) : r.toFixed(1);
+    }
+
+    function eqStr(m, b) {
+      const mPart = m === 1 ? '' : m === -1 ? '-' : n(m);
+      const bPart = b === 0 ? '' : b > 0 ? ` + ${n(b)}` : ` − ${n(Math.abs(b))}`;
+      if (m === 0) return `y = ${n(b)}`;
+      return `y = ${mPart}x${bPart}`;
+    }
+
+    // ── Build static grid/axes (once) ──────────────────────────────────
+    function buildStatic() {
+      let g = '', a = '', l = '';
+      for (let i = -RNG; i <= RNG; i++) {
+        const sx = OX + i * SC, sy = OY - i * SC;
+        g += `<line x1="${sx}" y1="${OY - RNG * SC}" x2="${sx}" y2="${OY + RNG * SC}" stroke="#1e293b" stroke-width="1"/>`;
+        g += `<line x1="${OX - RNG * SC}" y1="${sy}" x2="${OX + RNG * SC}" y2="${sy}" stroke="#1e293b" stroke-width="1"/>`;
+      }
+      document.getElementById('g-grid').innerHTML = g;
+
+      const ex = OX + RNG * SC, ey = OY - RNG * SC;
+      a = `
+        <line x1="${OX - RNG * SC}" y1="${OY}" x2="${ex}" y2="${OY}" stroke="#334155" stroke-width="1.5"/>
+        <line x1="${OX}" y1="${OY + RNG * SC}" x2="${OX}" y2="${ey}" stroke="#334155" stroke-width="1.5"/>
+        <polygon points="${ex},${OY} ${ex - 7},${OY - 3.5} ${ex - 7},${OY + 3.5}" fill="#334155"/>
+        <polygon points="${OX},${ey} ${OX - 3.5},${ey + 7} ${OX + 3.5},${ey + 7}" fill="#334155"/>
+        <text x="${ex + 6}" y="${OY + 4}" fill="#475569" font-size="11" font-family="monospace">x</text>
+        <text x="${OX + 5}" y="${ey - 5}" fill="#475569" font-size="11" font-family="monospace">y</text>`;
+      document.getElementById('g-axes').innerHTML = a;
+
+      for (let i = -RNG + 1; i <= RNG - 1; i++) {
+        if (i === 0) continue;
+        const sx = OX + i * SC, sy = OY - i * SC;
+        l += `<text x="${sx}" y="${OY + 13}" fill="#334155" font-size="8" text-anchor="middle" font-family="monospace">${i}</text>`;
+        l += `<text x="${OX - 12}" y="${sy + 3}" fill="#334155" font-size="8" text-anchor="middle" font-family="monospace">${i}</text>`;
+      }
+      l += `<text x="${OX + 8}" y="${OY + 13}" fill="#334155" font-size="8" font-family="monospace">0</text>`;
+      document.getElementById('g-labels').innerHTML = l;
+    }
+
+    // ── Clip line y=mx+b to viewport [-RNG,+RNG]^2 ─────────────────────
+    function clipLine(m, b) {
+      const pts = [];
+      const add = (mx, my) => { if (my >= -RNG - 0.001 && my <= RNG + 0.001) pts.push({ x: mx, y: my }); };
+      const addX = (mx, my) => { if (mx > -RNG + 0.001 && mx < RNG - 0.001) pts.push({ x: mx, y: my }); };
+      add(-RNG, m * -RNG + b);
+      add(RNG, m * RNG + b);
+      if (m !== 0) { addX((-RNG - b) / m, -RNG); addX((RNG - b) / m, RNG); }
+      else { pts.push({ x: -RNG, y: b }, { x: RNG, y: b }); }
+      return pts;
+    }
+
+    let showTri = false;
+    let score = 0;
+    let qm = 2, qb = 1;
+
+    function update() {
+      const m = parseFloat(document.getElementById('sl-m').value);
+      const b = parseFloat(document.getElementById('sl-b').value);
+
+      document.getElementById('m-badge').textContent = n(m);
+      document.getElementById('b-badge').textContent = n(b);
+      document.getElementById('equation').textContent = eqStr(m, b);
+
+      // Line
+      const pts = clipLine(m, b);
+      if (pts.length >= 2) {
+        const p0 = px(pts[0].x, pts[0].y), p1 = px(pts[pts.length - 1].x, pts[pts.length - 1].y);
+        const ln = document.getElementById('g-line');
+        ln.setAttribute('x1', p0.x); ln.setAttribute('y1', p0.y);
+        ln.setAttribute('x2', p1.x); ln.setAttribute('y2', p1.y);
+      }
+
+      // Special points
+      let sp = '';
+      const yp = px(0, b);
+      sp += `<circle cx="${yp.x}" cy="${yp.y}" r="5" fill="#10b981"/>`;
+      if (m !== 0) {
+        const nx = -b / m;
+        if (Math.abs(nx) <= RNG) { const np = px(nx, 0); sp += `<circle cx="${np.x}" cy="${np.y}" r="5" fill="#f59e0b"/>`; }
+      }
+      document.getElementById('g-points').innerHTML = sp;
+
+      // Slope triangle
+      let tri = '';
+      if (showTri && m !== 0) {
+        const tx = Math.abs(b) <= RNG - 2 ? 0 : Math.sign(-b);
+        const ty = m * tx + b;
+        if (Math.abs(ty) <= RNG - 1 && Math.abs(ty + m) <= RNG) {
+          const a = px(tx, ty), c = px(tx + 1, ty), d = px(tx + 1, ty + m);
+          tri = `
+            <line x1="${a.x}" y1="${a.y}" x2="${c.x}" y2="${c.y}" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4,2"/>
+            <line x1="${c.x}" y1="${c.y}" x2="${d.x}" y2="${d.y}" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4,2"/>
+            <rect x="${c.x - 5}" y="${Math.min(c.y, d.y)}" width="5" height="5" fill="none" stroke="#f59e0b" stroke-width="1"/>
+            <text x="${(a.x + c.x) / 2}" y="${a.y + 14}" fill="#f59e0b" font-size="9" text-anchor="middle" font-family="monospace">Δx=1</text>
+            <text x="${d.x + 18}" y="${(c.y + d.y) / 2 + 3}" fill="#f59e0b" font-size="9" text-anchor="middle" font-family="monospace">Δy=${n(m)}</text>`;
+        }
+      }
+      document.getElementById('g-triangle').innerHTML = tri;
+
+      // Info cards
+      document.getElementById('info-null').textContent = m !== 0 ? `x = ${n(-b / m)}` : '–';
+      document.getElementById('info-triangle').textContent = `Δy/Δx = ${n(m)}`;
+      document.getElementById('info-type').textContent = m > 0 ? 'Steigend' : m < 0 ? 'Fallend' : 'Waagerecht';
+    }
+
+    // ── Quiz ────────────────────────────────────────────────────────────
+    const M_VALS = [-3, -2, -1.5, -1, -0.5, 0.5, 1, 1.5, 2, 3];
+    const B_VALS = [-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5];
+
+    function newTask() {
+      qm = M_VALS[Math.floor(Math.random() * M_VALS.length)];
+      qb = B_VALS[Math.floor(Math.random() * B_VALS.length)];
+      document.getElementById('quiz-target').textContent = eqStr(qm, qb);
+      document.getElementById('quiz-feedback').classList.add('hidden');
+    }
+
+    function checkAnswer() {
+      const m = parseFloat(document.getElementById('sl-m').value);
+      const b = parseFloat(document.getElementById('sl-b').value);
+      const fb = document.getElementById('quiz-feedback');
+      fb.classList.remove('hidden');
+      if (Math.abs(m - qm) < 0.01 && Math.abs(b - qb) < 0.01) {
+        score++;
+        document.getElementById('score').textContent = score;
+        fb.className = 'mt-4 rounded-2xl px-4 py-3 text-sm font-medium bg-emerald-400/10 border border-emerald-400/30 text-emerald-300';
+        fb.textContent = '✓ Richtig! Sehr gut.';
+        setTimeout(newTask, 1200);
+      } else {
+        fb.className = 'mt-4 rounded-2xl px-4 py-3 text-sm font-medium bg-red-400/10 border border-red-400/30 text-red-300';
+        fb.textContent = `✗ Noch nicht. Tipp: Steigung m = ${n(qm)}, Achsenabschnitt b = ${n(qb)}`;
+      }
+    }
+
+    // ── Init ────────────────────────────────────────────────────────────
+    function initPage() {
+      buildStatic();
+      update();
+      newTask();
+
+      document.getElementById('sl-m').addEventListener('input', update);
+      document.getElementById('sl-b').addEventListener('input', update);
+
+      document.getElementById('btn-triangle').addEventListener('click', () => {
+        showTri = !showTri;
+        const btn = document.getElementById('btn-triangle');
+        btn.innerHTML = showTri
+          ? '<span class="text-emerald-300 text-base">△</span> Steigungsdreieck verbergen'
+          : '<span class="text-base">△</span> Steigungsdreieck anzeigen';
+        update();
+      });
+
+      document.getElementById('btn-check').addEventListener('click', checkAnswer);
+      document.getElementById('btn-new').addEventListener('click', newTask);
+    }
+  </script>
+</body>
+</html>
