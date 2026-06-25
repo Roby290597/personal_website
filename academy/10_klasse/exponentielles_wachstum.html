@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Exponentielles Wachstum – Klasse 10 | MathAcademy</title>
+
+  <link rel="icon"             href="../../favicon.ico" />
+  <link rel="apple-touch-icon" href="../../apple-touch-icon.png" />
+  <link rel="manifest"         href="../../site.webmanifest" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../../assets/css/style.css?v=1.0" />
+
+  <style>
+    @keyframes fadeInUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+    .anim-fadein { animation: fadeInUp 0.35s ease both; }
+
+    /* ── Graph-SVG ─────────────────────────────────────────── */
+    .gitter-linie  { stroke:#1e293b; stroke-width:1; }
+    .achse-linie   { stroke:#334155; stroke-width:1.5; }
+    .kurve-wachs   { fill:none; stroke:#34d399; stroke-width:2.5; }
+    .kurve-zerfall { fill:none; stroke:#f97316; stroke-width:2.5; }
+    .punkt-marker  { fill:#f1f5f9; stroke:#0f172a; stroke-width:2; }
+
+    .btn-answer:hover:not(:disabled) { filter: brightness(1.15); }
+    .btn-answer:disabled { opacity: 0.55; cursor: not-allowed; }
+    .btn-correct { background-color:#059669!important; border-color:#34d399!important; color:#fff!important; }
+    .btn-wrong   { background-color:#dc2626!important; border-color:#f87171!important; color:#fff!important; }
+
+    .sach-dot { width:10px; height:10px; border-radius:50%; background:#334155; transition:background-color 0.2s; }
+    .sach-dot.done    { background:#34d399; }
+    .sach-dot.current { background:#6ee7b7; box-shadow:0 0 0 3px rgba(52,211,153,0.25); }
+
+    .antwort-input:focus { outline:none; border-color:#34d399; box-shadow:0 0 0 3px rgba(52,211,153,0.2); }
+    input[type=range] { accent-color:#34d399; }
+
+    /* Tab-Buttons */
+    .tab-btn.aktiv  { background:#34d399; color:#0f172a; }
+    .tab-btn:not(.aktiv) { background:#1e293b; color:#94a3b8; }
+    .tab-btn:not(.aktiv):hover { background:#334155; }
+  </style>
+</head>
+
+<body class="bg-slate-950 text-slate-100 min-h-screen">
+  <div id="topbar-container"></div>
+
+  <main class="max-w-4xl mx-auto px-4 pb-16 pt-6">
+
+    <a href="/academy.html"
+       class="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-emerald-300 transition-colors mb-6">
+      ← Zurück zur Akademie
+    </a>
+
+    <div class="mb-10">
+      <span class="text-xs font-semibold uppercase tracking-widest text-emerald-400 mb-2 block">Klasse 10 · Vertiefung</span>
+      <h1 class="text-3xl sm:text-4xl font-bold mb-3">Exponentielles Wachstum &amp; Zerfall</h1>
+      <p class="text-slate-400 text-base max-w-xl">
+        f(t) = a · bᵗ interaktiv erkunden – Wachstum und Zerfall,
+        Halbwertszeit, Quiz und Sachaufgaben.
+      </p>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════
+         ABSCHNITT 1: GRAPH-EXPLORER
+         Tabs: Wachstum (b > 1) / Zerfall (0 < b < 1)
+         Slider: Anfangswert a, Wachstumsfaktor b, Zeit t
+         SVG-Graph: f(t) = a · b^t für t = 0..10
+         Tabelle: Werte für t = 0..5
+    ════════════════════════════════════════════════════ -->
+    <section class="mb-14" aria-labelledby="graph-title">
+      <div class="flex items-center gap-3 mb-6">
+        <span class="w-8 h-8 rounded-full bg-emerald-400 text-slate-950 text-sm font-bold flex items-center justify-center flex-shrink-0">1</span>
+        <h2 id="graph-title" class="text-xl font-semibold">Graph-Explorer: f(t) = a · bᵗ</h2>
+      </div>
+
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+
+        <!-- Tabs Wachstum / Zerfall -->
+        <div class="flex gap-2 mb-5">
+          <button id="tab-wachstum" class="tab-btn aktiv rounded-full px-5 py-2 text-sm font-semibold transition-colors"
+                  onclick="setTab('wachstum')">📈 Wachstum (b &gt; 1)</button>
+          <button id="tab-zerfall"  class="tab-btn rounded-full px-5 py-2 text-sm font-semibold transition-colors"
+                  onclick="setTab('zerfall')">📉 Zerfall (0 &lt; b &lt; 1)</button>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+          <!-- Slider-Panel -->
+          <div class="space-y-5">
+
+            <!-- Anfangswert a -->
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <span class="text-slate-400">Anfangswert <span class="font-mono font-bold text-emerald-300">a</span></span>
+                <span id="lbl-a" class="text-emerald-300 font-bold text-lg">100</span>
+              </div>
+              <input id="slider-a" type="range" min="10" max="500" value="100" step="10"
+                     class="w-full h-2 rounded-full cursor-pointer" oninput="updateGraph()"/>
+            </div>
+
+            <!-- Wachstumsfaktor b (Wachstum: 1.05–3, Zerfall: 0.3–0.95) -->
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <span class="text-slate-400">Faktor <span class="font-mono font-bold text-blue-300">b</span></span>
+                <span id="lbl-b" class="text-blue-300 font-bold text-lg">1.5</span>
+              </div>
+              <input id="slider-b" type="range" min="105" max="300" value="150" step="5"
+                     class="w-full h-2 rounded-full cursor-pointer" oninput="updateGraph()"/>
+              <p id="b-beschr" class="text-xs text-slate-600 mt-1">b > 1: Wachstum</p>
+            </div>
+
+            <!-- Markierungspunkt t -->
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <span class="text-slate-400">Zeit <span class="font-mono font-bold text-orange-300">t</span></span>
+                <span id="lbl-t" class="text-orange-300 font-bold text-lg">3</span>
+              </div>
+              <input id="slider-t" type="range" min="0" max="10" value="3" step="1"
+                     class="w-full h-2 rounded-full cursor-pointer" oninput="updateGraph()"/>
+            </div>
+
+            <!-- Ergebnis-Kacheln -->
+            <div class="grid grid-cols-2 gap-3">
+              <div class="rounded-2xl bg-emerald-400/10 border border-emerald-400/20 p-4 text-center">
+                <p class="text-xs text-slate-500 mb-1">f(t)</p>
+                <p id="val-ft" class="text-xl font-bold text-emerald-300 font-mono"></p>
+              </div>
+              <div class="rounded-2xl bg-orange-400/10 border border-orange-400/20 p-4 text-center">
+                <p class="text-xs text-slate-500 mb-1" id="halbw-label">Halbwertszeit</p>
+                <p id="val-halbw" class="text-xl font-bold text-orange-300 font-mono"></p>
+              </div>
+            </div>
+
+            <!-- Formel -->
+            <div class="rounded-2xl bg-slate-800/60 p-3 font-mono text-center text-sm">
+              <span id="formel-zeile" class="text-emerald-300 font-bold"></span>
+            </div>
+          </div>
+
+          <!-- Graph-SVG -->
+          <!--
+            viewBox 0 0 320 220
+            Ursprung bei (OX=40, OY=190)
+            t-Achse: t=0..10, Breite 260px → 26px pro Einheit
+            y-Achse: 0..maxY, Höhe 180px
+          -->
+          <svg id="exp-graph" viewBox="0 0 320 220"
+               class="w-full rounded-2xl bg-slate-800/40"
+               aria-label="Exponentieller Graph">
+
+            <!-- Gitter -->
+            <g id="gitter"></g>
+
+            <!-- Achsen -->
+            <line class="achse-linie" x1="40" y1="10" x2="40" y2="190"/>
+            <line class="achse-linie" x1="40" y1="190" x2="310" y2="190"/>
+
+            <!-- Achsenbeschriftungen -->
+            <text x="315" y="194" font-size="10" fill="#475569">t</text>
+            <text x="42"  y="10"  font-size="10" fill="#475569">f(t)</text>
+
+            <!-- t-Achsen-Ticks -->
+            <g id="t-ticks"></g>
+
+            <!-- Kurve -->
+            <polyline id="exp-kurve" points=""/>
+
+            <!-- Markierungs-Punkt P(t, f(t)) -->
+            <circle id="mark-punkt" class="punkt-marker" r="5"/>
+            <line id="mark-linie-h" stroke="#f97316" stroke-width="1" stroke-dasharray="4 3"/>
+            <line id="mark-linie-v" stroke="#f97316" stroke-width="1" stroke-dasharray="4 3"/>
+          </svg>
+        </div>
+
+        <!-- Wertetabelle -->
+        <div class="mt-5 overflow-x-auto">
+          <table class="w-full text-sm font-mono">
+            <thead>
+              <tr class="border-b border-slate-700/50">
+                <th class="text-left py-2 pr-4 text-slate-500 font-normal">t</th>
+                <th id="th-0" class="py-2 px-3 text-center text-slate-500 font-normal">0</th>
+                <th id="th-1" class="py-2 px-3 text-center text-slate-500 font-normal">1</th>
+                <th id="th-2" class="py-2 px-3 text-center text-slate-500 font-normal">2</th>
+                <th id="th-3" class="py-2 px-3 text-center text-slate-500 font-normal">3</th>
+                <th id="th-4" class="py-2 px-3 text-center text-slate-500 font-normal">4</th>
+                <th id="th-5" class="py-2 px-3 text-center text-slate-500 font-normal">5</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="py-2 pr-4 text-slate-500 text-xs">f(t)</td>
+                <td id="td-0" class="py-2 px-3 text-center text-emerald-300"></td>
+                <td id="td-1" class="py-2 px-3 text-center text-emerald-300"></td>
+                <td id="td-2" class="py-2 px-3 text-center text-emerald-300"></td>
+                <td id="td-3" class="py-2 px-3 text-center text-emerald-300"></td>
+                <td id="td-4" class="py-2 px-3 text-center text-emerald-300"></td>
+                <td id="td-5" class="py-2 px-3 text-center text-emerald-300"></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════
+         ABSCHNITT 2: QUIZ
+    ════════════════════════════════════════════════════ -->
+    <section class="mb-14" aria-labelledby="quiz-title">
+      <div class="flex items-center gap-3 mb-6">
+        <span class="w-8 h-8 rounded-full bg-emerald-400 text-slate-950 text-sm font-bold flex items-center justify-center flex-shrink-0">2</span>
+        <h2 id="quiz-title" class="text-xl font-semibold">Quiz – Exponentielles Wachstum</h2>
+      </div>
+
+      <div class="flex gap-2 mb-5 flex-wrap">
+        <button id="qm-einsetzen" onclick="setQuizModus('einsetzen')" class="rounded-full px-4 py-1.5 text-xs font-semibold bg-emerald-400 text-slate-950">Einsetzen</button>
+        <button id="qm-typ"       onclick="setQuizModus('typ')"       class="rounded-full px-4 py-1.5 text-xs font-semibold bg-slate-700 text-slate-300 hover:bg-slate-600">Wachstum/Zerfall?</button>
+        <button id="qm-halbwert"  onclick="setQuizModus('halbwert')"  class="rounded-full px-4 py-1.5 text-xs font-semibold bg-slate-700 text-slate-300 hover:bg-slate-600">Halbwertszeit</button>
+        <button id="qm-verdopp"   onclick="setQuizModus('verdopp')"   class="rounded-full px-4 py-1.5 text-xs font-semibold bg-slate-700 text-slate-300 hover:bg-slate-600">Verdopplung</button>
+      </div>
+
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+        <div class="flex justify-end mb-4">
+          <span class="text-sm font-semibold text-slate-500">Punkte:&nbsp;<span id="quiz-score" class="text-emerald-300">0 / 0</span></span>
+        </div>
+        <div id="quiz-karte" class="mb-6 text-center anim-fadein">
+          <p id="quiz-aufgabe" class="text-xl font-bold text-slate-100 mb-2 leading-relaxed"></p>
+          <p id="quiz-hinweis" class="text-sm text-slate-500 font-mono"></p>
+        </div>
+        <div id="quiz-buttons" class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5"></div>
+        <p id="quiz-feedback" class="text-center text-base font-semibold min-h-[1.5em] mb-4" aria-live="polite"></p>
+        <div class="flex justify-center">
+          <button onclick="newQuizAufgabe()"
+                  class="rounded-full border border-slate-700 text-slate-300 font-semibold px-6 py-2.5 text-sm hover:border-emerald-400/50 transition-colors">
+            Neue Aufgabe
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════
+         ABSCHNITT 3: SACHAUFGABEN
+    ════════════════════════════════════════════════════ -->
+    <section class="mb-14" aria-labelledby="sach-title">
+      <div class="flex items-center gap-3 mb-6">
+        <span class="w-8 h-8 rounded-full bg-emerald-400 text-slate-950 text-sm font-bold flex items-center justify-center flex-shrink-0">3</span>
+        <h2 id="sach-title" class="text-xl font-semibold">Sachaufgaben</h2>
+      </div>
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+        <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
+          <div class="flex gap-2" id="sach-dots"></div>
+          <span class="text-sm font-semibold text-slate-500">Punkte:&nbsp;<span id="sach-score" class="text-emerald-300">0 / 0</span></span>
+        </div>
+        <div id="sach-karte" class="mb-5 anim-fadein">
+          <p id="sach-kontext" class="text-xs font-semibold uppercase tracking-widest text-emerald-400/70 mb-2"></p>
+          <p id="sach-frage"   class="text-lg font-semibold text-slate-200 mb-2 leading-relaxed"></p>
+          <p id="sach-formel"  class="font-mono text-sm text-emerald-300/70 mb-4"></p>
+          <div class="flex items-center gap-3 flex-wrap">
+            <input id="sach-input" type="text" inputmode="decimal" placeholder="Deine Antwort"
+                   class="antwort-input w-44 rounded-2xl border border-slate-700 bg-slate-800 px-4 py-3 text-slate-100 text-lg font-bold transition-colors"
+                   onkeydown="if(event.key==='Enter') checkSach()" />
+            <span id="sach-einheit" class="text-base font-semibold text-emerald-300"></span>
+          </div>
+        </div>
+        <p id="sach-feedback" class="text-center text-base font-semibold min-h-[1.5em] mb-4" aria-live="polite"></p>
+        <div class="flex gap-3 justify-center">
+          <button id="sach-check-btn" onclick="checkSach()"
+                  class="rounded-full bg-emerald-400 text-slate-950 font-semibold px-6 py-2.5 text-sm hover:bg-emerald-300 transition-colors">Prüfen</button>
+          <button id="sach-next-btn"  onclick="nextSachAufgabe()"
+                  class="hidden rounded-full border border-slate-700 text-slate-300 font-semibold px-6 py-2.5 text-sm hover:border-emerald-400/50 transition-colors">Nächste Aufgabe →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- MERKHILFE -->
+    <section class="mb-10">
+      <h2 class="text-sm font-semibold text-slate-300 mb-4 uppercase tracking-wide">Merkhilfe – Exponentielles Wachstum</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-5">
+          <h3 class="font-semibold text-emerald-300 mb-3 text-sm">📈 Formel</h3>
+          <ul class="text-slate-400 text-sm space-y-2 font-mono">
+            <li>f(t) = a · <span class="text-emerald-300">b</span>ᵗ</li>
+            <li>a = Anfangswert</li>
+            <li>b = Wachstumsfaktor</li>
+            <li>b &gt; 1 → Wachstum</li>
+            <li>0 &lt; b &lt; 1 → Zerfall</li>
+          </ul>
+        </div>
+        <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-5">
+          <h3 class="font-semibold text-orange-300 mb-3 text-sm">⏱ Halbwertszeit</h3>
+          <ul class="text-slate-400 text-sm space-y-2 font-mono">
+            <li>b^T½ = 0,5</li>
+            <li>T½ = log(0,5)/log(b)</li>
+            <li class="text-xs text-slate-500 pt-1 border-t border-slate-700/50">Zerfall bis auf die Hälfte</li>
+          </ul>
+        </div>
+        <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-5">
+          <h3 class="font-semibold text-blue-300 mb-3 text-sm">✖ Verdopplungszeit</h3>
+          <ul class="text-slate-400 text-sm space-y-2 font-mono">
+            <li>b^T₂ = 2</li>
+            <li>T₂ = log(2)/log(b)</li>
+            <li class="text-xs text-slate-500 pt-1 border-t border-slate-700/50">Wachstum auf das Doppelte</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <footer class="py-6 text-center text-xs text-slate-500">© <span id="y"></span> Brandon Hank · Düsseldorf</footer>
+  </main>
+
+  <script>
+    window.__i18nBase = '../../';
+    fetch('../../topbar.html')
+      .then(r => r.text())
+      .then(html => {
+        document.getElementById('topbar-container').innerHTML = html;
+        const s = document.createElement('script');
+        s.src = '../../assets/js/script.js';
+        s.onload = init;
+        document.body.appendChild(s);
+      });
+
+    /* ════════════════════════════════════════════════════════════
+       ABSCHNITT 1 – GRAPH-EXPLORER
+    ════════════════════════════════════════════════════════════ */
+
+    /* SVG-Konstanten: Ursprung (OX, OY), Pixel pro Zeiteinheit */
+    const GX=40, GY=190, GW=270, GH=180;
+    let aktuellerTab = 'wachstum'; /* 'wachstum' oder 'zerfall' */
+
+    /*
+     * setTab(tab)
+     * Wechselt zwischen Wachstum (b>1) und Zerfall (0<b<1).
+     * Passt den Slider-Bereich für b an.
+     */
+    function setTab(tab){
+      aktuellerTab = tab;
+      const sb = document.getElementById('slider-b');
+      if(tab === 'wachstum'){
+        /* b: 1.05 – 3.0 → Slider: 105–300 */
+        sb.min=105; sb.max=300; sb.value=150;
+        document.getElementById('b-beschr').textContent = 'b > 1: Wachstum';
+        document.getElementById('tab-wachstum').classList.add('aktiv');
+        document.getElementById('tab-zerfall').classList.remove('aktiv');
+        document.getElementById('halbw-label').textContent = 'Verdopplungszeit';
+      } else {
+        /* b: 0.30 – 0.95 → Slider: 30–95 */
+        sb.min=30; sb.max=95; sb.value=70;
+        document.getElementById('b-beschr').textContent = '0 < b < 1: Zerfall';
+        document.getElementById('tab-wachstum').classList.remove('aktiv');
+        document.getElementById('tab-zerfall').classList.add('aktiv');
+        document.getElementById('halbw-label').textContent = 'Halbwertszeit';
+      }
+      updateGraph();
+    }
+
+    /*
+     * updateGraph()
+     * Berechnet f(t) = a · b^t für t = 0..10.
+     * Zeichnet die Kurve als SVG-Polyline.
+     *
+     * y-Skalierung: maxY = f(10) für Wachstum, f(0)=a für Zerfall
+     * SVG-y = GY - f(t)/maxY * GH
+     */
+    function updateGraph(){
+      const a   = parseInt(document.getElementById('slider-a').value);
+      const bRaw= parseInt(document.getElementById('slider-b').value);
+      /* b: Wachstum bRaw/100, Zerfall bRaw/100 (beide Bereiche schon passend) */
+      const b   = bRaw / 100;
+      const t   = parseInt(document.getElementById('slider-t').value);
+
+      document.getElementById('lbl-a').textContent = a;
+      document.getElementById('lbl-b').textContent = b.toFixed(2);
+      document.getElementById('lbl-t').textContent = t;
+
+      /* Wertetabelle befüllen */
+      for(let i=0; i<=5; i++){
+        const v = a * Math.pow(b, i);
+        document.getElementById(`td-${i}`).textContent = Math.round(v);
+      }
+
+      /* Maximaler y-Wert für Skalierung */
+      const maxY = aktuellerTab==='wachstum'
+        ? a * Math.pow(b, 10)
+        : a; /* beim Zerfall ist f(0)=a der höchste Wert */
+
+      /* Kurven-Punkte berechnen */
+      /* tStep: 10 Zeiteinheiten auf GW=270px → 27px pro Einheit */
+      const tPX = GW / 10;
+
+      const punkte = [];
+      for(let ti=0; ti<=100; ti++){
+        const tx = ti / 10; /* 0..10 in 0.1-Schritten */
+        const fy = a * Math.pow(b, tx);
+        const svgX = GX + tx * tPX;
+        const svgY = GY - (fy / maxY) * GH;
+        if(svgY >= 5 && svgY <= GY) punkte.push(`${svgX},${svgY}`);
+      }
+      const kurve = document.getElementById('exp-kurve');
+      kurve.setAttribute('points', punkte.join(' '));
+      kurve.setAttribute('class', aktuellerTab==='wachstum' ? 'kurve-wachs' : 'kurve-zerfall');
+
+      /* Markierungspunkt bei t */
+      const ft  = a * Math.pow(b, t);
+      const mx  = GX + t * tPX;
+      const my  = GY - (ft / maxY) * GH;
+      document.getElementById('mark-punkt').setAttribute('cx', mx);
+      document.getElementById('mark-punkt').setAttribute('cy', my);
+      /* Gestrichelte Hilfslinien zum Punkt */
+      setLine('mark-linie-h', GX, my, mx, my);
+      setLine('mark-linie-v', mx, my, mx, GY);
+
+      /* Wert-Kacheln */
+      document.getElementById('val-ft').textContent = Math.round(ft);
+
+      /* Halbwerts- bzw. Verdopplungszeit */
+      const ziel = aktuellerTab==='wachstum' ? 2 : 0.5;
+      const spezialzeit = Math.log(ziel) / Math.log(b);
+      document.getElementById('val-halbw').textContent =
+        isFinite(spezialzeit) ? spezialzeit.toFixed(2) : '—';
+
+      /* Formelzeile */
+      document.getElementById('formel-zeile').textContent =
+        `f(${t}) = ${a} · ${b.toFixed(2)}^${t} = ${Math.round(ft)}`;
+
+      /* t-Ticks */
+      let ticks='';
+      for(let ti=0; ti<=10; ti+=2){
+        const tx = GX + ti * tPX;
+        ticks += `<text x="${tx-3}" y="${GY+12}" font-size="9" fill="#475569">${ti}</text>`;
+      }
+      document.getElementById('t-ticks').innerHTML = ticks;
+    }
+
+    function setLine(id,x1,y1,x2,y2){
+      const el=document.getElementById(id);
+      el.setAttribute('x1',x1);el.setAttribute('y1',y1);
+      el.setAttribute('x2',x2);el.setAttribute('y2',y2);
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       ABSCHNITT 2 – QUIZ
+    ════════════════════════════════════════════════════════════ */
+
+    let quizModus='einsetzen', quizR=0, quizG=0;
+    function rnd(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+
+    function setQuizModus(m){
+      quizModus=m;
+      ['einsetzen','typ','halbwert','verdopp'].forEach(x=>{
+        document.getElementById(`qm-${x}`).className=
+          `rounded-full px-4 py-1.5 text-xs font-semibold transition-colors `+
+          (x===m?'bg-emerald-400 text-slate-950':'bg-slate-700 text-slate-300 hover:bg-slate-600');
+      });
+      newQuizAufgabe();
+    }
+
+    function newQuizAufgabe(){
+      document.getElementById('quiz-feedback').textContent='';
+      const a=rnd(2,10)*10, t=rnd(1,4);
+      const bs=[1.5,2,3,0.5,0.25,0.8];
+      const b=bs[rnd(0,5)];
+
+      if(quizModus==='einsetzen'){
+        const ergebnis = Math.round(a * Math.pow(b,t));
+        const falsch=[ergebnis+a, ergebnis-a, a*t*b].map(Math.round).filter(v=>v!==ergebnis&&v>0).map(String);
+        document.getElementById('quiz-aufgabe').textContent=`f(${t}) = ${a} · ${b}^${t} = ?`;
+        document.getElementById('quiz-hinweis').textContent=`${a} × ${b}^${t} = ?`;
+        renderQuizButtons([String(ergebnis),...falsch.slice(0,3)],String(ergebnis));
+
+      } else if(quizModus==='typ'){
+        const fakten=[
+          {b:1.5,  richtig:'Wachstum', falsch:['Zerfall','Konstant','Unbestimmt']},
+          {b:0.5,  richtig:'Zerfall',  falsch:['Wachstum','Konstant','Unbestimmt']},
+          {b:2,    richtig:'Wachstum', falsch:['Zerfall','Konstant','Schwingung']},
+          {b:0.8,  richtig:'Zerfall',  falsch:['Wachstum','Linear','Konstant']},
+        ][rnd(0,3)];
+        document.getElementById('quiz-aufgabe').textContent=`b = ${fakten.b} → Wachstum oder Zerfall?`;
+        document.getElementById('quiz-hinweis').textContent=`b > 1 → Wachstum | 0 < b < 1 → Zerfall`;
+        renderQuizButtons([fakten.richtig,...fakten.falsch],fakten.richtig);
+
+      } else if(quizModus==='halbwert'){
+        /* Einfacher Fall: b=0.5 → Halbwertszeit = 1 */
+        document.getElementById('quiz-aufgabe').textContent=
+          `f(t) = 100 · 0,5^t. Nach wie vielen Schritten ist f(t) = 50?`;
+        document.getElementById('quiz-hinweis').textContent=`0,5^? = 0,5`;
+        renderQuizButtons(['1','2','3','0,5'],'1');
+
+      } else {
+        /* Verdopplungszeit: b=2 → T₂=1 */
+        document.getElementById('quiz-aufgabe').textContent=
+          `f(t) = 50 · 2^t. Wann ist f(t) = 100? (t = ?)`;
+        document.getElementById('quiz-hinweis').textContent=`2^? = 2`;
+        renderQuizButtons(['1','2','3','4'],'1');
+      }
+    }
+
+    function renderQuizButtons(opts,richtig){
+      for(let i=opts.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[opts[i],opts[j]]=[opts[j],opts[i]];}
+      document.getElementById('quiz-buttons').innerHTML=opts.slice(0,4).map(v=>
+        `<button class="btn-answer rounded-2xl border border-slate-700 bg-slate-800 px-3 py-4
+                        text-base font-bold text-slate-100 hover:border-emerald-400/50 transition-colors"
+                 data-val="${encodeURIComponent(v)}" data-richtig="${encodeURIComponent(richtig)}"
+                 onclick="checkQuiz(this)">${v}</button>`
+      ).join('');
+    }
+
+    function checkQuiz(btn){
+      const g=decodeURIComponent(btn.dataset.val),r=decodeURIComponent(btn.dataset.richtig);
+      quizG++;
+      document.querySelectorAll('#quiz-buttons .btn-answer').forEach(b=>{
+        b.disabled=true;
+        const v=decodeURIComponent(b.dataset.val);
+        if(v===r)b.classList.add('btn-correct');else if(v===g)b.classList.add('btn-wrong');
+      });
+      const fb=document.getElementById('quiz-feedback');
+      if(g===r){quizR++;fb.textContent='✓ Richtig!';fb.className='text-center text-base font-semibold min-h-[1.5em] mb-4 text-emerald-400';}
+      else{fb.textContent=`✗ Falsch. Richtig: ${r}`;fb.className='text-center text-base font-semibold min-h-[1.5em] mb-4 text-red-400';}
+      document.getElementById('quiz-score').textContent=`${quizR} / ${quizG}`;
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       SACHAUFGABEN
+    ════════════════════════════════════════════════════════════ */
+    const SACHAUFGABEN=[
+      { kontext:'🦠 Bakterien',       frage:'Eine Bakterienkultur startet mit 100 Zellen und verdoppelt sich jede Stunde (b=2). Wie viele Zellen gibt es nach 3 Stunden?', formel:'f(3) = 100 · 2^3', antwort:'800', einheit:'', hinweis:'100 · 2^3 = 100 · 8 = 800' },
+      { kontext:'☢️ Radioaktivität',  frage:'Ein Stoff hat Halbwertszeit 1 Jahr (b=0,5). Startmenge 200 g. Wie viel ist nach 2 Jahren noch da?', formel:'f(2) = 200 · 0,5^2', antwort:'50', einheit:'g', hinweis:'200 · 0,5^2 = 200 · 0,25 = 50 g' },
+      { kontext:'💰 Zinsen',          frage:'Ein Konto hat 1000 € und wächst jährlich um den Faktor 1,05. Wie viel ist nach 0 Jahren darauf (Anfangswert)?', formel:'f(0) = 1000 · 1,05^0', antwort:'1000', einheit:'€', hinweis:'f(0) = 1000 · 1 = 1000 €' },
+      { kontext:'📉 Wertverlust',     frage:'Ein Auto kostet 20000 €. Jedes Jahr behält es 80% seines Werts (b=0,8). Wie viel ist es nach 1 Jahr wert?', formel:'f(1) = 20000 · 0,8^1', antwort:'16000', einheit:'€', hinweis:'20000 · 0,8 = 16000 €' },
+      { kontext:'🌱 Pflanzenwachstum',frage:'Eine Pflanze ist 5 cm groß und wächst um Faktor 1,5 pro Woche. Wie groß ist sie nach 2 Wochen (gerundet)?', formel:'f(2) = 5 · 1,5^2', antwort:'11', einheit:'cm', hinweis:'5 · 2,25 = 11,25 ≈ 11 cm' },
+    ];
+
+    let sachIdx=0,sachR=0,sachG=0;
+    function renderSachDots(){document.getElementById('sach-dots').innerHTML=SACHAUFGABEN.map((_,i)=>{let c='sach-dot';if(i<sachIdx)c+=' done';else if(i===sachIdx)c+=' current';return`<span class="${c}"></span>`;}).join('');}
+    function showSachAufgabe(){
+      if(sachIdx>=SACHAUFGABEN.length){document.getElementById('sach-karte').innerHTML=`<p class="text-center text-emerald-300 text-lg font-semibold py-6">🎉 Alle gelöst! ${sachR} von ${SACHAUFGABEN.length} richtig.</p>`;document.getElementById('sach-check-btn').classList.add('hidden');document.getElementById('sach-next-btn').classList.add('hidden');return;}
+      const a=SACHAUFGABEN[sachIdx];
+      document.getElementById('sach-kontext').textContent=a.kontext;
+      document.getElementById('sach-frage').textContent=a.frage;
+      document.getElementById('sach-formel').textContent=a.formel;
+      document.getElementById('sach-einheit').textContent=a.einheit;
+      document.getElementById('sach-input').value='';document.getElementById('sach-input').disabled=false;
+      document.getElementById('sach-feedback').textContent='';
+      document.getElementById('sach-check-btn').classList.remove('hidden');document.getElementById('sach-next-btn').classList.add('hidden');
+      const k=document.getElementById('sach-karte');k.classList.remove('anim-fadein');void k.offsetWidth;k.classList.add('anim-fadein');
+      renderSachDots();
+    }
+    function checkSach(){
+      const e=document.getElementById('sach-input').value.trim();sachG++;
+      document.getElementById('sach-input').disabled=true;document.getElementById('sach-check-btn').classList.add('hidden');document.getElementById('sach-next-btn').classList.remove('hidden');
+      const fb=document.getElementById('sach-feedback');
+      if(e===SACHAUFGABEN[sachIdx].antwort){sachR++;fb.textContent='✓ Richtig!';fb.className='text-center text-base font-semibold min-h-[1.5em] mb-4 text-emerald-400';}
+      else{fb.textContent=`✗ Falsch. ${SACHAUFGABEN[sachIdx].hinweis}`;fb.className='text-center text-base font-semibold min-h-[1.5em] mb-4 text-red-400';}
+      document.getElementById('sach-score').textContent=`${sachR} / ${sachG}`;
+    }
+    function nextSachAufgabe(){sachIdx++;showSachAufgabe();}
+
+    function init(){ updateGraph(); newQuizAufgabe(); showSachAufgabe(); }
+  </script>
+</body>
+</html>

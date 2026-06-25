@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trigonometrie – Klasse 10 | MathAcademy</title>
+
+  <link rel="icon"             href="../../favicon.ico" />
+  <link rel="apple-touch-icon" href="../../apple-touch-icon.png" />
+  <link rel="manifest"         href="../../site.webmanifest" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../../assets/css/style.css?v=1.0" />
+
+  <style>
+    @keyframes fadeInUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+    .anim-fadein { animation: fadeInUp 0.35s ease both; }
+
+    /* ── Einheitskreis-SVG ─────────────────────────────────────
+       Der Einheitskreis zeigt sin, cos, tan für einen frei
+       wählbaren Winkel α (Slider 0°–360°).
+       Farbkodierung: sin=grün, cos=blau, tan=orange.           */
+    .kreis-linie { stroke:#1e293b; stroke-width:1; }
+    .radius-linie{ stroke:#64748b; stroke-width:1.5; stroke-dasharray:4 3; }
+    .sin-linie   { stroke:#34d399; stroke-width:2.5; }
+    .cos-linie   { stroke:#60a5fa; stroke-width:2.5; }
+    .tan-linie   { stroke:#f97316; stroke-width:2; stroke-dasharray:5 3; }
+    .punkt-p     { fill:#f1f5f9; stroke:#0f172a; stroke-width:2; }
+
+    /* ── Dreieck-SVG für SOH-CAH-TOA ──────────────────────────
+       Zeigt das rechtwinklige Dreieck mit Hypotenuse,
+       Gegenkathete (sin) und Ankathete (cos).                  */
+    .drk-hyp  { stroke:#94a3b8; stroke-width:2; }
+    .drk-geg  { stroke:#34d399; stroke-width:2.5; }
+    .drk-ank  { stroke:#60a5fa; stroke-width:2.5; }
+
+    .btn-answer:hover:not(:disabled) { filter: brightness(1.15); }
+    .btn-answer:disabled { opacity: 0.55; cursor: not-allowed; }
+    .btn-correct { background-color:#059669!important; border-color:#34d399!important; color:#fff!important; }
+    .btn-wrong   { background-color:#dc2626!important; border-color:#f87171!important; color:#fff!important; }
+
+    .sach-dot { width:10px; height:10px; border-radius:50%; background:#334155; transition:background-color 0.2s; }
+    .sach-dot.done    { background:#34d399; }
+    .sach-dot.current { background:#6ee7b7; box-shadow:0 0 0 3px rgba(52,211,153,0.25); }
+
+    .antwort-input:focus { outline:none; border-color:#34d399; box-shadow:0 0 0 3px rgba(52,211,153,0.2); }
+    input[type=range] { accent-color:#34d399; }
+  </style>
+</head>
+
+<body class="bg-slate-950 text-slate-100 min-h-screen">
+  <div id="topbar-container"></div>
+
+  <main class="max-w-4xl mx-auto px-4 pb-16 pt-6">
+
+    <a href="/academy.html"
+       class="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-emerald-300 transition-colors mb-6">
+      ← Zurück zur Akademie
+    </a>
+
+    <div class="mb-10">
+      <span class="text-xs font-semibold uppercase tracking-widest text-emerald-400 mb-2 block">Klasse 10 · Vertiefung</span>
+      <h1 class="text-3xl sm:text-4xl font-bold mb-3">Trigonometrie</h1>
+      <p class="text-slate-400 text-base max-w-xl">
+        sin, cos und tan am Einheitskreis und im rechtwinkligen Dreieck –
+        interaktiv erkunden, Quiz und Sachaufgaben.
+      </p>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════
+         ABSCHNITT 1A: EINHEITSKREIS
+         Slider steuert den Winkel α (0°–360°).
+         Der SVG zeigt:
+           - Einheitskreis (Radius = 1)
+           - Punkt P = (cos α, sin α) auf dem Kreis
+           - sin α als grüne senkrechte Linie von x-Achse zu P
+           - cos α als blaue waagerechte Linie von y-Achse zu P
+           - Winkel-Bogen am Ursprung
+           - Zahlenwerte live
+    ════════════════════════════════════════════════════ -->
+    <section class="mb-14" aria-labelledby="kreis-title">
+      <div class="flex items-center gap-3 mb-6">
+        <span class="w-8 h-8 rounded-full bg-emerald-400 text-slate-950 text-sm font-bold flex items-center justify-center flex-shrink-0">1</span>
+        <h2 id="kreis-title" class="text-xl font-semibold">Interaktiver Einheitskreis</h2>
+      </div>
+
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+          <!-- Einheitskreis-SVG -->
+          <!--
+            viewBox 0 0 300 300:
+            Mittelpunkt (OX, OY) = (150, 150)
+            Radius R = 100px (entspricht 1 Einheit)
+          -->
+          <svg id="einheitskreis" viewBox="0 0 300 300"
+               class="w-full max-w-xs mx-auto rounded-2xl bg-slate-800/40"
+               aria-label="Einheitskreis mit Winkel alpha">
+
+            <!-- Gitter-Linien -->
+            <line class="kreis-linie" x1="0"   y1="150" x2="300" y2="150"/>
+            <line class="kreis-linie" x1="150" y1="0"   x2="150" y2="300"/>
+
+            <!-- Einheitskreis -->
+            <circle cx="150" cy="150" r="100" fill="none" stroke="#334155" stroke-width="1.5"/>
+
+            <!-- Achsenbeschriftungen -->
+            <text x="288" y="162" font-size="10" fill="#475569">x</text>
+            <text x="154" y="12"  font-size="10" fill="#475569">y</text>
+            <text x="155" y="162" font-size="9"  fill="#475569">0</text>
+            <text x="250" y="162" font-size="9"  fill="#475569">1</text>
+            <text x="154" y="55"  font-size="9"  fill="#475569">1</text>
+
+            <!-- Winkel-Bogen -->
+            <path id="winkel-bogen" fill="none" stroke="#64748b" stroke-width="1.5"/>
+
+            <!-- cos-Linie (blau, horizontal) -->
+            <line id="cos-linie" class="cos-linie"/>
+            <!-- sin-Linie (grün, vertikal) -->
+            <line id="sin-linie" class="sin-linie"/>
+            <!-- Radius-Linie zu P -->
+            <line id="radius-linie" class="radius-linie"/>
+            <!-- Punkt P -->
+            <circle id="punkt-P" class="punkt-p" r="6"/>
+
+            <!-- Beschriftungen -->
+            <text id="lbl-sin" font-size="10" font-weight="bold" fill="#34d399"></text>
+            <text id="lbl-cos" font-size="10" font-weight="bold" fill="#60a5fa"></text>
+            <text id="lbl-alpha" font-size="11" font-weight="bold" fill="#f97316"></text>
+          </svg>
+
+          <!-- Werte-Panel rechts -->
+          <div class="flex flex-col justify-center gap-4">
+
+            <!-- Slider Winkel -->
+            <div>
+              <div class="flex justify-between text-xs mb-2">
+                <span class="text-slate-400">Winkel α</span>
+                <span id="alpha-label" class="text-orange-300 font-bold text-xl">0°</span>
+              </div>
+              <input id="slider-alpha" type="range" min="0" max="360" value="30" step="1"
+                     class="w-full h-2 rounded-full cursor-pointer" oninput="updateKreis()"/>
+            </div>
+
+            <!-- Werte-Kacheln -->
+            <div class="grid grid-cols-3 gap-3">
+              <div class="rounded-2xl bg-emerald-400/10 border border-emerald-400/20 p-4 text-center">
+                <p class="text-xs text-slate-500 mb-1">sin α</p>
+                <p id="val-sin" class="text-lg font-bold text-emerald-300"></p>
+              </div>
+              <div class="rounded-2xl bg-blue-400/10 border border-blue-400/20 p-4 text-center">
+                <p class="text-xs text-slate-500 mb-1">cos α</p>
+                <p id="val-cos" class="text-lg font-bold text-blue-300"></p>
+              </div>
+              <div class="rounded-2xl bg-orange-400/10 border border-orange-400/20 p-4 text-center">
+                <p class="text-xs text-slate-500 mb-1">tan α</p>
+                <p id="val-tan" class="text-lg font-bold text-orange-300"></p>
+              </div>
+            </div>
+
+            <!-- Identitäten-Check -->
+            <div class="rounded-2xl bg-slate-800/60 p-4 space-y-2 text-sm font-mono">
+              <p class="text-xs text-slate-500 uppercase tracking-wide mb-2">Identitäten-Check</p>
+              <p>sin²α + cos²α = <span id="check-pyth" class="text-emerald-300 font-bold"></span></p>
+              <p>tan α = sin α / cos α = <span id="check-tan" class="text-orange-300 font-bold"></span></p>
+            </div>
+
+            <!-- Quadrant-Anzeige -->
+            <div class="rounded-2xl bg-slate-800/60 p-3 text-center">
+              <p class="text-xs text-slate-500 mb-1">Quadrant</p>
+              <p id="quadrant" class="font-semibold text-slate-200"></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Besondere Winkel Schnellauswahl -->
+        <div class="mt-5">
+          <p class="text-xs text-slate-500 uppercase tracking-wide mb-3">Besondere Winkel:</p>
+          <div class="flex flex-wrap gap-2">
+            <button onclick="setAlpha(0)"   class="text-xs bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 hover:border-emerald-400/50 transition-colors">0°</button>
+            <button onclick="setAlpha(30)"  class="text-xs bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 hover:border-emerald-400/50 transition-colors">30°</button>
+            <button onclick="setAlpha(45)"  class="text-xs bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 hover:border-emerald-400/50 transition-colors">45°</button>
+            <button onclick="setAlpha(60)"  class="text-xs bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 hover:border-emerald-400/50 transition-colors">60°</button>
+            <button onclick="setAlpha(90)"  class="text-xs bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 hover:border-emerald-400/50 transition-colors">90°</button>
+            <button onclick="setAlpha(120)" class="text-xs bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 hover:border-emerald-400/50 transition-colors">120°</button>
+            <button onclick="setAlpha(180)" class="text-xs bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 hover:border-emerald-400/50 transition-colors">180°</button>
+            <button onclick="setAlpha(270)" class="text-xs bg-slate-800 border border-slate-700 rounded-full px-3 py-1.5 hover:border-emerald-400/50 transition-colors">270°</button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════
+         ABSCHNITT 2: QUIZ
+    ════════════════════════════════════════════════════ -->
+    <section class="mb-14" aria-labelledby="quiz-title">
+      <div class="flex items-center gap-3 mb-6">
+        <span class="w-8 h-8 rounded-full bg-emerald-400 text-slate-950 text-sm font-bold flex items-center justify-center flex-shrink-0">2</span>
+        <h2 id="quiz-title" class="text-xl font-semibold">Quiz – Trigonometrie</h2>
+      </div>
+
+      <div class="flex gap-2 mb-5 flex-wrap">
+        <button id="qm-wert"    onclick="setQuizModus('wert')"    class="rounded-full px-4 py-1.5 text-xs font-semibold bg-emerald-400 text-slate-950">Wert ablesen</button>
+        <button id="qm-dreieck" onclick="setQuizModus('dreieck')" class="rounded-full px-4 py-1.5 text-xs font-semibold bg-slate-700 text-slate-300 hover:bg-slate-600">Dreieck berechnen</button>
+        <button id="qm-formel"  onclick="setQuizModus('formel')"  class="rounded-full px-4 py-1.5 text-xs font-semibold bg-slate-700 text-slate-300 hover:bg-slate-600">Formel zuordnen</button>
+        <button id="qm-vorzeichen" onclick="setQuizModus('vorzeichen')" class="rounded-full px-4 py-1.5 text-xs font-semibold bg-slate-700 text-slate-300 hover:bg-slate-600">Vorzeichen</button>
+      </div>
+
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+        <div class="flex justify-end mb-4">
+          <span class="text-sm font-semibold text-slate-500">Punkte:&nbsp;<span id="quiz-score" class="text-emerald-300">0 / 0</span></span>
+        </div>
+        <div id="quiz-karte" class="mb-6 text-center anim-fadein">
+          <p id="quiz-aufgabe" class="text-xl font-bold text-slate-100 mb-2 leading-relaxed"></p>
+          <p id="quiz-hinweis" class="text-sm text-slate-500"></p>
+        </div>
+        <div id="quiz-buttons" class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5"></div>
+        <p id="quiz-feedback" class="text-center text-base font-semibold min-h-[1.5em] mb-4" aria-live="polite"></p>
+        <div class="flex justify-center">
+          <button onclick="newQuizAufgabe()"
+                  class="rounded-full border border-slate-700 text-slate-300 font-semibold px-6 py-2.5 text-sm hover:border-emerald-400/50 transition-colors">
+            Neue Aufgabe
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════
+         ABSCHNITT 3: SACHAUFGABEN
+    ════════════════════════════════════════════════════ -->
+    <section class="mb-14" aria-labelledby="sach-title">
+      <div class="flex items-center gap-3 mb-6">
+        <span class="w-8 h-8 rounded-full bg-emerald-400 text-slate-950 text-sm font-bold flex items-center justify-center flex-shrink-0">3</span>
+        <h2 id="sach-title" class="text-xl font-semibold">Sachaufgaben</h2>
+      </div>
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+        <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
+          <div class="flex gap-2" id="sach-dots"></div>
+          <span class="text-sm font-semibold text-slate-500">Punkte:&nbsp;<span id="sach-score" class="text-emerald-300">0 / 0</span></span>
+        </div>
+        <div id="sach-karte" class="mb-5 anim-fadein">
+          <p id="sach-kontext" class="text-xs font-semibold uppercase tracking-widest text-emerald-400/70 mb-2"></p>
+          <p id="sach-frage"   class="text-lg font-semibold text-slate-200 mb-2 leading-relaxed"></p>
+          <p id="sach-formel"  class="font-mono text-sm text-emerald-300/70 mb-4"></p>
+          <div class="flex items-center gap-3 flex-wrap">
+            <input id="sach-input" type="text" inputmode="decimal" placeholder="Deine Antwort"
+                   class="antwort-input w-44 rounded-2xl border border-slate-700 bg-slate-800 px-4 py-3 text-slate-100 text-lg font-bold transition-colors"
+                   onkeydown="if(event.key==='Enter') checkSach()" />
+            <span id="sach-einheit" class="text-base font-semibold text-emerald-300"></span>
+          </div>
+        </div>
+        <p id="sach-feedback" class="text-center text-base font-semibold min-h-[1.5em] mb-4" aria-live="polite"></p>
+        <div class="flex gap-3 justify-center">
+          <button id="sach-check-btn" onclick="checkSach()"
+                  class="rounded-full bg-emerald-400 text-slate-950 font-semibold px-6 py-2.5 text-sm hover:bg-emerald-300 transition-colors">Prüfen</button>
+          <button id="sach-next-btn"  onclick="nextSachAufgabe()"
+                  class="hidden rounded-full border border-slate-700 text-slate-300 font-semibold px-6 py-2.5 text-sm hover:border-emerald-400/50 transition-colors">Nächste Aufgabe →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- MERKHILFE -->
+    <section class="mb-10">
+      <h2 class="text-sm font-semibold text-slate-300 mb-4 uppercase tracking-wide">Merkhilfe – SOH-CAH-TOA</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-5">
+          <h3 class="font-semibold text-emerald-300 mb-3 text-sm">📐 Formeln (Dreieck)</h3>
+          <ul class="text-slate-400 text-sm space-y-2 font-mono">
+            <li><span class="text-emerald-300">sin α</span> = Gegenkathete / Hyp.</li>
+            <li><span class="text-blue-300">cos α</span> = Ankathete / Hyp.</li>
+            <li><span class="text-orange-300">tan α</span> = Gegenkathete / Ank.</li>
+          </ul>
+        </div>
+        <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-5">
+          <h3 class="font-semibold text-emerald-300 mb-3 text-sm">⭐ Besondere Winkel</h3>
+          <table class="text-xs text-slate-400 w-full">
+            <tr class="border-b border-slate-700/50"><th class="text-left pb-1 text-slate-500">α</th><th class="text-orange-300">sin</th><th class="text-blue-300">cos</th></tr>
+            <tr><td>30°</td><td class="text-orange-300 text-center">1/2</td><td class="text-blue-300 text-center">√3/2</td></tr>
+            <tr><td>45°</td><td class="text-orange-300 text-center">√2/2</td><td class="text-blue-300 text-center">√2/2</td></tr>
+            <tr><td>60°</td><td class="text-orange-300 text-center">√3/2</td><td class="text-blue-300 text-center">1/2</td></tr>
+          </table>
+        </div>
+        <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-5">
+          <h3 class="font-semibold text-emerald-300 mb-3 text-sm">🔁 Identitäten</h3>
+          <ul class="text-slate-400 text-sm space-y-2 font-mono">
+            <li>sin²α + cos²α = 1</li>
+            <li>tan α = sin α / cos α</li>
+            <li class="text-xs text-slate-500 pt-1 border-t border-slate-700/50">sin(90°−α) = cos α</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <footer class="py-6 text-center text-xs text-slate-500">© <span id="y"></span> Brandon Hank · Düsseldorf</footer>
+  </main>
+
+  <script>
+    window.__i18nBase = '../../';
+    fetch('../../topbar.html')
+      .then(r => r.text())
+      .then(html => {
+        document.getElementById('topbar-container').innerHTML = html;
+        const s = document.createElement('script');
+        s.src = '../../assets/js/script.js';
+        s.onload = init;
+        document.body.appendChild(s);
+      });
+
+    /* ════════════════════════════════════════════════════════════
+       ABSCHNITT 1 – EINHEITSKREIS
+    ════════════════════════════════════════════════════════════ */
+
+    /* SVG-Konstanten */
+    const OX=150, OY=150, R=100; /* Mittelpunkt und Radius in SVG-Pixeln */
+
+    /*
+     * updateKreis()
+     * Liest den Winkel α vom Slider (0°–360°).
+     * Berechnet sin, cos, tan via Math-Funktionen.
+     *
+     * SVG-Koordinaten:
+     *   Die y-Achse ist in SVG nach unten, daher:
+     *   Px = OX + cos(α_rad) * R
+     *   Py = OY - sin(α_rad) * R  ← Minus weil SVG y nach unten
+     */
+    function updateKreis(){
+      const alphaDeg = parseFloat(document.getElementById('slider-alpha').value);
+      const alphaRad = alphaDeg * Math.PI / 180;
+
+      const sinA = Math.sin(alphaRad);
+      const cosA = Math.cos(alphaRad);
+      const tanA = Math.abs(cosA) < 0.001 ? null : Math.tan(alphaRad);
+
+      /* Punkt P auf dem Kreis */
+      const Px = OX + cosA * R;
+      const Py = OY - sinA * R;
+
+      /* SVG-Elemente aktualisieren */
+      document.getElementById('punkt-P').setAttribute('cx', Px);
+      document.getElementById('punkt-P').setAttribute('cy', Py);
+
+      /* sin-Linie: von (Px, OY) nach (Px, Py) */
+      setLine('sin-linie', Px, OY, Px, Py);
+      /* cos-Linie: von (OX, OY) nach (Px, OY) */
+      setLine('cos-linie', OX, OY, Px, OY);
+      /* Radius-Linie: von (OX, OY) nach P */
+      setLine('radius-linie', OX, OY, Px, Py);
+
+      /* Winkel-Bogen (kleiner Kreisbogen von 0° bis α) */
+      const bR = 25; /* Bogenverlauf-Radius */
+      const bx2 = OX + bR * cosA;
+      const by2 = OY - bR * sinA;
+      const largeArc = alphaDeg > 180 ? 1 : 0;
+      /* Bogen von (OX+bR, OY) gegen den Uhrzeigersinn bis (bx2, by2) */
+      document.getElementById('winkel-bogen').setAttribute('d',
+        `M ${OX+bR},${OY} A ${bR},${bR} 0 ${largeArc} 0 ${bx2},${by2}`);
+
+      /* Beschriftungen */
+      const lSin = document.getElementById('lbl-sin');
+      lSin.setAttribute('x', Px + (cosA >= 0 ? 5 : -35));
+      lSin.setAttribute('y', (OY + Py) / 2 + 4);
+      lSin.textContent = `sin=${parseFloat(sinA.toFixed(2))}`;
+
+      const lCos = document.getElementById('lbl-cos');
+      lCos.setAttribute('x', (OX + Px) / 2 - 15);
+      lCos.setAttribute('y', OY + (sinA >= 0 ? 13 : -5));
+      lCos.textContent = `cos=${parseFloat(cosA.toFixed(2))}`;
+
+      const lAlpha = document.getElementById('lbl-alpha');
+      const ax = OX + 35 * Math.cos(alphaRad / 2);
+      const ay = OY - 35 * Math.sin(alphaRad / 2);
+      lAlpha.setAttribute('x', ax - 5);
+      lAlpha.setAttribute('y', ay + 4);
+      lAlpha.textContent = `${alphaDeg}°`;
+
+      /* Werte-Panel */
+      document.getElementById('alpha-label').textContent = `${alphaDeg}°`;
+      document.getElementById('val-sin').textContent = parseFloat(sinA.toFixed(3));
+      document.getElementById('val-cos').textContent = parseFloat(cosA.toFixed(3));
+      document.getElementById('val-tan').textContent = tanA === null ? '∞' : parseFloat(tanA.toFixed(3));
+
+      /* Identitäten-Check */
+      document.getElementById('check-pyth').textContent =
+        parseFloat((sinA*sinA + cosA*cosA).toFixed(4));
+      document.getElementById('check-tan').textContent =
+        tanA === null ? '∞' : parseFloat((sinA/cosA).toFixed(3));
+
+      /* Quadrant */
+      const q = alphaDeg < 90 ? 'I (sin+, cos+)' :
+                alphaDeg < 180 ? 'II (sin+, cos−)' :
+                alphaDeg < 270 ? 'III (sin−, cos−)' : 'IV (sin−, cos+)';
+      document.getElementById('quadrant').textContent = q;
+    }
+
+    function setLine(id,x1,y1,x2,y2){
+      const el=document.getElementById(id);
+      el.setAttribute('x1',x1); el.setAttribute('y1',y1);
+      el.setAttribute('x2',x2); el.setAttribute('y2',y2);
+    }
+
+    function setAlpha(deg){
+      document.getElementById('slider-alpha').value = deg;
+      updateKreis();
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       ABSCHNITT 2 – QUIZ
+    ════════════════════════════════════════════════════════════ */
+
+    /* Tabelle besonderer Winkel */
+    const WINKEL = [
+      { deg:0,   sin:'0',     cos:'1',    tan:'0'    },
+      { deg:30,  sin:'0,5',   cos:'0,87', tan:'0,58' },
+      { deg:45,  sin:'0,71',  cos:'0,71', tan:'1'    },
+      { deg:60,  sin:'0,87',  cos:'0,5',  tan:'1,73' },
+      { deg:90,  sin:'1',     cos:'0',    tan:'∞'    },
+    ];
+
+    let quizModus='wert', quizR=0, quizG=0;
+    function rnd(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+
+    function setQuizModus(m){
+      quizModus=m;
+      ['wert','dreieck','formel','vorzeichen'].forEach(x=>{
+        document.getElementById(`qm-${x}`).className=
+          `rounded-full px-4 py-1.5 text-xs font-semibold transition-colors `+
+          (x===m?'bg-emerald-400 text-slate-950':'bg-slate-700 text-slate-300 hover:bg-slate-600');
+      });
+      newQuizAufgabe();
+    }
+
+    function newQuizAufgabe(){
+      document.getElementById('quiz-feedback').textContent='';
+      const w=WINKEL[rnd(0,4)];
+      const fns=['sin','cos','tan'];
+      const fn=fns[rnd(0,2)];
+
+      if(quizModus==='wert'){
+        /* sin/cos/tan eines besonderen Winkels */
+        if(fn==='tan'&&w.tan==='∞'){newQuizAufgabe();return;}
+        const richtig=w[fn];
+        const falsch=WINKEL.filter(x=>x[fn]!==richtig).map(x=>x[fn]).slice(0,3);
+        document.getElementById('quiz-aufgabe').textContent=`${fn}(${w.deg}°) = ?`;
+        document.getElementById('quiz-hinweis').textContent=
+          fn==='sin'?'SOH: sin=Gegenkathete/Hypotenuse':
+          fn==='cos'?'CAH: cos=Ankathete/Hypotenuse':'TOA: tan=Gegenkathete/Ankathete';
+        renderQuizButtons([richtig,...falsch],richtig);
+
+      } else if(quizModus==='dreieck'){
+        /* Seite im rechtwinkligen Dreieck berechnen */
+        const hyp=rnd(5,15), alpha=30;
+        const geg=Math.round(hyp*Math.sin(30*Math.PI/180));
+        const richtig=String(geg);
+        const falsch=[geg+1,geg-1,Math.round(hyp*Math.cos(30*Math.PI/180))].filter(v=>v!==geg).map(String);
+        document.getElementById('quiz-aufgabe').textContent=
+          `Hypotenuse = ${hyp}, α = 30°. Gegenkathete = ?`;
+        document.getElementById('quiz-hinweis').textContent=
+          `sin(30°) = 0,5 → Gegenkathete = ${hyp} × 0,5`;
+        renderQuizButtons([richtig,...falsch.slice(0,3)],richtig);
+
+      } else if(quizModus==='formel'){
+        /* Welche Formel gehört zu sin? */
+        const richtig='Geg / Hyp';
+        const falsch=['Ank / Hyp','Geg / Ank','Hyp / Geg'];
+        document.getElementById('quiz-aufgabe').textContent='sin α = ?';
+        document.getElementById('quiz-hinweis').textContent='SOH: Sin = Gegenüber / Hypotenuse';
+        renderQuizButtons([richtig,...falsch],richtig);
+
+      } else {
+        /* Vorzeichen im Quadrant */
+        const quads=[
+          {q:'II (90°–180°)', fn:'sin α', richtig:'+', falsch:['-']},
+          {q:'III (180°–270°)', fn:'cos α', richtig:'-', falsch:['+']},
+          {q:'IV (270°–360°)', fn:'sin α', richtig:'-', falsch:['+']},
+          {q:'I (0°–90°)', fn:'cos α', richtig:'+', falsch:['-']},
+        ][rnd(0,3)];
+        document.getElementById('quiz-aufgabe').textContent=
+          `Im ${quads.q}: ${quads.fn} ist ...?`;
+        document.getElementById('quiz-hinweis').textContent=
+          'Merke: ASTC – All Students Take Coffee (Q1: alle +, Q2: sin+, Q3: tan+, Q4: cos+)';
+        renderQuizButtons([quads.richtig,...quads.falsch,'0'],quads.richtig);
+      }
+    }
+
+    function renderQuizButtons(opts,richtig){
+      for(let i=opts.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[opts[i],opts[j]]=[opts[j],opts[i]];}
+      document.getElementById('quiz-buttons').innerHTML=opts.slice(0,4).map(v=>
+        `<button class="btn-answer rounded-2xl border border-slate-700 bg-slate-800 px-3 py-4
+                        text-base font-bold text-slate-100 hover:border-emerald-400/50 transition-colors"
+                 data-val="${encodeURIComponent(v)}" data-richtig="${encodeURIComponent(richtig)}"
+                 onclick="checkQuiz(this)">${v}</button>`
+      ).join('');
+    }
+
+    function checkQuiz(btn){
+      const g=decodeURIComponent(btn.dataset.val),r=decodeURIComponent(btn.dataset.richtig);
+      quizG++;
+      document.querySelectorAll('#quiz-buttons .btn-answer').forEach(b=>{
+        b.disabled=true;
+        const v=decodeURIComponent(b.dataset.val);
+        if(v===r) b.classList.add('btn-correct'); else if(v===g) b.classList.add('btn-wrong');
+      });
+      const fb=document.getElementById('quiz-feedback');
+      if(g===r){quizR++;fb.textContent='✓ Richtig!';fb.className='text-center text-base font-semibold min-h-[1.5em] mb-4 text-emerald-400';}
+      else{fb.textContent=`✗ Falsch. Richtig: ${r}`;fb.className='text-center text-base font-semibold min-h-[1.5em] mb-4 text-red-400';}
+      document.getElementById('quiz-score').textContent=`${quizR} / ${quizG}`;
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       SACHAUFGABEN
+    ════════════════════════════════════════════════════════════ */
+    const SACHAUFGABEN=[
+      { kontext:'🏔️ Bergwandern',  frage:'Ein Hang steigt unter 30° an. Man läuft 400 m die Strecke entlang. Wie hoch steigt man auf (Höhendifferenz = Gegenkathete)?', formel:'sin(30°) × 400 = 0,5 × 400', antwort:'200', einheit:'m', hinweis:'h = 400 × sin(30°) = 400 × 0,5 = 200 m' },
+      { kontext:'🔭 Astronomie',   frage:'Ein Turm wirft einen Schatten von 10 m. Der Sonnenwinkel α = 60°. Wie hoch ist der Turm?', formel:'tan(60°) = Höhe / 10  →  Höhe = 10 × tan(60°)', antwort:'17', einheit:'m', hinweis:'10 × tan(60°) ≈ 10 × 1,73 ≈ 17,3 ≈ 17 m' },
+      { kontext:'✈️ Flugzeug',     frage:'Ein Flugzeug steigt mit α = 45° auf. Nach einer Flugstrecke von 200 m: Wie groß ist die Höhe (Gegenkathete)?', formel:'sin(45°) × 200 ≈ 0,71 × 200', antwort:'142', einheit:'m', hinweis:'200 × sin(45°) ≈ 200 × 0,71 ≈ 142 m' },
+      { kontext:'📐 Dreieck',      frage:'In einem rechtwinkligen Dreieck ist α = 30° und die Hypotenuse = 20. Wie lang ist die Ankathete?', formel:'cos(30°) × 20 ≈ 0,87 × 20', antwort:'17', einheit:'cm', hinweis:'20 × cos(30°) ≈ 20 × 0,87 ≈ 17,3 ≈ 17' },
+      { kontext:'🌊 Wellen',       frage:'sin(90°) = ? (exakter Wert)', formel:'Einheitskreis: P=(cos90°, sin90°)=(0,1)', antwort:'1', einheit:'', hinweis:'sin(90°) = 1 (höchster Punkt des Einheitskreises)' },
+    ];
+
+    let sachIdx=0,sachR=0,sachG=0;
+    function renderSachDots(){document.getElementById('sach-dots').innerHTML=SACHAUFGABEN.map((_,i)=>{let c='sach-dot';if(i<sachIdx)c+=' done';else if(i===sachIdx)c+=' current';return`<span class="${c}"></span>`;}).join('');}
+    function showSachAufgabe(){
+      if(sachIdx>=SACHAUFGABEN.length){document.getElementById('sach-karte').innerHTML=`<p class="text-center text-emerald-300 text-lg font-semibold py-6">🎉 Alle gelöst! ${sachR} von ${SACHAUFGABEN.length} richtig.</p>`;document.getElementById('sach-check-btn').classList.add('hidden');document.getElementById('sach-next-btn').classList.add('hidden');return;}
+      const a=SACHAUFGABEN[sachIdx];
+      document.getElementById('sach-kontext').textContent=a.kontext;
+      document.getElementById('sach-frage').textContent=a.frage;
+      document.getElementById('sach-formel').textContent=a.formel;
+      document.getElementById('sach-einheit').textContent=a.einheit;
+      document.getElementById('sach-input').value='';document.getElementById('sach-input').disabled=false;
+      document.getElementById('sach-feedback').textContent='';
+      document.getElementById('sach-check-btn').classList.remove('hidden');document.getElementById('sach-next-btn').classList.add('hidden');
+      const k=document.getElementById('sach-karte');k.classList.remove('anim-fadein');void k.offsetWidth;k.classList.add('anim-fadein');
+      renderSachDots();
+    }
+    function checkSach(){
+      const e=document.getElementById('sach-input').value.trim();sachG++;
+      document.getElementById('sach-input').disabled=true;document.getElementById('sach-check-btn').classList.add('hidden');document.getElementById('sach-next-btn').classList.remove('hidden');
+      const fb=document.getElementById('sach-feedback');
+      if(e===SACHAUFGABEN[sachIdx].antwort){sachR++;fb.textContent='✓ Richtig!';fb.className='text-center text-base font-semibold min-h-[1.5em] mb-4 text-emerald-400';}
+      else{fb.textContent=`✗ Falsch. ${SACHAUFGABEN[sachIdx].hinweis}`;fb.className='text-center text-base font-semibold min-h-[1.5em] mb-4 text-red-400';}
+      document.getElementById('sach-score').textContent=`${sachR} / ${sachG}`;
+    }
+    function nextSachAufgabe(){sachIdx++;showSachAufgabe();}
+
+    function init(){ updateKreis(); newQuizAufgabe(); showSachAufgabe(); }
+  </script>
+</body>
+</html>

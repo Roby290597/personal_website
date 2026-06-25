@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Potenzen &amp; Wurzeln – Klasse 10 | MathAcademy</title>
+
+  <link rel="icon"             href="../../favicon.ico" />
+  <link rel="apple-touch-icon" href="../../apple-touch-icon.png" />
+  <link rel="manifest"         href="../../site.webmanifest" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../../assets/css/style.css?v=1.0" />
+
+  <style>
+    @keyframes fadeInUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+    .anim-fadein { animation: fadeInUp 0.35s ease both; }
+
+    /* ── Potenzgesetze-Karten ──────────────────────────────── */
+    .gesetz-karte { cursor:pointer; transition: border-color 0.2s, background-color 0.2s; }
+    .gesetz-karte:hover { border-color: rgba(52,211,153,0.4); }
+    .gesetz-karte.aktiv { border-color:#34d399; background-color:rgba(52,211,153,0.06); }
+
+    .btn-answer:hover:not(:disabled) { filter: brightness(1.15); }
+    .btn-answer:disabled { opacity: 0.55; cursor: not-allowed; }
+    .btn-correct { background-color:#059669!important; border-color:#34d399!important; color:#fff!important; }
+    .btn-wrong   { background-color:#dc2626!important; border-color:#f87171!important; color:#fff!important; }
+
+    .sach-dot { width:10px; height:10px; border-radius:50%; background:#334155; transition:background-color 0.2s; }
+    .sach-dot.done    { background:#34d399; }
+    .sach-dot.current { background:#6ee7b7; box-shadow:0 0 0 3px rgba(52,211,153,0.25); }
+
+    .antwort-input:focus { outline:none; border-color:#34d399; box-shadow:0 0 0 3px rgba(52,211,153,0.2); }
+    input[type=range] { accent-color:#34d399; }
+  </style>
+</head>
+
+<body class="bg-slate-950 text-slate-100 min-h-screen">
+  <div id="topbar-container"></div>
+
+  <main class="max-w-4xl mx-auto px-4 pb-16 pt-6">
+
+    <a href="/academy.html"
+       class="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-emerald-300 transition-colors mb-6">
+      ← Zurück zur Akademie
+    </a>
+
+    <div class="mb-10">
+      <span class="text-xs font-semibold uppercase tracking-widest text-emerald-400 mb-2 block">Klasse 10 · Vertiefung</span>
+      <h1 class="text-3xl sm:text-4xl font-bold mb-3">Potenzen &amp; Wurzeln</h1>
+      <p class="text-slate-400 text-base max-w-xl">
+        Potenzgesetze interaktiv erkunden, Wurzeln vereinfachen –
+        mit Rechner, Quiz und Sachaufgaben.
+      </p>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════
+         ABSCHNITT 1: POTENZGESETZE-RECHNER
+         Zeigt alle 5 Potenzgesetze als klickbare Karten.
+         Für das gewählte Gesetz können Basis/Exponent
+         mit Slidern eingestellt werden; das Ergebnis und
+         die angewandte Formel werden live angezeigt.
+    ════════════════════════════════════════════════════ -->
+    <section class="mb-14" aria-labelledby="rechner-title">
+      <div class="flex items-center gap-3 mb-6">
+        <span class="w-8 h-8 rounded-full bg-emerald-400 text-slate-950 text-sm font-bold flex items-center justify-center flex-shrink-0">1</span>
+        <h2 id="rechner-title" class="text-xl font-semibold">Potenzgesetze – interaktiver Rechner</h2>
+      </div>
+
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+
+        <!-- Gesetze-Karten -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
+          <!--
+            5 Potenzgesetze als auswählbare Karten.
+            data-id wird in setGesetz() ausgewertet.
+          -->
+          <div class="gesetz-karte rounded-2xl border border-slate-700 bg-slate-800/50 p-4 aktiv"
+               data-id="mult" onclick="setGesetz(this)">
+            <p class="text-xs text-slate-500 mb-1">Produkt gleicher Basis</p>
+            <p class="font-mono text-sm font-bold text-emerald-300">aⁿ · aᵐ = aⁿ⁺ᵐ</p>
+          </div>
+          <div class="gesetz-karte rounded-2xl border border-slate-700 bg-slate-800/50 p-4"
+               data-id="div" onclick="setGesetz(this)">
+            <p class="text-xs text-slate-500 mb-1">Quotient gleicher Basis</p>
+            <p class="font-mono text-sm font-bold text-blue-300">aⁿ ÷ aᵐ = aⁿ⁻ᵐ</p>
+          </div>
+          <div class="gesetz-karte rounded-2xl border border-slate-700 bg-slate-800/50 p-4"
+               data-id="pot" onclick="setGesetz(this)">
+            <p class="text-xs text-slate-500 mb-1">Potenz einer Potenz</p>
+            <p class="font-mono text-sm font-bold text-orange-300">(aⁿ)ᵐ = aⁿ·ᵐ</p>
+          </div>
+          <div class="gesetz-karte rounded-2xl border border-slate-700 bg-slate-800/50 p-4"
+               data-id="neg" onclick="setGesetz(this)">
+            <p class="text-xs text-slate-500 mb-1">Negativer Exponent</p>
+            <p class="font-mono text-sm font-bold text-purple-300">a⁻ⁿ = 1 / aⁿ</p>
+          </div>
+          <div class="gesetz-karte rounded-2xl border border-slate-700 bg-slate-800/50 p-4"
+               data-id="wur" onclick="setGesetz(this)">
+            <p class="text-xs text-slate-500 mb-1">Wurzel als Potenz</p>
+            <p class="font-mono text-sm font-bold text-pink-300">ⁿ√a = a^(1/n)</p>
+          </div>
+        </div>
+
+        <!-- Rechner-Panel -->
+        <div class="rounded-2xl bg-slate-800/60 p-5">
+
+          <!-- Slider für Basis a -->
+          <div class="flex justify-between text-xs mb-1">
+            <span class="text-slate-400">Basis <span class="font-mono font-bold text-emerald-300">a</span></span>
+            <span id="lbl-a" class="text-emerald-300 font-bold">2</span>
+          </div>
+          <input id="slider-a" type="range" min="2" max="10" value="2" step="1"
+                 class="w-full h-2 rounded-full cursor-pointer mb-4" oninput="updateRechner()"/>
+
+          <!-- Slider für Exponent n -->
+          <div class="flex justify-between text-xs mb-1">
+            <span class="text-slate-400">Exponent <span class="font-mono font-bold text-emerald-300">n</span></span>
+            <span id="lbl-n" class="text-emerald-300 font-bold">3</span>
+          </div>
+          <input id="slider-n" type="range" min="1" max="6" value="3" step="1"
+                 class="w-full h-2 rounded-full cursor-pointer mb-4" oninput="updateRechner()"/>
+
+          <!-- Slider für zweiten Exponenten m (nur bei mult/div/pot sichtbar) -->
+          <div id="m-row">
+            <div class="flex justify-between text-xs mb-1">
+              <span class="text-slate-400">Exponent <span class="font-mono font-bold text-blue-300">m</span></span>
+              <span id="lbl-m" class="text-blue-300 font-bold">2</span>
+            </div>
+            <input id="slider-m" type="range" min="1" max="6" value="2" step="1"
+                   class="w-full h-2 rounded-full cursor-pointer mb-4" oninput="updateRechner()"/>
+          </div>
+
+          <!-- Ergebnis-Zeile -->
+          <div class="rounded-2xl bg-slate-900/60 p-4 font-mono text-center">
+            <p id="rechner-formel" class="text-lg font-bold text-emerald-300 mb-1"></p>
+            <p id="rechner-erklaer" class="text-xs text-slate-500"></p>
+          </div>
+        </div>
+
+        <!-- Wurzel-Vereinfacher (immer sichtbar) -->
+        <div class="mt-5 rounded-2xl bg-slate-800/40 p-5">
+          <p class="text-xs text-slate-500 uppercase tracking-wide mb-3">Wurzel vereinfachen – √n</p>
+          <div class="flex items-center gap-3 flex-wrap">
+            <span class="text-slate-400 text-sm">√</span>
+            <input id="wur-input" type="number" min="1" max="1000" value="72"
+                   class="w-28 rounded-2xl border border-slate-700 bg-slate-800 px-3 py-2 text-lg font-bold font-mono text-slate-100 focus:outline-none focus:border-emerald-400 transition-colors"
+                   oninput="vereinfacheWurzel()"/>
+            <span class="text-2xl text-slate-600">=</span>
+            <span id="wur-ergeb" class="text-xl font-bold text-pink-300 font-mono"></span>
+          </div>
+          <p id="wur-schritte" class="text-xs text-slate-500 mt-2 font-mono"></p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════
+         ABSCHNITT 2: QUIZ
+    ════════════════════════════════════════════════════ -->
+    <section class="mb-14" aria-labelledby="quiz-title">
+      <div class="flex items-center gap-3 mb-6">
+        <span class="w-8 h-8 rounded-full bg-emerald-400 text-slate-950 text-sm font-bold flex items-center justify-center flex-shrink-0">2</span>
+        <h2 id="quiz-title" class="text-xl font-semibold">Quiz – Potenzen &amp; Wurzeln</h2>
+      </div>
+
+      <div class="flex gap-2 mb-5 flex-wrap">
+        <button id="qm-gesetz"   onclick="setQuizModus('gesetz')"   class="rounded-full px-4 py-1.5 text-xs font-semibold bg-emerald-400 text-slate-950">Gesetz erkennen</button>
+        <button id="qm-rechnen"  onclick="setQuizModus('rechnen')"  class="rounded-full px-4 py-1.5 text-xs font-semibold bg-slate-700 text-slate-300 hover:bg-slate-600">Ausrechnen</button>
+        <button id="qm-wurzel"   onclick="setQuizModus('wurzel')"   class="rounded-full px-4 py-1.5 text-xs font-semibold bg-slate-700 text-slate-300 hover:bg-slate-600">Wurzeln</button>
+        <button id="qm-negexp"   onclick="setQuizModus('negexp')"   class="rounded-full px-4 py-1.5 text-xs font-semibold bg-slate-700 text-slate-300 hover:bg-slate-600">Neg. Exponent</button>
+      </div>
+
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+        <div class="flex justify-end mb-4">
+          <span class="text-sm font-semibold text-slate-500">Punkte:&nbsp;<span id="quiz-score" class="text-emerald-300">0 / 0</span></span>
+        </div>
+        <div id="quiz-karte" class="mb-6 text-center anim-fadein">
+          <p id="quiz-aufgabe" class="text-2xl font-bold text-slate-100 mb-2 leading-relaxed font-mono"></p>
+          <p id="quiz-hinweis" class="text-sm text-slate-500"></p>
+        </div>
+        <div id="quiz-buttons" class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5"></div>
+        <p id="quiz-feedback" class="text-center text-base font-semibold min-h-[1.5em] mb-4" aria-live="polite"></p>
+        <div class="flex justify-center">
+          <button onclick="newQuizAufgabe()"
+                  class="rounded-full border border-slate-700 text-slate-300 font-semibold px-6 py-2.5 text-sm hover:border-emerald-400/50 transition-colors">
+            Neue Aufgabe
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════
+         ABSCHNITT 3: SACHAUFGABEN
+    ════════════════════════════════════════════════════ -->
+    <section class="mb-14" aria-labelledby="sach-title">
+      <div class="flex items-center gap-3 mb-6">
+        <span class="w-8 h-8 rounded-full bg-emerald-400 text-slate-950 text-sm font-bold flex items-center justify-center flex-shrink-0">3</span>
+        <h2 id="sach-title" class="text-xl font-semibold">Sachaufgaben</h2>
+      </div>
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+        <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
+          <div class="flex gap-2" id="sach-dots"></div>
+          <span class="text-sm font-semibold text-slate-500">Punkte:&nbsp;<span id="sach-score" class="text-emerald-300">0 / 0</span></span>
+        </div>
+        <div id="sach-karte" class="mb-5 anim-fadein">
+          <p id="sach-kontext" class="text-xs font-semibold uppercase tracking-widest text-emerald-400/70 mb-2"></p>
+          <p id="sach-frage"   class="text-lg font-semibold text-slate-200 mb-2 leading-relaxed"></p>
+          <p id="sach-formel"  class="font-mono text-sm text-emerald-300/70 mb-4"></p>
+          <div class="flex items-center gap-3 flex-wrap">
+            <input id="sach-input" type="text" inputmode="decimal" placeholder="Deine Antwort"
+                   class="antwort-input w-44 rounded-2xl border border-slate-700 bg-slate-800 px-4 py-3 text-slate-100 text-lg font-bold transition-colors"
+                   onkeydown="if(event.key==='Enter') checkSach()" />
+            <span id="sach-einheit" class="text-base font-semibold text-emerald-300"></span>
+          </div>
+        </div>
+        <p id="sach-feedback" class="text-center text-base font-semibold min-h-[1.5em] mb-4" aria-live="polite"></p>
+        <div class="flex gap-3 justify-center">
+          <button id="sach-check-btn" onclick="checkSach()"
+                  class="rounded-full bg-emerald-400 text-slate-950 font-semibold px-6 py-2.5 text-sm hover:bg-emerald-300 transition-colors">Prüfen</button>
+          <button id="sach-next-btn"  onclick="nextSachAufgabe()"
+                  class="hidden rounded-full border border-slate-700 text-slate-300 font-semibold px-6 py-2.5 text-sm hover:border-emerald-400/50 transition-colors">Nächste Aufgabe →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- MERKHILFE -->
+    <section class="mb-10">
+      <h2 class="text-sm font-semibold text-slate-300 mb-4 uppercase tracking-wide">Merkhilfe – Potenzgesetze</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-5">
+          <h3 class="font-semibold text-emerald-300 mb-3 text-sm">🔢 Gleiche Basis</h3>
+          <ul class="text-slate-400 text-sm space-y-2 font-mono">
+            <li>aⁿ · aᵐ = a<span class="text-emerald-300">ⁿ⁺ᵐ</span></li>
+            <li>aⁿ ÷ aᵐ = a<span class="text-emerald-300">ⁿ⁻ᵐ</span></li>
+            <li>(aⁿ)ᵐ = a<span class="text-emerald-300">ⁿ·ᵐ</span></li>
+          </ul>
+        </div>
+        <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-5">
+          <h3 class="font-semibold text-blue-300 mb-3 text-sm">📐 Besondere Exponenten</h3>
+          <ul class="text-slate-400 text-sm space-y-2 font-mono">
+            <li>a⁰ = 1  (a ≠ 0)</li>
+            <li>a¹ = a</li>
+            <li>a⁻ⁿ = 1 / aⁿ</li>
+          </ul>
+        </div>
+        <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-5">
+          <h3 class="font-semibold text-pink-300 mb-3 text-sm">√ Wurzeln</h3>
+          <ul class="text-slate-400 text-sm space-y-2 font-mono">
+            <li>√a = a^(1/2)</li>
+            <li>ⁿ√a = a^(1/n)</li>
+            <li>√(a·b) = √a · √b</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <footer class="py-6 text-center text-xs text-slate-500">© <span id="y"></span> Brandon Hank · Düsseldorf</footer>
+  </main>
+
+  <script>
+    window.__i18nBase = '../../';
+    fetch('../../topbar.html')
+      .then(r => r.text())
+      .then(html => {
+        document.getElementById('topbar-container').innerHTML = html;
+        const s = document.createElement('script');
+        s.src = '../../assets/js/script.js';
+        s.onload = init;
+        document.body.appendChild(s);
+      });
+
+    /* ════════════════════════════════════════════════════════════
+       ABSCHNITT 1 – POTENZGESETZE-RECHNER
+    ════════════════════════════════════════════════════════════ */
+
+    /* Aktuell ausgewähltes Gesetz */
+    let aktivesGesetz = 'mult';
+
+    /*
+     * setGesetz(el)
+     * Markiert die angeklickte Karte als aktiv,
+     * blendet den m-Slider bei Bedarf ein/aus
+     * und aktualisiert den Rechner.
+     */
+    function setGesetz(el){
+      document.querySelectorAll('.gesetz-karte').forEach(k=>k.classList.remove('aktiv'));
+      el.classList.add('aktiv');
+      aktivesGesetz = el.dataset.id;
+      /* m-Slider nur bei mult, div, pot nötig */
+      document.getElementById('m-row').style.display =
+        ['mult','div','pot'].includes(aktivesGesetz) ? '' : 'none';
+      updateRechner();
+    }
+
+    /*
+     * updateRechner()
+     * Liest Slider-Werte, berechnet das Ergebnis für
+     * das aktive Potenzgesetz und zeigt Formel + Wert.
+     */
+    function updateRechner(){
+      const a = parseInt(document.getElementById('slider-a').value);
+      const n = parseInt(document.getElementById('slider-n').value);
+      const m = parseInt(document.getElementById('slider-m').value);
+      document.getElementById('lbl-a').textContent = a;
+      document.getElementById('lbl-n').textContent = n;
+      document.getElementById('lbl-m').textContent = m;
+
+      let formel='', erklaer='';
+
+      if(aktivesGesetz==='mult'){
+        const links = Math.pow(a,n) * Math.pow(a,m);
+        const exp   = n+m;
+        formel = `${a}^${n} · ${a}^${m} = ${a}^${exp} = ${links}`;
+        erklaer= `Exponent addieren: ${n} + ${m} = ${exp}`;
+
+      } else if(aktivesGesetz==='div'){
+        const exp = n - m;
+        const ergebnis = exp >= 0 ? Math.pow(a,exp) : `1/${Math.pow(a,-exp)}`;
+        formel = `${a}^${n} ÷ ${a}^${m} = ${a}^${n-m} = ${ergebnis}`;
+        erklaer= `Exponent subtrahieren: ${n} − ${m} = ${n-m}`;
+
+      } else if(aktivesGesetz==='pot'){
+        const exp = n*m;
+        const ergebnis = Math.pow(a, exp);
+        formel = `(${a}^${n})^${m} = ${a}^${exp} = ${ergebnis}`;
+        erklaer= `Exponenten multiplizieren: ${n} × ${m} = ${exp}`;
+
+      } else if(aktivesGesetz==='neg'){
+        const ergebnis = 1 / Math.pow(a, n);
+        formel = `${a}^−${n} = 1/${a}^${n} = 1/${Math.pow(a,n)} ≈ ${ergebnis.toFixed(4)}`;
+        erklaer= `Negativer Exponent: Kehrwert bilden`;
+
+      } else { /* wur */
+        const ergebnis = Math.pow(a, 1/n);
+        formel = `^${n}√${a} = ${a}^(1/${n}) ≈ ${ergebnis.toFixed(4)}`;
+        erklaer= `Wurzel als Potenz mit gebrochenem Exponenten`;
+      }
+
+      document.getElementById('rechner-formel').textContent  = formel;
+      document.getElementById('rechner-erklaer').textContent = erklaer;
+    }
+
+    /*
+     * vereinfacheWurzel()
+     * Vereinfacht √n durch Ausklammern von Quadratzahlen.
+     * Algorithmus: Primfaktorzerlegung, Paare herausziehen.
+     */
+    function vereinfacheWurzel(){
+      const n = parseInt(document.getElementById('wur-input').value)||1;
+      if(n <= 0){ document.getElementById('wur-ergeb').textContent='–'; return; }
+
+      /* Primfaktoren bestimmen */
+      let rest = n, aussen = 1;
+      let schritte = [];
+      for(let p = 2; p * p <= rest; p++){
+        let count = 0;
+        while(rest % p === 0){ count++; rest = Math.floor(rest/p); }
+        if(count >= 2){
+          aussen *= Math.pow(p, Math.floor(count/2));
+          if(count % 2 === 1) schritte.push(`${p}^1`);
+          schritte.push(`${p}^${Math.floor(count/2)} ausklammern`);
+        } else if(count === 1){
+          schritte.push(`${p}^1`);
+        }
+      }
+      if(rest > 1) schritte.push(`${rest} verbleibt`);
+
+      const innen = rest * (n > 1 ? (n/(aussen*aussen*rest) > 1 ? n/(aussen*aussen*rest) : 1) : 1);
+      /* vereinfachte Ausgabe */
+      const innerFaktor = Math.round(n / (aussen * aussen));
+      const ausgabe = aussen > 1
+        ? (innerFaktor === 1 ? `${aussen}` : `${aussen}·√${innerFaktor}`)
+        : `√${n}`;
+
+      document.getElementById('wur-ergeb').textContent = ausgabe;
+      document.getElementById('wur-schritte').textContent =
+        aussen > 1 ? `√${n} = ${aussen}·√${innerFaktor}` : `Kann nicht vereinfacht werden`;
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       ABSCHNITT 2 – QUIZ
+    ════════════════════════════════════════════════════════════ */
+
+    let quizModus='gesetz', quizR=0, quizG=0;
+    function rnd(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+    function pow(a,n){return Math.pow(a,n);}
+
+    function setQuizModus(m){
+      quizModus=m;
+      ['gesetz','rechnen','wurzel','negexp'].forEach(x=>{
+        document.getElementById(`qm-${x}`).className=
+          `rounded-full px-4 py-1.5 text-xs font-semibold transition-colors `+
+          (x===m?'bg-emerald-400 text-slate-950':'bg-slate-700 text-slate-300 hover:bg-slate-600');
+      });
+      newQuizAufgabe();
+    }
+
+    function newQuizAufgabe(){
+      document.getElementById('quiz-feedback').textContent='';
+      const a=rnd(2,5), n=rnd(2,4), m=rnd(1,3);
+
+      if(quizModus==='gesetz'){
+        const gesetze=[
+          {frage:`${a}^${n} · ${a}^${m} = ?`, richtig:`${a}^${n+m}`, falsch:[`${a}^${n*m}`,`${a}^${n-m}`,`${a+a}^${n+m}`]},
+          {frage:`(${a}^${n})^${m} = ?`,       richtig:`${a}^${n*m}`, falsch:[`${a}^${n+m}`,`${a+1}^${n*m}`,`${a}^${m}`]},
+          {frage:`${a}^${n} ÷ ${a}^${m} = ?`,  richtig:`${a}^${n-m}`, falsch:[`${a}^${n+m}`,`${a}^${n*m}`,`1`]},
+        ][rnd(0,2)];
+        document.getElementById('quiz-aufgabe').textContent=gesetze.frage;
+        document.getElementById('quiz-hinweis').textContent='Welches Potenzgesetz gilt hier?';
+        renderQuizButtons([gesetze.richtig,...gesetze.falsch],gesetze.richtig);
+
+      } else if(quizModus==='rechnen'){
+        const ergebnis = pow(a,n);
+        const falsch=[ergebnis+1, ergebnis-1, a*n].filter(v=>v!==ergebnis).map(String);
+        document.getElementById('quiz-aufgabe').textContent=`${a}^${n} = ?`;
+        document.getElementById('quiz-hinweis').textContent=`${a} × `.repeat(n).slice(0,-3)+` = ?`;
+        renderQuizButtons([String(ergebnis),...falsch.slice(0,3)],String(ergebnis));
+
+      } else if(quizModus==='wurzel'){
+        const quadrat = [4,9,16,25,36,49,64,81,100][rnd(0,8)];
+        const wur = Math.sqrt(quadrat);
+        const falsch=[wur+1,wur-1,wur+2].filter(v=>v>0).map(String);
+        document.getElementById('quiz-aufgabe').textContent=`√${quadrat} = ?`;
+        document.getElementById('quiz-hinweis').textContent=`Welche Zahl mit sich selbst multipliziert ${quadrat} ergibt?`;
+        renderQuizButtons([String(wur),...falsch.slice(0,3)],String(wur));
+
+      } else {
+        /* Negativer Exponent: a^(-n) = 1/a^n */
+        const ergebnis = `1/${pow(a,n)}`;
+        const falsch=[`-${pow(a,n)}`,`1/${a}`,`${pow(a,n)}`];
+        document.getElementById('quiz-aufgabe').textContent=`${a}^-${n} = ?`;
+        document.getElementById('quiz-hinweis').textContent=`Kehrwert: 1 / ${a}^${n} = 1/${pow(a,n)}`;
+        renderQuizButtons([ergebnis,...falsch],ergebnis);
+      }
+    }
+
+    function renderQuizButtons(opts,richtig){
+      for(let i=opts.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[opts[i],opts[j]]=[opts[j],opts[i]];}
+      document.getElementById('quiz-buttons').innerHTML=opts.slice(0,4).map(v=>
+        `<button class="btn-answer rounded-2xl border border-slate-700 bg-slate-800 px-3 py-4
+                        text-base font-bold text-slate-100 hover:border-emerald-400/50 transition-colors font-mono"
+                 data-val="${encodeURIComponent(v)}" data-richtig="${encodeURIComponent(richtig)}"
+                 onclick="checkQuiz(this)">${v}</button>`
+      ).join('');
+    }
+
+    function checkQuiz(btn){
+      const g=decodeURIComponent(btn.dataset.val),r=decodeURIComponent(btn.dataset.richtig);
+      quizG++;
+      document.querySelectorAll('#quiz-buttons .btn-answer').forEach(b=>{
+        b.disabled=true;
+        const v=decodeURIComponent(b.dataset.val);
+        if(v===r)b.classList.add('btn-correct');else if(v===g)b.classList.add('btn-wrong');
+      });
+      const fb=document.getElementById('quiz-feedback');
+      if(g===r){quizR++;fb.textContent='✓ Richtig!';fb.className='text-center text-base font-semibold min-h-[1.5em] mb-4 text-emerald-400';}
+      else{fb.textContent=`✗ Falsch. Richtig: ${r}`;fb.className='text-center text-base font-semibold min-h-[1.5em] mb-4 text-red-400';}
+      document.getElementById('quiz-score').textContent=`${quizR} / ${quizG}`;
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       SACHAUFGABEN
+    ════════════════════════════════════════════════════════════ */
+    const SACHAUFGABEN=[
+      { kontext:'🦠 Bakterien',   frage:'Eine Bakterie verdoppelt sich jede Stunde. Nach 8 Stunden: Wie viele Bakterien gibt es? (2^8)', formel:'2^8 = 2·2·2·2·2·2·2·2', antwort:'256', einheit:'', hinweis:'2^8 = 256' },
+      { kontext:'💾 Datenspeicher', frage:'Ein Speicher hat 2^10 Byte = ? KB.', formel:'2^10 = 1024', antwort:'1024', einheit:'Byte', hinweis:'2^10 = 1024 Byte = 1 KB' },
+      { kontext:'🌍 Physik',      frage:'Die Schallgeschwindigkeit beträgt 3^4 · 3 m/s (= 3^5). Wie viel ist 3^5?', formel:'3^5 = 3·3·3·3·3', antwort:'243', einheit:'', hinweis:'3^5 = 243' },
+      { kontext:'📐 Geometrie',   frage:'Ein Würfel hat Kantenlänge 5. Volumen = 5^? Welcher Exponent? (Antwort: der Exponent)', formel:'V = a^3', antwort:'3', einheit:'', hinweis:'Volumen = Kantenlänge^3' },
+      { kontext:'🔬 Wissenschaft', frage:'2^(-3) = 1/? (Nenner angeben)', formel:'2^-3 = 1/2^3', antwort:'8', einheit:'', hinweis:'2^-3 = 1/8, Nenner = 8' },
+    ];
+
+    let sachIdx=0,sachR=0,sachG=0;
+    function renderSachDots(){document.getElementById('sach-dots').innerHTML=SACHAUFGABEN.map((_,i)=>{let c='sach-dot';if(i<sachIdx)c+=' done';else if(i===sachIdx)c+=' current';return`<span class="${c}"></span>`;}).join('');}
+    function showSachAufgabe(){
+      if(sachIdx>=SACHAUFGABEN.length){document.getElementById('sach-karte').innerHTML=`<p class="text-center text-emerald-300 text-lg font-semibold py-6">🎉 Alle gelöst! ${sachR} von ${SACHAUFGABEN.length} richtig.</p>`;document.getElementById('sach-check-btn').classList.add('hidden');document.getElementById('sach-next-btn').classList.add('hidden');return;}
+      const a=SACHAUFGABEN[sachIdx];
+      document.getElementById('sach-kontext').textContent=a.kontext;
+      document.getElementById('sach-frage').textContent=a.frage;
+      document.getElementById('sach-formel').textContent=a.formel;
+      document.getElementById('sach-einheit').textContent=a.einheit;
+      document.getElementById('sach-input').value='';document.getElementById('sach-input').disabled=false;
+      document.getElementById('sach-feedback').textContent='';
+      document.getElementById('sach-check-btn').classList.remove('hidden');document.getElementById('sach-next-btn').classList.add('hidden');
+      const k=document.getElementById('sach-karte');k.classList.remove('anim-fadein');void k.offsetWidth;k.classList.add('anim-fadein');
+      renderSachDots();
+    }
+    function checkSach(){
+      const e=document.getElementById('sach-input').value.trim();sachG++;
+      document.getElementById('sach-input').disabled=true;document.getElementById('sach-check-btn').classList.add('hidden');document.getElementById('sach-next-btn').classList.remove('hidden');
+      const fb=document.getElementById('sach-feedback');
+      if(e===SACHAUFGABEN[sachIdx].antwort){sachR++;fb.textContent='✓ Richtig!';fb.className='text-center text-base font-semibold min-h-[1.5em] mb-4 text-emerald-400';}
+      else{fb.textContent=`✗ Falsch. ${SACHAUFGABEN[sachIdx].hinweis}`;fb.className='text-center text-base font-semibold min-h-[1.5em] mb-4 text-red-400';}
+      document.getElementById('sach-score').textContent=`${sachR} / ${sachG}`;
+    }
+    function nextSachAufgabe(){sachIdx++;showSachAufgabe();}
+
+    function init(){
+      setGesetz(document.querySelector('.gesetz-karte.aktiv'));
+      vereinfacheWurzel();
+      newQuizAufgabe();
+      showSachAufgabe();
+    }
+  </script>
+</body>
+</html>
