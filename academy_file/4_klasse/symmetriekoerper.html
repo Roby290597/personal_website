@@ -1,0 +1,1438 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <!-- Zeichensatz und Viewport für mobile Geräte -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Symmetrie &amp; Körper – Klasse 4 | MathAcademy</title>
+
+  <!-- Tailwind CSS über CDN – kein Build-Schritt nötig -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Eigene Stylesheet-Datei für Theme-Variablen und globale Stile -->
+  <link rel="stylesheet" href="../../style.css?v=1.0" />
+
+  <style>
+    /* ── Animationen ──────────────────────────────────────────── */
+
+    /* Sanftes Erscheinen einer Karte von unten – für neue Quiz-Runden */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Kurzes Wackeln bei falscher Antwort – visuelles Feedback */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%       { transform: translateX(-8px); }
+      40%       { transform: translateX(8px); }
+      60%       { transform: translateX(-6px); }
+      80%       { transform: translateX(6px); }
+    }
+
+    /* Pulsieren beim Auswählen einer Symmetrieachsen-Karte */
+    @keyframes pulse-border {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(52,211,153,0.4); }
+      50%       { box-shadow: 0 0 0 8px rgba(52,211,153,0); }
+    }
+
+    /* Einblenden einer neuen Quiz-Frage mit leichter Bewegung */
+    .anim-fadein {
+      animation: fadeInUp 0.35s ease both;
+    }
+
+    /* Schütteln bei falscher Antwort */
+    .anim-shake {
+      animation: shake 0.4s ease;
+    }
+
+    /* Ausgewählte Symmetrie-Karte – grüner Leuchtrand */
+    .sym-card-selected {
+      border-color: #34d399 !important;
+      box-shadow: 0 0 0 3px rgba(52,211,153,0.25);
+      animation: pulse-border 1.8s ease infinite;
+    }
+
+    /* SVG-Elemente geben Klicks an die übergeordnete Karte weiter */
+    .sym-card svg, .koerper-svg svg {
+      pointer-events: none;
+    }
+
+    /* Quiz-Antwort-Button beim Hovern leicht aufhellen */
+    .btn-answer:hover:not(:disabled) {
+      filter: brightness(1.15);
+    }
+
+    /* Deaktivierter Button nach dem Klick – kein zweiter Versuch */
+    .btn-answer:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    /* Richtiger Antwort-Button – grün hervorheben */
+    .btn-correct {
+      background-color: #059669 !important;
+      border-color: #34d399 !important;
+      color: #fff !important;
+    }
+
+    /* Falscher Antwort-Button – rot hervorheben */
+    .btn-wrong {
+      background-color: #dc2626 !important;
+      border-color: #f87171 !important;
+      color: #fff !important;
+    }
+
+    /* Symmetrieachsen-Linien sanft einblenden */
+    .sym-axis {
+      transition: opacity 0.3s ease;
+    }
+
+    /* Theorie-Box – hellerer Hintergrund für Lerninhalte */
+    .theory-card {
+      background: linear-gradient(135deg, rgba(16,185,129,0.08), rgba(15,23,42,0.6));
+      border-color: rgba(52,211,153,0.25);
+    }
+
+    /* Körper-Karte für den Quiz – isometrische 3D-Zeichnung */
+    .koerper-display {
+      background: rgba(15,23,42,0.7);
+      border: 2px dashed rgba(52,211,153,0.3);
+      border-radius: 1.5rem;
+    }
+
+    /* Score-Anzeige – kurz aufleuchten bei neuem Punkt */
+    @keyframes score-pop {
+      0%   { transform: scale(1); }
+      50%  { transform: scale(1.25); color: #34d399; }
+      100% { transform: scale(1); }
+    }
+    .score-pop {
+      animation: score-pop 0.4s ease;
+    }
+
+    /* Fortschrittsbalken für den Eigenschaften-Quiz */
+    .progress-bar {
+      transition: width 0.4s ease;
+      background: linear-gradient(90deg, #059669, #34d399);
+    }
+
+    /* Tooltip-Stil für Achsenbeschriftungen */
+    .axes-badge {
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 999px;
+    }
+  </style>
+</head>
+
+<body class="bg-slate-950 text-slate-100 min-h-screen">
+
+  <!-- Topbar-Container – wird per JS mit ../../topbar.html befüllt -->
+  <div id="topbar-container"></div>
+
+  <!-- ══════════════════════════════════════════════════
+       HAUPT-INHALT DER LEKTION
+  ══════════════════════════════════════════════════ -->
+  <main class="max-w-4xl mx-auto px-4 pb-20 pt-6">
+
+    <!-- ── Zurück-Link zur Akademie-Übersicht ── -->
+    <a href="../../academy.html"
+       class="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-emerald-300 transition-colors mb-6">
+      ← Zurück zur Akademie
+    </a>
+
+    <!-- ── Seiten-Titel und Beschreibung ── -->
+    <div class="mb-10">
+      <!-- Fach-Badge: zeigt Klasse und Themengebiet -->
+      <span class="text-xs font-semibold uppercase tracking-widest text-emerald-400 mb-2 block">
+        Klasse 4 · Grundlagen
+      </span>
+      <!-- Haupt-Überschrift der Lektion -->
+      <h1 class="text-3xl sm:text-4xl font-bold text-slate-100 mb-3">
+        Symmetrie &amp; Körper
+      </h1>
+      <!-- Kurze Erklärung was in dieser Lektion gelernt wird -->
+      <p class="text-slate-400 text-base max-w-xl">
+        Entdecke Symmetrieachsen bei verschiedenen Formen und lerne die wichtigsten
+        geometrischen Körper mit ihren Eigenschaften kennen.
+      </p>
+    </div>
+
+    <!-- ════════════════════════════════════════════════
+         THEORIE-BOX: Wichtige Begriffe erklärt
+    ════════════════════════════════════════════════ -->
+    <section class="mb-12" aria-labelledby="theory-title">
+
+      <div class="flex items-center gap-3 mb-5">
+        <!-- Runde Nummer als visueller Ankerpunkt -->
+        <span class="w-8 h-8 rounded-full bg-emerald-400 text-slate-950 text-sm font-bold
+                     flex items-center justify-center flex-shrink-0">
+          📖
+        </span>
+        <h2 id="theory-title" class="text-xl font-semibold text-slate-100">
+          Das lernst du heute
+        </h2>
+      </div>
+
+      <!-- Drei Theorie-Karten nebeneinander (oder untereinander auf kleinen Bildschirmen) -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+
+        <!-- Theorie-Karte 1: Was ist eine Symmetrieachse? -->
+        <div class="theory-card rounded-3xl border p-5">
+          <!-- Grüner Balken oben als Dekoration -->
+          <div class="w-10 h-1 bg-emerald-400 rounded-full mb-3"></div>
+          <h3 class="text-sm font-bold text-emerald-300 mb-2">Symmetrieachse</h3>
+          <!-- Einfache Erklärung in Kindersprache -->
+          <p class="text-slate-300 text-xs leading-relaxed">
+            Eine Linie, an der man die Figur falten kann, sodass beide Hälften
+            deckungsgleich sind – wie ein Spiegel!
+          </p>
+        </div>
+
+        <!-- Theorie-Karte 2: Unterschied 2D und 3D -->
+        <div class="theory-card rounded-3xl border p-5">
+          <div class="w-10 h-1 bg-emerald-400 rounded-full mb-3"></div>
+          <h3 class="text-sm font-bold text-emerald-300 mb-2">Körper vs. Fläche</h3>
+          <!-- Klare Unterscheidung zwischen 2D und 3D -->
+          <p class="text-slate-300 text-xs leading-relaxed">
+            Körper sind dreidimensional (3D) – sie haben Länge, Breite und Höhe.
+            Flächen sind zweidimensional (2D) – sie sind flach.
+          </p>
+        </div>
+
+        <!-- Theorie-Karte 3: Der Würfel und seine Eigenschaften -->
+        <div class="theory-card rounded-3xl border p-5">
+          <div class="w-10 h-1 bg-emerald-400 rounded-full mb-3"></div>
+          <h3 class="text-sm font-bold text-emerald-300 mb-2">Der Würfel</h3>
+          <!-- Zahlen des Würfels – Flächen, Kanten, Ecken -->
+          <p class="text-slate-300 text-xs leading-relaxed">
+            6 Flächen · 12 Kanten · 8 Ecken<br>
+            Alle Flächen sind gleich große Quadrate.
+          </p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         ABSCHNITT 1: SYMMETRIE-EXPLORER
+         Hier können Schüler verschiedene Formen anklicken
+         und die Symmetrieachsen ein- und ausblenden.
+    ════════════════════════════════════════════════ -->
+    <section class="mb-14" aria-labelledby="sym-title">
+
+      <!-- Abschnitts-Überschrift mit Schritt-Badge -->
+      <div class="flex items-center gap-3 mb-4">
+        <span class="w-8 h-8 rounded-full bg-emerald-400 text-slate-950 text-sm font-bold
+                     flex items-center justify-center flex-shrink-0">
+          1
+        </span>
+        <h2 id="sym-title" class="text-xl font-semibold text-slate-100">
+          Symmetrie-Explorer
+        </h2>
+      </div>
+
+      <!-- Anleitung für den Schüler -->
+      <p class="text-slate-400 text-sm mb-6">
+        Klicke auf eine Form, um die Symmetrieachsen zu sehen oder zu verstecken.
+        Die grünen gestrichelten Linien zeigen die Achsen.
+      </p>
+
+      <!-- Raster mit 6 Form-Karten: 2 Spalten auf Handy, 3 auf Desktop -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-4" id="sym-grid">
+
+        <!-- ────────────────────────────────
+             Karte 0: Kreis – unendlich viele Symmetrieachsen
+             Wir zeigen 4 Achsen als Beispiel (horizontal, vertikal, 2 diagonal)
+        ──────────────────────────────── -->
+        <button
+          id="sym-card-0"
+          class="sym-card rounded-3xl border border-slate-800 bg-slate-900/30 p-5
+                 flex flex-col items-center gap-3 cursor-pointer
+                 hover:border-emerald-400/50 transition-colors focus:outline-none
+                 focus:ring-2 focus:ring-emerald-400"
+          onclick="selectSymmetrie(0)"
+          aria-label="Kreis – Symmetrieachsen anzeigen"
+        >
+          <!-- SVG des Kreises mit optionalen Symmetrieachsen -->
+          <!-- viewBox="0 0 120 120" → internes Koordinatensystem 120×120 Einheiten -->
+          <svg viewBox="0 0 120 120" width="100" height="100" aria-hidden="true">
+            <!-- Der Kreis selbst: Mittelpunkt (60,60), Radius 46 -->
+            <circle cx="60" cy="60" r="46" fill="#065f46" stroke="#34d399" stroke-width="2"/>
+            <!-- Kleines Glanzlicht oben links – macht den Kreis hübscher -->
+            <circle cx="45" cy="40" r="8" fill="#34d399" opacity="0.18"/>
+
+            <!-- Symmetrieachsen des Kreises – 4 Beispiel-Achsen -->
+            <!-- id="sym-axes-0" → wird per JS ein-/ausgeblendet -->
+            <g id="sym-axes-0" style="opacity:0;" class="sym-axis">
+              <!-- Waagerechte Achse durch Mittelpunkt -->
+              <line x1="10" y1="60" x2="110" y2="60"
+                    stroke="#34d399" stroke-width="1.5" stroke-dasharray="4,3"/>
+              <!-- Senkrechte Achse durch Mittelpunkt -->
+              <line x1="60" y1="10" x2="60" y2="110"
+                    stroke="#34d399" stroke-width="1.5" stroke-dasharray="4,3"/>
+              <!-- Diagonale Achse links-unten nach rechts-oben -->
+              <line x1="18" y1="18" x2="102" y2="102"
+                    stroke="#34d399" stroke-width="1.5" stroke-dasharray="4,3"/>
+              <!-- Diagonale Achse rechts-unten nach links-oben -->
+              <line x1="102" y1="18" x2="18" y2="102"
+                    stroke="#34d399" stroke-width="1.5" stroke-dasharray="4,3"/>
+            </g>
+          </svg>
+          <!-- Name der Form -->
+          <span class="text-sm font-semibold text-slate-200">Kreis</span>
+          <!-- Badge mit Anzahl der Achsen – id für dynamische Aktualisierung -->
+          <span id="sym-badge-0"
+                class="axes-badge bg-slate-800 text-slate-400 font-medium">
+            ∞ Achsen
+          </span>
+        </button>
+
+        <!-- ────────────────────────────────
+             Karte 1: Quadrat – 4 Symmetrieachsen
+             2 horizontale/vertikale + 2 diagonale
+        ──────────────────────────────── -->
+        <button
+          id="sym-card-1"
+          class="sym-card rounded-3xl border border-slate-800 bg-slate-900/30 p-5
+                 flex flex-col items-center gap-3 cursor-pointer
+                 hover:border-emerald-400/50 transition-colors focus:outline-none
+                 focus:ring-2 focus:ring-emerald-400"
+          onclick="selectSymmetrie(1)"
+          aria-label="Quadrat – Symmetrieachsen anzeigen"
+        >
+          <svg viewBox="0 0 120 120" width="100" height="100" aria-hidden="true">
+            <!-- Das Quadrat: von (18,18) mit Seitenlänge 84 -->
+            <rect x="18" y="18" width="84" height="84"
+                  fill="#065f46" stroke="#34d399" stroke-width="2" rx="3"/>
+
+            <!-- Symmetrieachsen des Quadrats -->
+            <g id="sym-axes-1" style="opacity:0;" class="sym-axis">
+              <!-- Waagerechte Mittelachse -->
+              <line x1="8" y1="60" x2="112" y2="60"
+                    stroke="#34d399" stroke-width="1.5" stroke-dasharray="4,3"/>
+              <!-- Senkrechte Mittelachse -->
+              <line x1="60" y1="8" x2="60" y2="112"
+                    stroke="#34d399" stroke-width="1.5" stroke-dasharray="4,3"/>
+              <!-- Diagonale von links-oben nach rechts-unten -->
+              <line x1="18" y1="18" x2="102" y2="102"
+                    stroke="#34d399" stroke-width="1.5" stroke-dasharray="4,3"/>
+              <!-- Diagonale von rechts-oben nach links-unten -->
+              <line x1="102" y1="18" x2="18" y2="102"
+                    stroke="#34d399" stroke-width="1.5" stroke-dasharray="4,3"/>
+            </g>
+          </svg>
+          <span class="text-sm font-semibold text-slate-200">Quadrat</span>
+          <span id="sym-badge-1"
+                class="axes-badge bg-slate-800 text-slate-400 font-medium">
+            4 Achsen
+          </span>
+        </button>
+
+        <!-- ────────────────────────────────
+             Karte 2: Rechteck – 2 Symmetrieachsen
+             Nur waagerecht und senkrecht – keine Diagonalen!
+        ──────────────────────────────── -->
+        <button
+          id="sym-card-2"
+          class="sym-card rounded-3xl border border-slate-800 bg-slate-900/30 p-5
+                 flex flex-col items-center gap-3 cursor-pointer
+                 hover:border-emerald-400/50 transition-colors focus:outline-none
+                 focus:ring-2 focus:ring-emerald-400"
+          onclick="selectSymmetrie(2)"
+          aria-label="Rechteck – Symmetrieachsen anzeigen"
+        >
+          <svg viewBox="0 0 120 120" width="100" height="100" aria-hidden="true">
+            <!-- Das Rechteck: breiter als hoch (von 12,30 mit 96×60) -->
+            <rect x="12" y="30" width="96" height="60"
+                  fill="#065f46" stroke="#34d399" stroke-width="2" rx="3"/>
+
+            <!-- Symmetrieachsen des Rechtecks -->
+            <g id="sym-axes-2" style="opacity:0;" class="sym-axis">
+              <!-- Waagerechte Mittelachse (durch Mitte der Höhe) -->
+              <line x1="6" y1="60" x2="114" y2="60"
+                    stroke="#34d399" stroke-width="1.5" stroke-dasharray="4,3"/>
+              <!-- Senkrechte Mittelachse (durch Mitte der Breite) -->
+              <line x1="60" y1="20" x2="60" y2="100"
+                    stroke="#34d399" stroke-width="1.5" stroke-dasharray="4,3"/>
+            </g>
+          </svg>
+          <span class="text-sm font-semibold text-slate-200">Rechteck</span>
+          <span id="sym-badge-2"
+                class="axes-badge bg-slate-800 text-slate-400 font-medium">
+            2 Achsen
+          </span>
+        </button>
+
+        <!-- ────────────────────────────────
+             Karte 3: Gleichseitiges Dreieck – 3 Symmetrieachsen
+             Jede Achse geht von einer Spitze zur gegenüberliegenden Seite
+        ──────────────────────────────── -->
+        <button
+          id="sym-card-3"
+          class="sym-card rounded-3xl border border-slate-800 bg-slate-900/30 p-5
+                 flex flex-col items-center gap-3 cursor-pointer
+                 hover:border-emerald-400/50 transition-colors focus:outline-none
+                 focus:ring-2 focus:ring-emerald-400"
+          onclick="selectSymmetrie(3)"
+          aria-label="Gleichseitiges Dreieck – Symmetrieachsen anzeigen"
+        >
+          <svg viewBox="0 0 120 120" width="100" height="100" aria-hidden="true">
+            <!-- Gleichseitiges Dreieck: Spitze oben (60,10), Basis unten (10,105) und (110,105) -->
+            <polygon points="60,10 10,105 110,105"
+                     fill="#065f46" stroke="#34d399" stroke-width="2"/>
+
+            <!-- Symmetrieachsen des gleichseitigen Dreiecks -->
+            <!-- Berechnung: Mittelpunkt der Basis = (60,105), obere Spitze = (60,10) -->
+            <!-- Mittelpunkt rechte Seite ≈ (85,57.5), linke Ecke (10,105) -->
+            <!-- Mittelpunkt linke Seite ≈ (35,57.5), rechte Ecke (110,105) -->
+            <g id="sym-axes-3" style="opacity:0;" class="sym-axis">
+              <!-- Achse 1: von oberer Spitze zur Mitte der Basis (senkrecht) -->
+              <line x1="60" y1="7" x2="60" y2="108"
+                    stroke="#34d399" stroke-width="1.5" stroke-dasharray="4,3"/>
+              <!-- Achse 2: von linker Ecke zur Mitte der rechten Seite -->
+              <line x1="7" y1="105" x2="85" y2="57"
+                    stroke="#34d399" stroke-width="1.5" stroke-dasharray="4,3"/>
+              <!-- Achse 3: von rechter Ecke zur Mitte der linken Seite -->
+              <line x1="113" y1="105" x2="35" y2="57"
+                    stroke="#34d399" stroke-width="1.5" stroke-dasharray="4,3"/>
+            </g>
+          </svg>
+          <span class="text-sm font-semibold text-slate-200">Gleichseitiges Dreieck</span>
+          <span id="sym-badge-3"
+                class="axes-badge bg-slate-800 text-slate-400 font-medium">
+            3 Achsen
+          </span>
+        </button>
+
+        <!-- ────────────────────────────────
+             Karte 4: Buchstabe "A" – 1 Symmetrieachse
+             Nur die senkrechte Mittelachse ist eine Symmetrieachse
+        ──────────────────────────────── -->
+        <button
+          id="sym-card-4"
+          class="sym-card rounded-3xl border border-slate-800 bg-slate-900/30 p-5
+                 flex flex-col items-center gap-3 cursor-pointer
+                 hover:border-emerald-400/50 transition-colors focus:outline-none
+                 focus:ring-2 focus:ring-emerald-400"
+          onclick="selectSymmetrie(4)"
+          aria-label="Buchstabe A – Symmetrieachsen anzeigen"
+        >
+          <svg viewBox="0 0 120 120" width="100" height="100" aria-hidden="true">
+            <!-- Buchstabe A als Pfad: Spitze oben, zwei Schenkel und ein Querbalken -->
+            <!-- M = Startpunkt, L = Linie zu Punkt, Z = Pfad schließen -->
+            <!-- Linker Schenkel: Spitze (60,8) → links-unten (16,108) → etwas einwärts (30,108) → zurück -->
+            <!-- Querbalken bei etwa y=72 -->
+            <!-- Rechter Schenkel: Spitze → rechts-unten -->
+            <path d="M60,10 L18,108 L33,108 L41,85 L79,85 L87,108 L102,108 L60,10 Z"
+                  fill="#065f46" stroke="#34d399" stroke-width="2"/>
+            <!-- Querbalken des A: von (44,72) bis (76,72), Höhe 10 -->
+            <rect x="42" y="70" width="36" height="10"
+                  fill="#0d9488" stroke="none"/>
+
+            <!-- Symmetrieachse des Buchstaben A -->
+            <g id="sym-axes-4" style="opacity:0;" class="sym-axis">
+              <!-- Nur eine Achse: senkrecht durch die Mitte -->
+              <line x1="60" y1="4" x2="60" y2="116"
+                    stroke="#34d399" stroke-width="1.5" stroke-dasharray="4,3"/>
+            </g>
+          </svg>
+          <span class="text-sm font-semibold text-slate-200">Buchstabe „A"</span>
+          <span id="sym-badge-4"
+                class="axes-badge bg-slate-800 text-slate-400 font-medium">
+            1 Achse
+          </span>
+        </button>
+
+        <!-- ────────────────────────────────
+             Karte 5: Blitz/Z-Form – 0 Symmetrieachsen
+             Diese Form hat keine Spiegelachse!
+        ──────────────────────────────── -->
+        <button
+          id="sym-card-5"
+          class="sym-card rounded-3xl border border-slate-800 bg-slate-900/30 p-5
+                 flex flex-col items-center gap-3 cursor-pointer
+                 hover:border-emerald-400/50 transition-colors focus:outline-none
+                 focus:ring-2 focus:ring-emerald-400"
+          onclick="selectSymmetrie(5)"
+          aria-label="Blitzform – keine Symmetrieachsen"
+        >
+          <svg viewBox="0 0 120 120" width="100" height="100" aria-hidden="true">
+            <!-- Blitz/Z-Form: oben rechts, schräg nach unten-links, dann wieder rechts -->
+            <!-- Die Form hat keine Symmetrieachse -->
+            <polygon points="80,12 25,12 20,22 68,56 20,95 25,108 85,108 90,98 42,64 90,25"
+                     fill="#065f46" stroke="#34d399" stroke-width="2"/>
+
+            <!-- Keine Achsen – leerer Gruppe-Container (bleibt unsichtbar) -->
+            <g id="sym-axes-5" style="opacity:0;" class="sym-axis">
+              <!-- Kein Inhalt – diese Form hat keine Symmetrieachse -->
+              <!-- Stattdessen: rotes Kreuz als Hinweis -->
+              <line x1="35" y1="35" x2="85" y2="85"
+                    stroke="#ef4444" stroke-width="2" stroke-dasharray="4,3"/>
+              <line x1="85" y1="35" x2="35" y2="85"
+                    stroke="#ef4444" stroke-width="2" stroke-dasharray="4,3"/>
+              <!-- Erklärungstext im SVG -->
+              <text x="60" y="110" text-anchor="middle"
+                    font-size="9" fill="#f87171">Keine Achse!</text>
+            </g>
+          </svg>
+          <span class="text-sm font-semibold text-slate-200">Blitzform (Z)</span>
+          <!-- Badge in Rot – zeigt deutlich: keine Achse -->
+          <span id="sym-badge-5"
+                class="axes-badge bg-red-950/60 text-red-400 font-medium">
+            0 Achsen
+          </span>
+        </button>
+
+      </div><!-- Ende Symmetrie-Raster -->
+
+      <!-- Info-Box unter dem Raster – zeigt Details zur gewählten Form -->
+      <div id="sym-info"
+           class="mt-5 rounded-2xl border border-slate-800 bg-slate-900/50 p-4
+                  text-sm text-slate-300 min-h-[3.5rem] transition-all"
+           aria-live="polite">
+        <!-- Wird per JS befüllt wenn man eine Karte auswählt -->
+        <span class="text-slate-500">← Klicke eine Form an, um mehr zu erfahren.</span>
+      </div>
+
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         ABSCHNITT 2: KÖRPER-QUIZ
+         Ein 3D-Körper wird angezeigt, der Schüler wählt den richtigen Namen.
+         Nach der Antwort werden Flächen, Kanten und Ecken angezeigt.
+    ════════════════════════════════════════════════ -->
+    <section class="mb-14" aria-labelledby="koerper-title">
+
+      <!-- Abschnitts-Überschrift -->
+      <div class="flex items-center gap-3 mb-4">
+        <span class="w-8 h-8 rounded-full bg-emerald-400 text-slate-950 text-sm font-bold
+                     flex items-center justify-center flex-shrink-0">
+          2
+        </span>
+        <h2 id="koerper-title" class="text-xl font-semibold text-slate-100">
+          Körper-Quiz
+        </h2>
+      </div>
+
+      <!-- Anleitung zum Quiz -->
+      <p class="text-slate-400 text-sm mb-6">
+        Welcher geometrische Körper ist das? Schau dir die Zeichnung an und wähle den richtigen Namen.
+      </p>
+
+      <!-- Score-Anzeige für den Körper-Quiz -->
+      <div class="flex items-center justify-between mb-5">
+        <span class="text-slate-400 text-sm">Punkte:</span>
+        <span id="koerper-score"
+              class="text-emerald-400 font-bold text-lg tabular-nums">
+          0 / 0
+        </span>
+      </div>
+
+      <!-- Haupt-Karte des Körper-Quiz -->
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+
+        <!-- Anzeige des 3D-Körpers als SVG-Zeichnung -->
+        <div class="koerper-display flex items-center justify-center p-6 mb-6"
+             id="koerper-display">
+          <!-- Wird per JS mit einem SVG befüllt (drawKoerper-Funktion) -->
+          <div id="koerper-svg" class="koerper-svg">
+            <!-- Platzhalter bis das Quiz startet -->
+            <svg viewBox="0 0 200 160" width="200" height="160">
+              <text x="100" y="85" text-anchor="middle" fill="#475569" font-size="14">
+                Lade Quiz…
+              </text>
+            </svg>
+          </div>
+        </div>
+
+        <!-- 4 Antwort-Buttons für die Körpernamen -->
+        <!-- werden per JS mit den richtigen/falschen Optionen befüllt -->
+        <div id="koerper-buttons" class="grid grid-cols-2 gap-3">
+          <!-- Platzhalter – echte Buttons kommen per JS -->
+        </div>
+
+        <!-- Feedback nach der Antwort: zeigt Flächen, Kanten, Ecken -->
+        <div id="koerper-feedback"
+             class="mt-5 rounded-2xl border border-slate-800 bg-slate-900/50 p-4
+                    text-sm hidden"
+             aria-live="polite">
+        </div>
+
+        <!-- Weiter-Button erscheint nach jeder Antwort -->
+        <button
+          id="koerper-next"
+          onclick="newKoerperQuiz()"
+          class="hidden mt-4 w-full py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500
+                 text-white font-semibold text-sm transition-colors"
+        >
+          Nächster Körper →
+        </button>
+
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════
+         ABSCHNITT 3: EIGENSCHAFTEN-QUIZ
+         Abwechselnd zwei Fragetypen:
+         - Typ A: Beschreibung → richtigen Formnamen wählen
+         - Typ B: Wie viele Symmetrieachsen hat diese Form?
+    ════════════════════════════════════════════════ -->
+    <section class="mb-14" aria-labelledby="eigen-title">
+
+      <!-- Abschnitts-Überschrift -->
+      <div class="flex items-center gap-3 mb-4">
+        <span class="w-8 h-8 rounded-full bg-emerald-400 text-slate-950 text-sm font-bold
+                     flex items-center justify-center flex-shrink-0">
+          3
+        </span>
+        <h2 id="eigen-title" class="text-xl font-semibold text-slate-100">
+          Eigenschaften-Quiz
+        </h2>
+      </div>
+
+      <!-- Anleitung -->
+      <p class="text-slate-400 text-sm mb-5">
+        8 Fragen über Symmetrie und Körper. Lese die Beschreibung und wähle die richtige Antwort!
+      </p>
+
+      <!-- Fortschrittsbalken: zeigt wie weit man im Quiz ist (z. B. 3 von 8) -->
+      <div class="mb-5">
+        <!-- Beschriftung des Fortschrittsbalkens -->
+        <div class="flex justify-between text-xs text-slate-500 mb-1.5">
+          <span id="eigen-progress-label">Frage 1 von 8</span>
+          <span id="eigen-score-label" class="text-emerald-400 font-semibold">0 Punkte</span>
+        </div>
+        <!-- Grauer Hintergrundbalken -->
+        <div class="w-full bg-slate-800 rounded-full h-2">
+          <!-- Grüner Fortschrittsbalken – Breite wird per JS verändert -->
+          <div id="eigen-progress-bar" class="progress-bar h-2 rounded-full" style="width:0%"></div>
+        </div>
+      </div>
+
+      <!-- Haupt-Karte des Eigenschaften-Quiz -->
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6 anim-fadein"
+           id="eigen-card">
+
+        <!-- Frage-Text – wird per JS befüllt -->
+        <p id="eigen-question"
+           class="text-base font-medium text-slate-100 mb-6 min-h-[3rem] leading-relaxed">
+          <!-- Platzhalter -->
+        </p>
+
+        <!-- Antwort-Buttons für den Eigenschaften-Quiz – wird per JS befüllt -->
+        <div id="eigen-buttons" class="grid grid-cols-2 gap-3">
+          <!-- Buttons kommen per JS -->
+        </div>
+
+        <!-- Feedback-Nachricht nach Antwort -->
+        <div id="eigen-feedback"
+             class="mt-4 rounded-xl p-3 text-sm font-medium hidden"
+             aria-live="polite">
+        </div>
+
+        <!-- Weiter-Button -->
+        <button
+          id="eigen-next"
+          onclick="nextEigenFrage()"
+          class="hidden mt-4 w-full py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500
+                 text-white font-semibold text-sm transition-colors"
+        >
+          Nächste Frage →
+        </button>
+
+      </div>
+
+      <!-- Ergebnis-Karte – erscheint nach allen 8 Fragen -->
+      <div id="eigen-result"
+           class="hidden rounded-3xl border border-emerald-400/30 bg-slate-900/60 p-8
+                  text-center anim-fadein">
+        <!-- Ergebnistext wird per JS gesetzt -->
+        <div id="eigen-result-text"></div>
+        <button
+          onclick="startEigenQuiz()"
+          class="mt-6 px-8 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500
+                 text-white font-semibold transition-colors"
+        >
+          Nochmal spielen
+        </button>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ── Footer mit Jahreszahl ── -->
+  <footer class="border-t border-slate-800 py-8 text-center text-xs text-slate-600">
+    <!-- Jahreszahl und Urheberrechts-Hinweis -->
+    &copy; <span id="footer-year"></span> MathAcademy · Klasse 4 · Symmetrie &amp; Körper
+  </footer>
+
+  <!-- ══════════════════════════════════════════════════
+       TOPBAR LADEN
+       Die Navigationsleiste oben wird aus einer separaten
+       Datei geladen und per JavaScript eingefügt.
+  ══════════════════════════════════════════════════ -->
+  <script>
+    // Basis-Pfad für i18n-Übersetzungsdateien (../../ = zwei Ordner nach oben)
+    window.__i18nBase = '../../';
+
+    // Topbar-HTML aus separater Datei laden und in den Container einfügen
+    fetch('../../topbar.html')
+      .then(r => r.text())
+      .then(html => {
+        // HTML-Inhalt in den Platzhalter-Container einfügen
+        document.getElementById('topbar-container').innerHTML = html;
+        // Das dazugehörige Skript nachladen (Menü-Toggle, Sprache usw.)
+        const s = document.createElement('script');
+        s.src = '../../script.js';
+        document.body.appendChild(s);
+      });
+
+    // Aktuelles Jahr in den Footer schreiben
+    document.getElementById('footer-year').textContent = new Date().getFullYear();
+  </script>
+
+  <!-- ══════════════════════════════════════════════════
+       HAUPT-SKRIPT: SYMMETRIE-EXPLORER
+  ══════════════════════════════════════════════════ -->
+  <script>
+    // ── Daten für den Symmetrie-Explorer ──────────────────────────────────────
+    // Jede Form hat: Name, Anzahl der Achsen, und eine Info-Beschreibung
+    // Dieser Array ist parallel zu den 6 Karten im HTML (Index 0–5)
+    const SYMMETRIE_DATEN = [
+      {
+        name: 'Kreis',
+        achsen: '∞',        // Unendlich viele Achsen
+        info: 'Ein Kreis hat unendlich viele Symmetrieachsen! Jede Linie durch den Mittelpunkt ist eine Achse.'
+      },
+      {
+        name: 'Quadrat',
+        achsen: 4,
+        info: 'Das Quadrat hat 4 Symmetrieachsen: je eine waagerecht, senkrecht und zwei diagonal.'
+      },
+      {
+        name: 'Rechteck',
+        achsen: 2,
+        info: 'Das Rechteck hat nur 2 Achsen: eine waagerechte und eine senkrechte. Die Diagonalen sind KEINE Achsen!'
+      },
+      {
+        name: 'Gleichseitiges Dreieck',
+        achsen: 3,
+        info: 'Das gleichseitige Dreieck hat 3 Symmetrieachsen – je eine von jeder Ecke zur Mitte der gegenüberliegenden Seite.'
+      },
+      {
+        name: 'Buchstabe A',
+        achsen: 1,
+        info: 'Der Buchstabe A hat genau 1 Symmetrieachse – die senkrechte Mittellinie. Links und rechts sind gleich.'
+      },
+      {
+        name: 'Blitzform (Z)',
+        achsen: 0,
+        info: 'Die Blitz-/Z-Form hat keine Symmetrieachse. Man kann sie an keiner Linie spiegeln, sodass beide Hälften gleich sind.'
+      }
+    ];
+
+    // axesVisible: für jede der 6 Karten speichern ob die Achsen gerade sichtbar sind
+    // false = versteckt, true = sichtbar
+    let axesVisible = [false, false, false, false, false, false];
+
+    /**
+     * selectSymmetrie(idx) – wird aufgerufen wenn man auf eine Form-Karte klickt
+     * Schaltet die Symmetrieachsen der angeklickten Form ein oder aus (Toggle).
+     * Zeigt außerdem eine Info-Beschreibung unter dem Raster.
+     *
+     * @param {number} idx – Index der angeklickten Karte (0 bis 5)
+     */
+    function selectSymmetrie(idx) {
+      // Achsen-Sichtbarkeit umschalten (true → false, false → true)
+      axesVisible[idx] = !axesVisible[idx];
+
+      // SVG-Gruppe mit den Achsen ein- oder ausblenden
+      const axesGroup = document.getElementById('sym-axes-' + idx);
+      if (axesGroup) {
+        // opacity 1 = sichtbar, opacity 0 = unsichtbar
+        axesGroup.style.opacity = axesVisible[idx] ? '1' : '0';
+      }
+
+      // Karten-Rahmen: ausgewählte Karte grün hervorheben, wenn Achsen sichtbar
+      const card = document.getElementById('sym-card-' + idx);
+      if (card) {
+        if (axesVisible[idx]) {
+          // Grüner Leuchtrand aktivieren
+          card.classList.add('sym-card-selected');
+        } else {
+          // Leuchtrand wieder entfernen
+          card.classList.remove('sym-card-selected');
+        }
+      }
+
+      // Badge-Farbe anpassen: grün wenn aktiv, grau wenn inaktiv
+      const badge = document.getElementById('sym-badge-' + idx);
+      if (badge) {
+        if (axesVisible[idx]) {
+          // Aktiver Zustand: grüner Badge
+          badge.className = 'axes-badge bg-emerald-900/60 text-emerald-300 font-semibold';
+        } else {
+          // Inaktiver Zustand: grauer Badge (außer für idx=5 mit 0 Achsen)
+          badge.className = idx === 5
+            ? 'axes-badge bg-red-950/60 text-red-400 font-medium'
+            : 'axes-badge bg-slate-800 text-slate-400 font-medium';
+        }
+      }
+
+      // Info-Box unter dem Raster aktualisieren
+      const info = document.getElementById('sym-info');
+      const daten = SYMMETRIE_DATEN[idx];
+      if (info && daten) {
+        if (axesVisible[idx]) {
+          // Grüner Info-Text mit Achsenanzahl und Beschreibung
+          info.innerHTML =
+            '<span class="text-emerald-400 font-semibold">' + daten.name + '</span>' +
+            ' – <span class="text-slate-300">' + daten.info + '</span>';
+        } else {
+          // Zurück zum Platzhalter-Text
+          info.innerHTML =
+            '<span class="text-slate-500">← Klicke eine Form an, um mehr zu erfahren.</span>';
+        }
+      }
+    }
+  </script>
+
+  <!-- ══════════════════════════════════════════════════
+       KÖRPER-QUIZ SKRIPT
+       Zeigt isometrische SVG-Zeichnungen von 3D-Körpern.
+       Der Schüler klickt auf den richtigen Namen.
+  ══════════════════════════════════════════════════ -->
+  <script>
+    // ── Hilfsfunktion: SVG-String für den Würfel ──────────────────────────────
+    // Zeichnet einen Würfel in isometrischer Ansicht (3 sichtbare Flächen)
+    // Die drei Flächen: oben (hellgrün), vorne (dunkelgrün), rechts (mittelgrün)
+    function drawWuerfel() {
+      // Würfel-Mittelpunkt und Größe definieren
+      // Isometrischer Würfel: 3 Parallelogramme = Dach + Vorderwand + Seitenwand
+      return `
+        <svg viewBox="0 0 200 160" width="200" height="160" aria-label="Würfel">
+          <!-- Dachfläche (oben) – hellstes Grün -->
+          <!-- Koordinaten: Mittelpunkt oben, links, vorne, rechts -->
+          <polygon points="100,30 145,55 100,80 55,55"
+                   fill="#065f46" stroke="#34d399" stroke-width="1.5"/>
+          <!-- Vordere Wand (links-unten) – etwas dunkler -->
+          <polygon points="55,55 100,80 100,130 55,105"
+                   fill="#064e3b" stroke="#34d399" stroke-width="1.5"/>
+          <!-- Rechte Seitenwand – mittleres Grün -->
+          <polygon points="100,80 145,55 145,105 100,130"
+                   fill="#047857" stroke="#34d399" stroke-width="1.5"/>
+          <!-- Beschriftung: "Würfel" in der Mitte -->
+          <text x="100" y="152" text-anchor="middle" fill="#94a3b8" font-size="12">Würfel</text>
+        </svg>`;
+    }
+
+    // ── Hilfsfunktion: SVG-String für den Quader ──────────────────────────────
+    // Wie der Würfel, aber die Vorderwand ist breiter als hoch (rechteckig)
+    function drawQuader() {
+      return `
+        <svg viewBox="0 0 200 160" width="200" height="160" aria-label="Quader">
+          <!-- Schmales Dach – der Quader ist breiter als ein Würfel -->
+          <polygon points="100,35 160,55 100,75 40,55"
+                   fill="#065f46" stroke="#34d399" stroke-width="1.5"/>
+          <!-- Breite Vorderwand -->
+          <polygon points="40,55 100,75 100,130 40,110"
+                   fill="#064e3b" stroke="#34d399" stroke-width="1.5"/>
+          <!-- Schmale Seitenwand rechts -->
+          <polygon points="100,75 160,55 160,110 100,130"
+                   fill="#047857" stroke="#34d399" stroke-width="1.5"/>
+          <text x="100" y="152" text-anchor="middle" fill="#94a3b8" font-size="12">Quader</text>
+        </svg>`;
+    }
+
+    // ── Hilfsfunktion: SVG-String für den Zylinder ────────────────────────────
+    // Zylinder = elliptischer Deckel + rechteckiger Körper + elliptischer Boden
+    // Die Ellipsen simulieren die runden Enden des Zylinders in der Seitenansicht
+    function drawZylinder() {
+      return `
+        <svg viewBox="0 0 200 160" width="200" height="160" aria-label="Zylinder">
+          <!-- Rechteckiger Körper des Zylinders (Mantel) -->
+          <rect x="55" y="55" width="90" height="75"
+                fill="#065f46" stroke="#34d399" stroke-width="1.5"/>
+          <!-- Untere Ellipse (Bodenkreis) – sieht aus wie ein ovaler Kreis von vorne -->
+          <!-- cx=100 cy=130 = Mittelpunkt, rx=45 = waagerechter Radius, ry=12 = senkrechter Radius -->
+          <ellipse cx="100" cy="130" rx="45" ry="12"
+                   fill="#047857" stroke="#34d399" stroke-width="1.5"/>
+          <!-- Obere Ellipse (Deckelkreis) – liegt über dem Körper -->
+          <ellipse cx="100" cy="55" rx="45" ry="12"
+                   fill="#059669" stroke="#34d399" stroke-width="1.5"/>
+          <!-- Kleiner Glanzstreifen auf dem Deckel für 3D-Effekt -->
+          <ellipse cx="90" cy="52" rx="15" ry="4"
+                   fill="#34d399" opacity="0.2"/>
+          <text x="100" y="152" text-anchor="middle" fill="#94a3b8" font-size="12">Zylinder</text>
+        </svg>`;
+    }
+
+    // ── Hilfsfunktion: SVG-String für die Kugel ───────────────────────────────
+    // Kugel = Kreis + Glanzpunkt (weißer Bogen) + leichter Schlagschatten
+    function drawKugel() {
+      return `
+        <svg viewBox="0 0 200 160" width="200" height="160" aria-label="Kugel">
+          <!-- Schlagschatten unter der Kugel – ovale Ellipse -->
+          <ellipse cx="100" cy="138" rx="42" ry="8"
+                   fill="#000" opacity="0.35"/>
+          <!-- Die Kugel selbst – großer Kreis -->
+          <circle cx="100" cy="78" r="52"
+                  fill="#065f46" stroke="#34d399" stroke-width="1.5"/>
+          <!-- Glanzpunkt oben-links – zeigt, dass die Kugel rund ist -->
+          <circle cx="80" cy="58" r="14"
+                  fill="#34d399" opacity="0.22"/>
+          <!-- Kleiner heller Punkt für stärkeres Glanzlicht -->
+          <circle cx="76" cy="54" r="5"
+                  fill="#a7f3d0" opacity="0.35"/>
+          <!-- Horizontaler Äquatorkreis als gestrichelte Linie -->
+          <!-- Simuliert die Krümmung der Kugeloberfläche -->
+          <ellipse cx="100" cy="78" rx="52" ry="14"
+                   fill="none" stroke="#34d399" stroke-width="1"
+                   stroke-dasharray="5,4" opacity="0.5"/>
+          <text x="100" y="152" text-anchor="middle" fill="#94a3b8" font-size="12">Kugel</text>
+        </svg>`;
+    }
+
+    // ── Hilfsfunktion: SVG-String für die Pyramide ────────────────────────────
+    // Quadratische Pyramide: rechteckige Basis + 4 Dreiecke die zur Spitze führen
+    function drawPyramide() {
+      return `
+        <svg viewBox="0 0 200 160" width="200" height="160" aria-label="Pyramide">
+          <!-- Linke Vorderfläche der Pyramide (sichtbares Dreieck) -->
+          <polygon points="100,25 55,120 145,120"
+                   fill="#065f46" stroke="#34d399" stroke-width="1.5"/>
+          <!-- Rechte Seitenfläche – etwas heller für 3D-Effekt -->
+          <polygon points="100,25 145,120 165,95"
+                   fill="#047857" stroke="#34d399" stroke-width="1.5"/>
+          <!-- Basis-Viereck (Boden der Pyramide) als Parallelogramm -->
+          <polygon points="55,120 145,120 165,95 75,95"
+                   fill="#064e3b" stroke="#34d399" stroke-width="1.5"/>
+          <!-- Gestrichelte Linien für die hinteren Kanten -->
+          <line x1="100" y1="25" x2="75" y2="95"
+                stroke="#34d399" stroke-width="1" stroke-dasharray="4,3" opacity="0.6"/>
+          <text x="100" y="152" text-anchor="middle" fill="#94a3b8" font-size="12">Pyramide</text>
+        </svg>`;
+    }
+
+    // ── Daten-Array für den Körper-Quiz ──────────────────────────────────────
+    // Jeder Eintrag beschreibt einen 3D-Körper mit seinen Eigenschaften
+    // drawFn: Referenz auf die Zeichenfunktion oben
+    const KOERPER = [
+      {
+        name: 'Würfel',
+        flaechen: 6,   // Anzahl der Flächen
+        kanten: 12,    // Anzahl der Kanten (Verbindungslinien zwischen Ecken)
+        ecken: 8,      // Anzahl der Ecken (Eckpunkte)
+        drawFn: drawWuerfel,
+        info: 'Alle 6 Flächen sind gleich große Quadrate.'
+      },
+      {
+        name: 'Quader',
+        flaechen: 6,
+        kanten: 12,
+        ecken: 8,
+        drawFn: drawQuader,
+        info: 'Die 6 Flächen sind Rechtecke (manche können Quadrate sein).'
+      },
+      {
+        name: 'Zylinder',
+        flaechen: 3,   // 2 Kreisflächen + 1 Mantel (gebogene Fläche)
+        kanten: 2,     // 2 Kreiskanten (oben und unten)
+        ecken: 0,      // Keine Ecken
+        drawFn: drawZylinder,
+        info: '2 kreisförmige Deckflächen + 1 gebogene Mantelfläche. Keine Ecken!'
+      },
+      {
+        name: 'Kugel',
+        flaechen: 1,   // 1 gebogene Oberfläche (Kugelschale)
+        kanten: 0,     // Keine Kanten
+        ecken: 0,      // Keine Ecken
+        drawFn: drawKugel,
+        info: 'Nur 1 gebogene Fläche, keine Kanten und keine Ecken.'
+      },
+      {
+        name: 'Pyramide',
+        flaechen: 5,   // 1 quadratische Basis + 4 Dreiecksflächen
+        kanten: 8,     // 4 Basiskanten + 4 Kanten zur Spitze
+        ecken: 5,      // 4 Ecken der Basis + 1 Spitze
+        drawFn: drawPyramide,
+        info: '1 quadratische Grundfläche + 4 Dreiecksflächen, die zur Spitze führen.'
+      }
+    ];
+
+    // ── Zustands-Variablen für den Körper-Quiz ────────────────────────────────
+    let koerperScore = 0;       // Wie viele richtig beantwortet
+    let koerperTotal = 0;       // Wie viele Fragen bisher
+    let koerperAktuell = null;  // Der gerade angezeigte Körper (Objekt aus KOERPER)
+    let koerperBeantwortet = false; // Hat der Schüler diese Frage schon beantwortet?
+
+    /**
+     * newKoerperQuiz() – startet eine neue Körper-Quiz-Runde
+     * Wählt zufällig einen Körper und erstellt 4 Antwort-Buttons.
+     * Einer davon ist richtig, die anderen 3 sind zufällige Ablenkungen.
+     */
+    function newKoerperQuiz() {
+      koerperBeantwortet = false;
+
+      // Zufälligen Körper wählen (zufälliger Index 0 bis KOERPER.length-1)
+      const idx = Math.floor(Math.random() * KOERPER.length);
+      koerperAktuell = KOERPER[idx];
+
+      // SVG-Zeichnung des gewählten Körpers anzeigen
+      const svgContainer = document.getElementById('koerper-svg');
+      if (svgContainer) {
+        // drawFn() aufrufen – gibt HTML-String mit SVG zurück
+        svgContainer.innerHTML = koerperAktuell.drawFn();
+      }
+
+      // 4 zufällige Antwort-Optionen zusammenstellen (richtig + 3 falsche)
+      // Alle Namen außer dem richtigen
+      const alleNamen = KOERPER.map(k => k.name);
+      const falscheNamen = alleNamen.filter(n => n !== koerperAktuell.name);
+      // 3 zufällige falsche Antworten auswählen (Array mischen und 3 nehmen)
+      const gemischt = falscheNamen.sort(() => Math.random() - 0.5).slice(0, 3);
+      // Richtige Antwort an zufälliger Position einfügen
+      const optionen = [...gemischt];
+      const richtigePos = Math.floor(Math.random() * 4);
+      optionen.splice(richtigePos, 0, koerperAktuell.name);
+
+      // Antwort-Buttons rendern
+      const buttonsDiv = document.getElementById('koerper-buttons');
+      if (buttonsDiv) {
+        buttonsDiv.innerHTML = '';
+        optionen.forEach(name => {
+          // Für jede Option einen Button erstellen
+          const btn = document.createElement('button');
+          btn.className =
+            'btn-answer rounded-2xl border border-slate-700 bg-slate-800/60 ' +
+            'py-3 px-4 text-sm font-medium text-slate-200 hover:border-emerald-400/60 ' +
+            'transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-400';
+          btn.textContent = name;
+          // Klick-Handler: checkKoerper mit dem Namen des Buttons aufrufen
+          btn.onclick = () => checkKoerper(name);
+          buttonsDiv.appendChild(btn);
+        });
+      }
+
+      // Feedback und Weiter-Button zurücksetzen/verstecken
+      const feedback = document.getElementById('koerper-feedback');
+      if (feedback) feedback.classList.add('hidden');
+      const nextBtn = document.getElementById('koerper-next');
+      if (nextBtn) nextBtn.classList.add('hidden');
+
+      // Einblend-Animation für die neue Frage
+      const display = document.getElementById('koerper-display');
+      if (display) {
+        display.classList.remove('anim-fadein');
+        void display.offsetWidth; // Animations-Reset durch DOM-Reflow
+        display.classList.add('anim-fadein');
+      }
+    }
+
+    /**
+     * checkKoerper(gewaehlterName) – prüft die gewählte Antwort im Körper-Quiz
+     * Zeigt grünes/rotes Feedback und die Körper-Eigenschaften an.
+     *
+     * @param {string} gewaehlterName – Der Name den der Schüler angeklickt hat
+     */
+    function checkKoerper(gewaehlterName) {
+      // Verhindert Doppelklicken wenn die Frage schon beantwortet ist
+      if (koerperBeantwortet) return;
+      koerperBeantwortet = true;
+      koerperTotal++;
+
+      // Alle Buttons deaktivieren (kein weiterer Klick möglich)
+      const buttonsDiv = document.getElementById('koerper-buttons');
+      const alleButtons = buttonsDiv ? buttonsDiv.querySelectorAll('button') : [];
+      alleButtons.forEach(btn => {
+        btn.disabled = true;
+        // Richtigen Button grün markieren
+        if (btn.textContent === koerperAktuell.name) {
+          btn.classList.add('btn-correct');
+        }
+        // Falschen angeklickten Button rot markieren
+        if (btn.textContent === gewaehlterName && gewaehlterName !== koerperAktuell.name) {
+          btn.classList.add('btn-wrong');
+        }
+      });
+
+      // Punkte bei richtiger Antwort erhöhen
+      const richtig = gewaehlterName === koerperAktuell.name;
+      if (richtig) {
+        koerperScore++;
+        // Score-Anzeige kurz aufleuchten lassen
+        const scoreEl = document.getElementById('koerper-score');
+        if (scoreEl) {
+          scoreEl.classList.remove('score-pop');
+          void scoreEl.offsetWidth;
+          scoreEl.classList.add('score-pop');
+        }
+      }
+
+      // Score-Anzeige aktualisieren
+      const scoreEl = document.getElementById('koerper-score');
+      if (scoreEl) scoreEl.textContent = koerperScore + ' / ' + koerperTotal;
+
+      // Feedback-Box mit Körper-Eigenschaften anzeigen
+      const feedback = document.getElementById('koerper-feedback');
+      if (feedback) {
+        feedback.classList.remove('hidden');
+        // Grünes Feedback bei richtig, rotes bei falsch
+        const farbe = richtig
+          ? 'border-emerald-400/40 bg-emerald-900/20 text-emerald-300'
+          : 'border-red-400/40 bg-red-900/20 text-red-300';
+        const emoji = richtig ? '✓' : '✗';
+        const antwortText = richtig
+          ? 'Richtig! Das ist ein ' + koerperAktuell.name + '.'
+          : 'Fast! Das war ein ' + koerperAktuell.name + '.';
+
+        feedback.className = 'mt-5 rounded-2xl border p-4 text-sm ' + farbe;
+        // Eigenschaften des Körpers anzeigen (Flächen, Kanten, Ecken)
+        feedback.innerHTML =
+          '<p class="font-semibold mb-2">' + emoji + ' ' + antwortText + '</p>' +
+          '<p class="text-slate-300 text-xs mb-2">' + koerperAktuell.info + '</p>' +
+          '<div class="flex gap-4 text-xs mt-2">' +
+            '<span class="bg-slate-800 px-3 py-1 rounded-xl text-slate-300">' +
+              '🟦 Flächen: <strong>' + koerperAktuell.flaechen + '</strong>' +
+            '</span>' +
+            '<span class="bg-slate-800 px-3 py-1 rounded-xl text-slate-300">' +
+              '━ Kanten: <strong>' + koerperAktuell.kanten + '</strong>' +
+            '</span>' +
+            '<span class="bg-slate-800 px-3 py-1 rounded-xl text-slate-300">' +
+              '• Ecken: <strong>' + koerperAktuell.ecken + '</strong>' +
+            '</span>' +
+          '</div>';
+      }
+
+      // Weiter-Button einblenden
+      const nextBtn = document.getElementById('koerper-next');
+      if (nextBtn) nextBtn.classList.remove('hidden');
+    }
+
+    // Körper-Quiz beim Laden der Seite starten
+    newKoerperQuiz();
+  </script>
+
+  <!-- ══════════════════════════════════════════════════
+       EIGENSCHAFTEN-QUIZ SKRIPT
+       Zwei Fragetypen wechseln sich ab:
+       - Typ 'name': Beschreibung → richtigen Formnamen wählen
+       - Typ 'achsen': Wie viele Symmetrieachsen hat diese Form? → Zahl wählen
+  ══════════════════════════════════════════════════ -->
+  <script>
+    // ── Alle möglichen Fragen für den Eigenschaften-Quiz ─────────────────────
+    // Jedes Objekt hat: type ('name' oder 'achsen'), frage, richtig, optionen (4 Stück)
+    const EIGEN_FRAGEN = [
+      // ── Typ 'name': Beschreibung → richtige Form finden ──
+      {
+        type: 'name',
+        frage: 'Diese Figur hat 4 gleich lange Seiten und 4 Symmetrieachsen (2 mittlere + 2 diagonale).',
+        richtig: 'Quadrat',
+        optionen: ['Quadrat', 'Rechteck', 'Kreis', 'Raute']
+      },
+      {
+        type: 'name',
+        frage: 'Diese Figur ist rund und hat unendlich viele Symmetrieachsen.',
+        richtig: 'Kreis',
+        optionen: ['Kreis', 'Quadrat', 'Oval', 'Dreieck']
+      },
+      {
+        type: 'name',
+        frage: 'Dieser Körper hat 6 Flächen, 12 Kanten und 8 Ecken. Alle Flächen sind Quadrate.',
+        richtig: 'Würfel',
+        optionen: ['Würfel', 'Quader', 'Pyramide', 'Zylinder']
+      },
+      {
+        type: 'name',
+        frage: 'Diese Figur hat 2 Symmetrieachsen: eine waagerechte und eine senkrechte, aber keine diagonalen.',
+        richtig: 'Rechteck',
+        optionen: ['Rechteck', 'Quadrat', 'Dreieck', 'Parallelogramm']
+      },
+      {
+        type: 'name',
+        frage: 'Dieser Körper hat nur 1 gebogene Fläche, keine Kanten und keine Ecken.',
+        richtig: 'Kugel',
+        optionen: ['Kugel', 'Zylinder', 'Kreis', 'Würfel']
+      },
+      {
+        type: 'name',
+        frage: 'Diese Figur hat 3 gleich lange Seiten und 3 Symmetrieachsen.',
+        richtig: 'Gleichseitiges Dreieck',
+        optionen: ['Gleichseitiges Dreieck', 'Rechtwinkliges Dreieck', 'Quadrat', 'Sechseck']
+      },
+      {
+        type: 'name',
+        frage: 'Dieser Körper hat 2 Kreisflächen, 1 Mantelfläche (gebogen), 2 Kanten und 0 Ecken.',
+        richtig: 'Zylinder',
+        optionen: ['Zylinder', 'Quader', 'Kugel', 'Pyramide']
+      },
+      {
+        type: 'name',
+        frage: 'Dieser Körper hat 5 Flächen (1 Quadrat + 4 Dreiecke), 8 Kanten und 5 Ecken.',
+        richtig: 'Pyramide',
+        optionen: ['Pyramide', 'Würfel', 'Zylinder', 'Quader']
+      },
+
+      // ── Typ 'achsen': Wie viele Symmetrieachsen hat diese Form? ──
+      {
+        type: 'achsen',
+        frage: 'Wie viele Symmetrieachsen hat ein Rechteck?',
+        richtig: '2',
+        optionen: ['0', '1', '2', '4']
+      },
+      {
+        type: 'achsen',
+        frage: 'Wie viele Symmetrieachsen hat ein Quadrat?',
+        richtig: '4',
+        optionen: ['1', '2', '3', '4']
+      },
+      {
+        type: 'achsen',
+        frage: 'Wie viele Symmetrieachsen hat ein gleichseitiges Dreieck?',
+        richtig: '3',
+        optionen: ['0', '1', '2', '3']
+      },
+      {
+        type: 'achsen',
+        frage: 'Wie viele Symmetrieachsen hat der Buchstabe „A"?',
+        richtig: '1',
+        optionen: ['0', '1', '2', '3']
+      },
+      {
+        type: 'achsen',
+        frage: 'Wie viele Symmetrieachsen hat eine Blitz-/Z-Form?',
+        richtig: '0',
+        optionen: ['0', '1', '2', '4']
+      },
+      {
+        type: 'achsen',
+        frage: 'Wie viele Symmetrieachsen hat ein regelmäßiges Sechseck?',
+        richtig: '6',
+        optionen: ['3', '4', '6', '8']
+      },
+      {
+        type: 'achsen',
+        frage: 'Wie viele Symmetrieachsen hat ein gleichschenkliges (nicht gleichseitiges) Dreieck?',
+        richtig: '1',
+        optionen: ['0', '1', '2', '3']
+      },
+      {
+        type: 'achsen',
+        frage: 'Wie viele Symmetrieachsen hat der Buchstabe „H"?',
+        richtig: '2',
+        optionen: ['0', '1', '2', '3']
+      }
+    ];
+
+    // ── Zustands-Variablen für den Eigenschaften-Quiz ─────────────────────────
+    let eigenFragenRunde = [];    // Zufällig ausgewählte 8 Fragen für diese Runde
+    let eigenAktuellIdx = 0;     // Welche Frage gerade angezeigt wird (0 bis 7)
+    let eigenScore = 0;          // Wie viele richtige Antworten in dieser Runde
+    let eigenBeantwortet = false; // Hat der Schüler die aktuelle Frage schon beantwortet?
+    const EIGEN_RUNDEN_LAENGE = 8; // Pro Runde werden 8 Fragen gestellt
+
+    /**
+     * startEigenQuiz() – startet den Eigenschaften-Quiz neu
+     * Wählt 8 zufällige Fragen aus dem EIGEN_FRAGEN-Array und zeigt die erste an.
+     */
+    function startEigenQuiz() {
+      eigenScore = 0;
+      eigenAktuellIdx = 0;
+
+      // 8 zufällige Fragen ohne Wiederholung auswählen
+      // Array mischen (Fisher-Yates-ähnlich mit sort) und die ersten 8 nehmen
+      eigenFragenRunde = [...EIGEN_FRAGEN]
+        .sort(() => Math.random() - 0.5)
+        .slice(0, EIGEN_RUNDEN_LAENGE);
+
+      // Ergebnis-Karte verstecken, Quiz-Karte anzeigen
+      document.getElementById('eigen-result').classList.add('hidden');
+      document.getElementById('eigen-card').classList.remove('hidden');
+
+      // Erste Frage anzeigen
+      zeigeEigenFrage();
+    }
+
+    /**
+     * zeigeEigenFrage() – zeigt die aktuelle Frage des Eigenschaften-Quiz
+     * Rendert den Frage-Text und die 4 Antwort-Buttons.
+     */
+    function zeigeEigenFrage() {
+      eigenBeantwortet = false;
+
+      // Fortschrittsbalken und Labels aktualisieren
+      const fortschritt = (eigenAktuellIdx / EIGEN_RUNDEN_LAENGE) * 100;
+      const progressBar = document.getElementById('eigen-progress-bar');
+      if (progressBar) progressBar.style.width = fortschritt + '%';
+
+      const progressLabel = document.getElementById('eigen-progress-label');
+      if (progressLabel) {
+        progressLabel.textContent = 'Frage ' + (eigenAktuellIdx + 1) + ' von ' + EIGEN_RUNDEN_LAENGE;
+      }
+
+      const scoreLabel = document.getElementById('eigen-score-label');
+      if (scoreLabel) scoreLabel.textContent = eigenScore + ' Punkte';
+
+      // Aktuelle Frage aus dem Runden-Array holen
+      const frage = eigenFragenRunde[eigenAktuellIdx];
+
+      // Frage-Text anzeigen
+      const questionEl = document.getElementById('eigen-question');
+      if (questionEl) questionEl.textContent = frage.frage;
+
+      // Optionen zufällig mischen (damit die richtige Antwort immer woanders ist)
+      const optionenGemischt = [...frage.optionen].sort(() => Math.random() - 0.5);
+
+      // Antwort-Buttons rendern
+      const buttonsDiv = document.getElementById('eigen-buttons');
+      if (buttonsDiv) {
+        buttonsDiv.innerHTML = '';
+        optionenGemischt.forEach(option => {
+          const btn = document.createElement('button');
+          btn.className =
+            'btn-answer rounded-2xl border border-slate-700 bg-slate-800/60 ' +
+            'py-3 px-4 text-sm font-medium text-slate-200 hover:border-emerald-400/60 ' +
+            'transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-400';
+          btn.textContent = option;
+          btn.onclick = () => checkEigenAntwort(option);
+          buttonsDiv.appendChild(btn);
+        });
+      }
+
+      // Feedback und Weiter-Button zurücksetzen
+      const feedback = document.getElementById('eigen-feedback');
+      if (feedback) feedback.classList.add('hidden');
+      const nextBtn = document.getElementById('eigen-next');
+      if (nextBtn) nextBtn.classList.add('hidden');
+
+      // Einblend-Animation für die neue Frage
+      const card = document.getElementById('eigen-card');
+      if (card) {
+        card.classList.remove('anim-fadein');
+        void card.offsetWidth; // DOM-Reflow zum Zurücksetzen der Animation
+        card.classList.add('anim-fadein');
+      }
+    }
+
+    /**
+     * checkEigenAntwort(gewaehlt) – prüft die Antwort im Eigenschaften-Quiz
+     * Zeigt grünes/rotes Feedback und aktiviert den "Weiter"-Button.
+     *
+     * @param {string} gewaehlt – Die gewählte Antwort-Option
+     */
+    function checkEigenAntwort(gewaehlt) {
+      // Doppelklick verhindern
+      if (eigenBeantwortet) return;
+      eigenBeantwortet = true;
+
+      // Aktuelle Frage holen
+      const frage = eigenFragenRunde[eigenAktuellIdx];
+      const richtig = gewaehlt === frage.richtig;
+
+      // Punkte erhöhen wenn richtig
+      if (richtig) eigenScore++;
+
+      // Alle Buttons deaktivieren
+      const buttonsDiv = document.getElementById('eigen-buttons');
+      const alleButtons = buttonsDiv ? buttonsDiv.querySelectorAll('button') : [];
+      alleButtons.forEach(btn => {
+        btn.disabled = true;
+        // Richtige Antwort grün markieren
+        if (btn.textContent === frage.richtig) btn.classList.add('btn-correct');
+        // Falsche angeklickte Antwort rot markieren
+        if (btn.textContent === gewaehlt && !richtig) btn.classList.add('btn-wrong');
+      });
+
+      // Score-Label sofort aktualisieren
+      const scoreLabel = document.getElementById('eigen-score-label');
+      if (scoreLabel) scoreLabel.textContent = eigenScore + ' Punkte';
+
+      // Feedback anzeigen
+      const feedback = document.getElementById('eigen-feedback');
+      if (feedback) {
+        feedback.classList.remove('hidden');
+        if (richtig) {
+          feedback.className =
+            'mt-4 rounded-xl p-3 text-sm font-medium border ' +
+            'border-emerald-400/30 bg-emerald-900/20 text-emerald-300';
+          feedback.textContent = '✓ Richtig! Sehr gut!';
+        } else {
+          feedback.className =
+            'mt-4 rounded-xl p-3 text-sm font-medium border ' +
+            'border-red-400/30 bg-red-900/20 text-red-300';
+          feedback.textContent = '✗ Leider falsch. Die richtige Antwort ist: ' + frage.richtig;
+        }
+      }
+
+      // Weiter-Button einblenden
+      const nextBtn = document.getElementById('eigen-next');
+      if (nextBtn) nextBtn.classList.remove('hidden');
+    }
+
+    /**
+     * nextEigenFrage() – geht zur nächsten Frage oder zeigt das Ergebnis
+     * Wird vom "Nächste Frage →"-Button aufgerufen.
+     */
+    function nextEigenFrage() {
+      eigenAktuellIdx++;
+
+      // Haben wir alle 8 Fragen beantwortet?
+      if (eigenAktuellIdx >= EIGEN_RUNDEN_LAENGE) {
+        // Quiz beendet – Ergebnis anzeigen
+        zeigeEigenErgebnis();
+      } else {
+        // Nächste Frage anzeigen
+        zeigeEigenFrage();
+      }
+    }
+
+    /**
+     * zeigeEigenErgebnis() – zeigt die Auswertung nach allen 8 Fragen
+     * Blendet die Quiz-Karte aus und die Ergebnis-Karte ein.
+     */
+    function zeigeEigenErgebnis() {
+      // Quiz-Karte verstecken
+      document.getElementById('eigen-card').classList.add('hidden');
+
+      // Fortschrittsbalken auf 100% setzen
+      const progressBar = document.getElementById('eigen-progress-bar');
+      if (progressBar) progressBar.style.width = '100%';
+
+      // Ergebnis-Text je nach Punktzahl wählen
+      let sternText, nachricht;
+      if (eigenScore >= 7) {
+        sternText = '🌟🌟🌟';
+        nachricht = 'Ausgezeichnet! Du bist ein Symmetrie-Experte!';
+      } else if (eigenScore >= 5) {
+        sternText = '⭐⭐';
+        nachricht = 'Gut gemacht! Noch ein bisschen üben und du schaffst alle!';
+      } else {
+        sternText = '⭐';
+        nachricht = 'Das war ein guter Anfang! Schau dir noch einmal die Theorie an und versuche es erneut.';
+      }
+
+      // Ergebnis-Inhalt rendern
+      const resultText = document.getElementById('eigen-result-text');
+      if (resultText) {
+        resultText.innerHTML =
+          '<div class="text-4xl mb-3">' + sternText + '</div>' +
+          '<h3 class="text-xl font-bold text-slate-100 mb-2">Quiz beendet!</h3>' +
+          '<p class="text-3xl font-bold text-emerald-400 mb-3">' +
+            eigenScore + ' / ' + EIGEN_RUNDEN_LAENGE + ' Punkte' +
+          '</p>' +
+          '<p class="text-slate-400 text-sm">' + nachricht + '</p>';
+      }
+
+      // Ergebnis-Karte einblenden
+      document.getElementById('eigen-result').classList.remove('hidden');
+    }
+
+    // Eigenschaften-Quiz beim Laden der Seite starten
+    startEigenQuiz();
+  </script>
+
+</body>
+</html>

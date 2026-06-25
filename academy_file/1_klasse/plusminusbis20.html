@@ -1,0 +1,810 @@
+<!doctype html>
+<html lang="de">
+
+<head>
+  <!-- Zeichenkodierung und Viewport für mobile Geräte -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+  <!-- Seitentitel und Beschreibung für SEO -->
+  <title>Plus & Minus bis 20 · Klasse 1 · Mathe Akademie</title>
+  <meta name="description" content="Lerne Addition und Subtraktion bis 20 – mit Punkte-Visualisierung, Zahlenstrahl und Quiz." />
+
+  <!-- Favicon und App-Icons -->
+  <link rel="icon" href="../favicon.ico">
+  <link rel="manifest" href="../site.webmanifest">
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png">
+
+  <!-- Tailwind CSS über CDN für Utility-Klassen -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Globale Theme-Variablen und Light/Dark-Mode-Stile -->
+  <link rel="stylesheet" href="../style.css?v=1.0">
+
+  <style>
+    /* ── Eingabefeld-Stil ────────────────────────────────────── */
+    /* Zahlen-Spinner (Pfeilchen) im Input ausblenden */
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type=number] {
+      -moz-appearance: textfield; /* Firefox: kein Spinner */
+    }
+
+    /* ── Tab-Übergang ────────────────────────────────────────── */
+    /* Sanfter Farbwechsel beim Umschalten der Tabs */
+    .tab-btn {
+      transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    }
+
+    /* ── Feedback-Animation ──────────────────────────────────── */
+    /* Einblend-Effekt für Richtig/Falsch-Rückmeldung */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .feedback-anim {
+      animation: fadeIn 0.25s ease forwards;
+    }
+
+    /* ── SVG-Punkte ──────────────────────────────────────────── */
+    /* Sanfter Farbübergang bei Kreisen in der Visualisierung */
+    .dot-circle {
+      transition: fill 0.4s ease, opacity 0.4s ease;
+    }
+
+    /* ── Zahlenstrahl-Beschriftung ───────────────────────────── */
+    /* Schriftart für SVG-Text einheitlich setzen */
+    .strahl-text {
+      font-family: ui-monospace, monospace;
+    }
+  </style>
+</head>
+
+<!-- Dunkles Hintergrund-Design gemäß Design-System -->
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col">
+
+  <!-- ── Top-Bar Container ──────────────────────────────────── -->
+  <!-- Wird dynamisch per fetch() aus topbar.html befüllt -->
+  <header class="border-b border-slate-800 bg-slate-950/80 backdrop-blur sticky top-0 z-50">
+    <div id="topbar-container"></div>
+  </header>
+
+  <!-- ── Hauptinhalt ────────────────────────────────────────── -->
+  <main class="mx-auto max-w-3xl w-full px-4 flex-1 pb-16">
+
+    <!-- ── Zurück-Link und Hero-Bereich ───────────────────────── -->
+    <section class="pt-10 pb-6">
+
+      <!-- Link zurück zur Akademie-Übersicht -->
+      <a href="../academy.html"
+         class="inline-flex items-center gap-1 text-sm text-slate-400 hover:text-emerald-300 transition-colors mb-6 group">
+        <!-- Pfeil-Icon, vergrößert sich beim Hover -->
+        <span class="group-hover:-translate-x-0.5 transition-transform">←</span>
+        Zurück zur Akademie
+      </a>
+
+      <!-- Klassen-Badge mit Smaragd-Akzent -->
+      <div class="flex items-center gap-2 mb-3">
+        <span class="inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-xs font-medium text-emerald-300">
+          <!-- Kleiner Leucht-Punkt als Deko-Element -->
+          <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+          Klasse 1 · Arithmetik
+        </span>
+      </div>
+
+      <!-- Seitentitel -->
+      <h1 class="text-3xl md:text-4xl font-semibold tracking-tight">
+        Plus &amp; Minus
+        <!-- Akzentfarbe für den Zahlenbereich -->
+        <span class="text-emerald-300">bis 20</span>
+      </h1>
+
+      <!-- Kurze Beschreibung unter dem Titel -->
+      <p class="mt-3 text-slate-300 text-sm md:text-base max-w-xl">
+        Übe Addition und Subtraktion mit Zahlen bis 20 – mit visuellen Punkten,
+        Zahlenstrahl und einem kleinen Quiz.
+      </p>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════════ -->
+    <!-- ABSCHNITT 1: Modus-Umschalter (Addition / Subtraktion)  -->
+    <!-- ════════════════════════════════════════════════════════ -->
+    <section class="mb-6">
+      <!-- Karten-Container im Design-System-Stil -->
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+
+        <!-- Abschnitts-Überschrift -->
+        <h2 class="text-lg font-semibold text-slate-200 mb-4">Rechenart wählen</h2>
+
+        <!-- Tab-Buttons: nebeneinander, volle Breite aufgeteilt -->
+        <div class="flex gap-3">
+
+          <!-- Tab: Addition – startet aktiv (smaragd-Hintergrund) -->
+          <button
+            id="btn-addition"
+            onclick="setMode('addition')"
+            class="tab-btn flex-1 py-3 rounded-2xl font-semibold text-sm
+                   bg-emerald-400 text-slate-950">
+            ➕ Addition
+          </button>
+
+          <!-- Tab: Subtraktion – startet inaktiv (Rahmen-Stil) -->
+          <button
+            id="btn-subtraktion"
+            onclick="setMode('subtraktion')"
+            class="tab-btn flex-1 py-3 rounded-2xl font-semibold text-sm
+                   border border-slate-700 text-slate-300">
+            ➖ Subtraktion
+          </button>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════════ -->
+    <!-- ABSCHNITT 2: Visuelle Darstellung mit SVG-Punkten       -->
+    <!-- ════════════════════════════════════════════════════════ -->
+    <section class="mb-6">
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+
+        <!-- Abschnitts-Überschrift -->
+        <h2 class="text-lg font-semibold text-slate-200 mb-1">Visuelle Darstellung</h2>
+        <!-- Dynamischer Untertext je nach Modus -->
+        <p id="dots-label" class="text-xs text-slate-400 mb-4">
+          Smaragd-Punkte + Blau-Punkte = Summe
+        </p>
+
+        <!-- SVG-Container für die Punkte-Visualisierung -->
+        <!-- viewBox="0 0 500 120": 500px breit, 120px hoch -->
+        <div class="overflow-x-auto">
+          <svg id="rechnung-svg"
+               viewBox="0 0 500 120"
+               class="w-full max-w-lg mx-auto block"
+               style="min-width:280px; height:120px;"
+               aria-label="Visuelle Darstellung der Aufgabe">
+            <!-- Inhalt wird per JavaScript befüllt -->
+          </svg>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════════ -->
+    <!-- ABSCHNITT 3: Zahlenstrahl mit Sprung-Animation          -->
+    <!-- ════════════════════════════════════════════════════════ -->
+    <section class="mb-6">
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+
+        <!-- Abschnitts-Überschrift -->
+        <h2 class="text-lg font-semibold text-slate-200 mb-1">Zahlenstrahl</h2>
+        <!-- Erklärtext ändert sich je nach Modus -->
+        <p id="strahl-label" class="text-xs text-slate-400 mb-4">
+          Der Bogen zeigt den Sprung von der ersten Zahl zur Summe.
+        </p>
+
+        <!-- SVG-Zahlenstrahl: viewBox 900x100 für viel Platz -->
+        <div class="overflow-x-auto">
+          <svg id="strahl-svg"
+               viewBox="0 0 900 100"
+               class="w-full block"
+               style="min-width:340px; height:100px;"
+               aria-label="Zahlenstrahl von 0 bis 20">
+            <!-- Inhalt wird per buildRechnungsstrahl() befüllt -->
+          </svg>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════════ -->
+    <!-- ABSCHNITT 4: Quiz – Aufgabe eingeben und prüfen         -->
+    <!-- ════════════════════════════════════════════════════════ -->
+    <section class="mb-8">
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+
+        <!-- Kopfzeile: Überschrift und Punktestand -->
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-lg font-semibold text-slate-200">Quiz</h2>
+          <!-- Punkte-Anzeige rechts oben -->
+          <div class="flex items-center gap-2 text-sm text-slate-400">
+            <span>Punkte:</span>
+            <!-- Wird von updateScore() aktualisiert -->
+            <span id="rechnung-score"
+                  class="font-bold text-emerald-300 text-base tabular-nums">0</span>
+          </div>
+        </div>
+
+        <!-- Aufgaben-Anzeige: große Rechnung -->
+        <div class="flex items-center justify-center mb-6">
+          <!-- Aufgaben-Text, z.B. "8 + 5 = ?" – wird per JS gesetzt -->
+          <div id="aufgabe-text"
+               class="text-4xl md:text-5xl font-bold tracking-tight text-slate-100 text-center">
+            <!-- Platzhalter bis newAufgabe() läuft -->
+            …
+          </div>
+        </div>
+
+        <!-- Eingabezeile: Zahlenfeld und Prüfen-Button -->
+        <div class="flex gap-3 items-center justify-center">
+
+          <!-- Zahlen-Eingabefeld (kein Spinner durch CSS oben) -->
+          <input
+            id="rechnung-input"
+            type="number"
+            min="0"
+            max="20"
+            placeholder="?"
+            autocomplete="off"
+            class="w-24 text-center text-2xl font-bold rounded-2xl
+                   border border-slate-700 bg-slate-800
+                   text-slate-100 placeholder-slate-500
+                   focus:outline-none focus:border-emerald-400
+                   py-3 transition-colors"
+          />
+
+          <!-- Antwort-Prüfen-Button -->
+          <button
+            onclick="checkAnswer()"
+            class="px-6 py-3 rounded-2xl font-semibold text-sm
+                   bg-emerald-400 text-slate-950
+                   hover:bg-emerald-300 transition-colors active:scale-95">
+            Prüfen ✓
+          </button>
+
+          <!-- Neue Aufgabe ohne Prüfung überspringen -->
+          <button
+            onclick="newAufgabe()"
+            class="px-4 py-3 rounded-2xl font-semibold text-sm
+                   border border-slate-700 text-slate-300
+                   hover:border-slate-500 transition-colors active:scale-95">
+            Weiter →
+          </button>
+
+        </div>
+
+        <!-- Feedback-Bereich: ✓ Richtig! oder ✗ Falsch! -->
+        <!-- Startet leer und wird per showFeedback() befüllt -->
+        <div id="feedback-box"
+             class="mt-4 text-center text-lg font-semibold min-h-[28px]">
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════════ -->
+    <!-- THEORIE-BOX: Erklärungen zu Plus und Minus              -->
+    <!-- ════════════════════════════════════════════════════════ -->
+    <section class="mb-8">
+      <!-- 2-Spalten-Grid für Plus und Minus -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        <!-- Plus (+) Erklärung -->
+        <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+          <!-- Titel mit Smaragd-Akzent -->
+          <h3 class="text-base font-semibold text-emerald-300 mb-3">➕ Plus (+)</h3>
+          <p class="text-sm text-slate-300 leading-relaxed">
+            Beim <strong class="text-slate-100">Addieren</strong> werden Zahlen zusammengezählt.
+          </p>
+          <!-- Beispiel-Rechnung farblich hervorgehoben -->
+          <div class="mt-3 rounded-2xl bg-slate-800/60 px-4 py-3 text-sm font-mono text-emerald-300">
+            5 + 3 = 8
+          </div>
+          <p class="mt-3 text-xs text-slate-400 leading-relaxed">
+            Wir fangen bei <strong class="text-slate-300">5</strong> an und zählen
+            <strong class="text-slate-300">3 Schritte</strong> weiter auf dem Zahlenstrahl.
+          </p>
+        </div>
+
+        <!-- Minus (−) Erklärung -->
+        <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+          <!-- Titel in Rosarot für Subtraktion -->
+          <h3 class="text-base font-semibold text-rose-300 mb-3">➖ Minus (−)</h3>
+          <p class="text-sm text-slate-300 leading-relaxed">
+            Beim <strong class="text-slate-100">Subtrahieren</strong> ziehen wir eine Zahl ab.
+          </p>
+          <!-- Beispiel-Rechnung -->
+          <div class="mt-3 rounded-2xl bg-slate-800/60 px-4 py-3 text-sm font-mono text-rose-300">
+            8 − 3 = 5
+          </div>
+          <p class="mt-3 text-xs text-slate-400 leading-relaxed">
+            Wir fangen bei <strong class="text-slate-300">8</strong> an und gehen
+            <strong class="text-slate-300">3 Schritte</strong> zurück auf dem Zahlenstrahl.
+          </p>
+        </div>
+
+      </div>
+    </section>
+
+  </main><!-- Ende main -->
+
+  <!-- ── Fußzeile ───────────────────────────────────────────── -->
+  <footer class="py-6 text-center text-xs text-slate-500">
+    © <span id="y"></span> Brandon Hank · Düsseldorf
+  </footer>
+
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <!-- JAVASCRIPT: Gesamte Interaktionslogik                     -->
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <script>
+    /* ── Globale Zustandsvariablen ─────────────────────────── */
+    let mode    = 'addition';  // Aktueller Modus: 'addition' oder 'subtraktion'
+    let a       = 0;           // Erste Zahl der Aufgabe
+    let b       = 0;           // Zweite Zahl der Aufgabe
+    let korrekt = 0;           // Richtige Antwort (a+b oder a-b)
+    let score   = 0;           // Gesammelter Punktestand
+
+    /* Merkt sich, ob gerade eine Antwort ausgewertet wird,
+       um Doppelklicks auf "Prüfen" zu verhindern */
+    let geprueft = false;
+
+    /* ── Hilfsfunktion: Zufallszahl im Bereich [min, max] ───── */
+    function zufall(min, max) {
+      // Math.random() liefert [0,1), skalieren auf den gewünschten Bereich
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    /* ── Modus wechseln und Tab-Buttons aktualisieren ────────── */
+    function setMode(neuerModus) {
+      mode = neuerModus; // Globalen Modus setzen
+
+      // Alle Tab-Buttons auf inaktiven Stil zurücksetzen
+      const btnAdd = document.getElementById('btn-addition');
+      const btnSub = document.getElementById('btn-subtraktion');
+
+      // Inaktiver Stil: Rahmen sichtbar, Text grau
+      const inaktivKlassen = 'border border-slate-700 text-slate-300';
+      // Aktiver Stil: smaragd-Hintergrund, dunkler Text
+      const aktivKlassen   = 'bg-emerald-400 text-slate-950';
+
+      // Klassen je nach gewähltem Modus verteilen
+      if (mode === 'addition') {
+        btnAdd.className = `tab-btn flex-1 py-3 rounded-2xl font-semibold text-sm ${aktivKlassen}`;
+        btnSub.className = `tab-btn flex-1 py-3 rounded-2xl font-semibold text-sm ${inaktivKlassen}`;
+      } else {
+        btnAdd.className = `tab-btn flex-1 py-3 rounded-2xl font-semibold text-sm ${inaktivKlassen}`;
+        btnSub.className = `tab-btn flex-1 py-3 rounded-2xl font-semibold text-sm ${aktivKlassen}`;
+      }
+
+      // Neue Aufgabe für den gewählten Modus generieren
+      newAufgabe();
+    }
+
+    /* ── Neue Aufgabe generieren ──────────────────────────────── */
+    function newAufgabe() {
+      geprueft = false; // Sperr-Flag zurücksetzen
+
+      if (mode === 'addition') {
+        // Addition: a ∈ [1,10], b ∈ [1,10], Summe ≤ 20
+        a = zufall(1, 10);
+        b = zufall(1, Math.min(10, 20 - a)); // b so wählen, dass a+b ≤ 20
+        korrekt = a + b;
+
+        // Aufgaben-Text anzeigen
+        document.getElementById('aufgabe-text').textContent = `${a} + ${b} = ?`;
+
+        // Hilfs-Label unter der Visualisierung anpassen
+        document.getElementById('dots-label').textContent =
+          `${a} smaragde Punkte + ${b} blaue Punkte = ?`;
+        document.getElementById('strahl-label').textContent =
+          `Der Bogen zeigt den Sprung von ${a} um ${b} Schritte nach rechts.`;
+
+      } else {
+        // Subtraktion: a ∈ [5,20], b ∈ [1,a-1], Ergebnis ≥ 0
+        a = zufall(5, 20);
+        b = zufall(1, a - 1); // b immer kleiner als a (kein negatives Ergebnis)
+        korrekt = a - b;
+
+        // Aufgaben-Text für Subtraktion
+        document.getElementById('aufgabe-text').textContent = `${a} − ${b} = ?`;
+
+        // Hilfs-Labels anpassen
+        document.getElementById('dots-label').textContent =
+          `${a} Punkte gesamt – ${b} werden durchgestrichen = ?`;
+        document.getElementById('strahl-label').textContent =
+          `Der Bogen zeigt den Sprung von ${a} um ${b} Schritte nach links.`;
+      }
+
+      // Eingabefeld leeren und fokussieren
+      const input = document.getElementById('rechnung-input');
+      input.value = '';
+      input.focus();
+
+      // Feedback aus vorheriger Aufgabe löschen
+      document.getElementById('feedback-box').textContent = '';
+      document.getElementById('feedback-box').className =
+        'mt-4 text-center text-lg font-semibold min-h-[28px]';
+
+      // SVG-Visualisierungen neu aufbauen
+      buildDots(a, b, mode);
+      buildRechnungsstrahl(a, b, mode);
+    }
+
+    /* ══════════════════════════════════════════════════════════ */
+    /* SVG-PUNKTE-VISUALISIERUNG                                 */
+    /* ══════════════════════════════════════════════════════════ */
+
+    /* ── Punkte (Dots) aufbauen ───────────────────────────────── */
+    function buildDots(a, b, mode) {
+      const svg = document.getElementById('rechnung-svg');
+      svg.innerHTML = ''; // Alten Inhalt löschen
+
+      const r      = 14;   // Radius jedes Kreises in SVG-Einheiten
+      const gap    = 5;    // Abstand zwischen den Kreisen
+      const schritt = r * 2 + gap; // Gesamtbreite pro Kreis (Durchmesser + Lücke)
+      const cy     = 60;   // Vertikale Mitte des SVG
+
+      if (mode === 'addition') {
+        /* ── Addition: a smaragde Punkte + Trennzeichen + b blaue Punkte ── */
+
+        // Gruppe A (smaragd) zeichnen
+        for (let i = 0; i < a; i++) {
+          const cx = 20 + i * schritt + r; // x-Position: Startoffset + Index × Schrittweite
+          svg.appendChild(makeDot(cx, cy, r, '#34d399', 1, `dot-a-${i}`));
+          // #34d399 = emerald-400 (Tailwind-Farbe)
+        }
+
+        // Trennzeichen „+" zwischen den Gruppen
+        const sepX = 20 + a * schritt + r + 4; // direkt nach der letzten A-Gruppe
+        const sep = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        sep.setAttribute('x', sepX);
+        sep.setAttribute('y', cy + 7); // leicht nach unten versetzt für optische Mitte
+        sep.setAttribute('text-anchor', 'middle');
+        sep.setAttribute('font-size', '22');
+        sep.setAttribute('font-weight', 'bold');
+        sep.setAttribute('fill', '#94a3b8'); // slate-400: dezentes Grau
+        sep.textContent = '+';
+        svg.appendChild(sep);
+
+        // Breite des Trennzeichens reservieren
+        const sepBreite = 28;
+
+        // Gruppe B (blau/teal) zeichnen
+        for (let i = 0; i < b; i++) {
+          const cx = sepX + sepBreite + i * schritt + r; // nach dem Trennzeichen
+          svg.appendChild(makeDot(cx, cy, r, '#2dd4bf', 1, `dot-b-${i}`));
+          // #2dd4bf = teal-400 (Tailwind-Farbe)
+        }
+
+      } else {
+        /* ── Subtraktion: a Punkte gesamt, b davon durchgestrichen ── */
+
+        for (let i = 0; i < a; i++) {
+          const cx = 20 + i * schritt + r; // x-Position des i-ten Kreises
+
+          if (i < a - b) {
+            // Verbleibende Punkte: smaragd, volle Deckkraft
+            svg.appendChild(makeDot(cx, cy, r, '#34d399', 1, `dot-k-${i}`));
+          } else {
+            // Abgezogene Punkte: grau mit 0.3 Deckkraft (halbtransparent)
+            const gruppe = makeDotDurchgestrichen(cx, cy, r);
+            svg.appendChild(gruppe);
+          }
+        }
+      }
+    }
+
+    /* ── Hilfsfunktion: Einen einfachen SVG-Kreis erzeugen ───── */
+    function makeDot(cx, cy, r, farbe, opazitaet, id) {
+      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      circle.setAttribute('cx', cx);
+      circle.setAttribute('cy', cy);
+      circle.setAttribute('r', r);
+      circle.setAttribute('fill', farbe);
+      circle.setAttribute('opacity', opazitaet); // 1 = voll sichtbar
+      circle.setAttribute('id', id);
+      circle.classList.add('dot-circle'); // CSS-Klasse für Übergänge
+      return circle;
+    }
+
+    /* ── Hilfsfunktion: Durchgestrichenen SVG-Kreis erzeugen ─── */
+    function makeDotDurchgestrichen(cx, cy, r) {
+      // Gruppe für Kreis + X-Linie zusammenfassen
+      const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      g.setAttribute('opacity', '0.35'); // opacity: 0.3 → macht die durchgestrichenen Punkte halbtransparent
+
+      // Grauer Hintergrundkreis
+      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      circle.setAttribute('cx', cx);
+      circle.setAttribute('cy', cy);
+      circle.setAttribute('r', r);
+      circle.setAttribute('fill', '#64748b'); // slate-500: neutrales Grau
+      g.appendChild(circle);
+
+      // Diagonale X-Linie (von oben-links nach unten-rechts)
+      const off = r * 0.65; // Abstand vom Mittelpunkt zum Rand des X
+      const linie1 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      linie1.setAttribute('x1', cx - off);
+      linie1.setAttribute('y1', cy - off);
+      linie1.setAttribute('x2', cx + off);
+      linie1.setAttribute('y2', cy + off);
+      linie1.setAttribute('stroke', '#ef4444'); // rot: rot-500 für Durchstrich
+      linie1.setAttribute('stroke-width', '2.5');
+      linie1.setAttribute('stroke-linecap', 'round'); // abgerundete Linienenden
+      g.appendChild(linie1);
+
+      // Zweite Diagonale (von oben-rechts nach unten-links)
+      const linie2 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      linie2.setAttribute('x1', cx + off);
+      linie2.setAttribute('y1', cy - off);
+      linie2.setAttribute('x2', cx - off);
+      linie2.setAttribute('y2', cy + off);
+      linie2.setAttribute('stroke', '#ef4444'); // gleiche rote Farbe
+      linie2.setAttribute('stroke-width', '2.5');
+      linie2.setAttribute('stroke-linecap', 'round');
+      g.appendChild(linie2);
+
+      return g; // Gesamte Gruppe zurückgeben
+    }
+
+    /* ── Alle Punkte nach richtiger Antwort smaragd färben ───── */
+    function allesPunkteFaerben() {
+      // Alle Kreise im Visualisierungs-SVG auf smaragd umfärben
+      const svg = document.getElementById('rechnung-svg');
+      const circles = svg.querySelectorAll('circle');
+      circles.forEach(c => {
+        c.setAttribute('fill', '#34d399'); // emerald-400: Smaragdgrün
+        c.setAttribute('opacity', '1');    // voll sichtbar
+      });
+
+      // X-Linien bei Subtraktion ausblenden (nicht mehr relevant)
+      const linien = svg.querySelectorAll('line');
+      linien.forEach(l => l.setAttribute('stroke', 'transparent'));
+
+      // Gruppen wieder voll sichtbar machen
+      const gruppen = svg.querySelectorAll('g');
+      gruppen.forEach(g => g.setAttribute('opacity', '1'));
+    }
+
+    /* ══════════════════════════════════════════════════════════ */
+    /* ZAHLENSTRAHL MIT SPRUNG-BOGEN                             */
+    /* ══════════════════════════════════════════════════════════ */
+
+    /* ── Zahlenstrahl aufbauen ────────────────────────────────── */
+    function buildRechnungsstrahl(a, b, mode) {
+      const svg = document.getElementById('strahl-svg');
+      svg.innerHTML = ''; // Alten Inhalt löschen
+
+      /* Geometrie-Konstanten des Zahlenstrahls */
+      const links  = 30;   // Startabstand vom linken Rand
+      const rechts = 870;  // Endabstand vom rechten Rand
+      const breite = rechts - links;  // Nutzbare Breite
+      const lineY  = 65;   // Y-Koordinate der Strahllinie
+      const schrittPx = breite / 20; // Pixel pro Zahleneinheit (0–20 = 21 Punkte)
+
+      /* ── Grundlinie des Zahlenstrahls ──────────────────────── */
+      const strahllinie = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      strahllinie.setAttribute('x1', links);
+      strahllinie.setAttribute('y1', lineY);
+      strahllinie.setAttribute('x2', rechts);
+      strahllinie.setAttribute('y2', lineY);
+      strahllinie.setAttribute('stroke', '#334155');      // slate-700: dunkle Linie
+      strahllinie.setAttribute('stroke-width', '2');
+      svg.appendChild(strahllinie);
+
+      /* Pfeilspitze am rechten Ende */
+      const pfeil = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+      pfeil.setAttribute('points', `${rechts},${lineY} ${rechts-8},${lineY-5} ${rechts-8},${lineY+5}`);
+      pfeil.setAttribute('fill', '#334155'); // gleiche Farbe wie Linie
+      svg.appendChild(pfeil);
+
+      /* ── Markierungen und Beschriftungen für 0 bis 20 ───────── */
+      for (let n = 0; n <= 20; n++) {
+        const x = links + n * schrittPx; // x-Position dieser Zahl
+
+        // Senkrechter Strich (Tick) an der Zahl
+        const tick = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        tick.setAttribute('x1', x);
+        tick.setAttribute('y1', lineY - 5);  // 5px nach oben
+        tick.setAttribute('x2', x);
+        tick.setAttribute('y2', lineY + 5);  // 5px nach unten
+        tick.setAttribute('stroke', '#475569');   // slate-600
+        tick.setAttribute('stroke-width', n % 5 === 0 ? '2' : '1'); // Fünfer-Marken dicker
+        svg.appendChild(tick);
+
+        // Zahlen-Beschriftung unterhalb des Strahls
+        // Nur jede zweite Zahl beschriften, damit es nicht zu eng wird
+        // Ausnahme: a, b, Ergebnis immer zeigen
+        const ergebnis = mode === 'addition' ? a + b : a - b;
+        const wichtig  = (n === 0 || n === a || n === ergebnis || n % 5 === 0);
+
+        if (wichtig) {
+          const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          label.setAttribute('x', x);
+          label.setAttribute('y', lineY + 20);  // Unterhalb des Ticks
+          label.setAttribute('text-anchor', 'middle');
+          label.setAttribute('font-size', n === 0 || n % 5 === 0 ? '11' : '10');
+          label.setAttribute('fill', n === a || n === ergebnis ? '#f1f5f9' : '#64748b');
+          // Wichtige Zahlen (a, Ergebnis) weiß, Rest grau
+          label.classList.add('strahl-text');
+          label.textContent = n;
+          svg.appendChild(label);
+        }
+      }
+
+      /* ── Sprung-Bogen vom Startpunkt zum Endpunkt ───────────── */
+      const startZahl = a;                                        // Startposition auf dem Strahl
+      const endZahl   = mode === 'addition' ? a + b : a - b;     // Endposition
+      const x1        = links + startZahl * schrittPx;           // Start-x in Pixeln
+      const x2        = links + endZahl   * schrittPx;           // End-x in Pixeln
+      const distanz   = Math.abs(x2 - x1);                       // Abstand in Pixeln
+
+      // Bogen-Radius proportional zur Sprungweite (größere Sprünge = höherer Bogen)
+      const bogRadius = Math.max(25, distanz * 0.45);
+
+      // Bogenfarbe: smaragd für Addition, rosé für Subtraktion
+      const bogFarbe  = mode === 'addition' ? '#34d399' : '#fb7185';
+
+      // sweep-flag=1 → Bogen geht im Uhrzeigersinn (von links nach rechts = nach oben)
+      // sweep-flag=0 → Bogen geht gegen Uhrzeigersinn (von rechts nach links = auch nach oben)
+      const sweep = mode === 'addition' ? '0' : '1';
+
+      // SVG arc: A rx,ry x-rotation large-arc-flag sweep-flag x,y
+      // rx=bogRadius, ry=bogRadius → runder Bogen
+      // x-rotation=0, large-arc-flag=0 (kurzer Bogen), sweep=variabel
+      const bogPfad = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      bogPfad.setAttribute('d', `M ${x1},${lineY} A ${bogRadius},${bogRadius} 0 0,${sweep} ${x2},${lineY}`);
+      bogPfad.setAttribute('fill', 'none');
+      bogPfad.setAttribute('stroke', bogFarbe);
+      bogPfad.setAttribute('stroke-width', '2.5');
+      bogPfad.setAttribute('stroke-dasharray', '5,3'); // gestrichelter Bogen für Klarheit
+      svg.appendChild(bogPfad);
+
+      /* ── Pfeilspitze am Bogenende ───────────────────────────── */
+      // Kleines Dreieck direkt am Endpunkt des Bogens
+      const pfeilKlein = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+      if (mode === 'addition') {
+        // Pfeil zeigt nach rechts
+        pfeilKlein.setAttribute('points',
+          `${x2},${lineY} ${x2-7},${lineY-5} ${x2-7},${lineY+5}`);
+      } else {
+        // Pfeil zeigt nach links
+        pfeilKlein.setAttribute('points',
+          `${x2},${lineY} ${x2+7},${lineY-5} ${x2+7},${lineY+5}`);
+      }
+      pfeilKlein.setAttribute('fill', bogFarbe);
+      svg.appendChild(pfeilKlein);
+
+      /* ── Startpunkt-Markierung (Kreis bei Zahl a) ───────────── */
+      const startKreis = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      startKreis.setAttribute('cx', x1);
+      startKreis.setAttribute('cy', lineY);
+      startKreis.setAttribute('r', '6');
+      startKreis.setAttribute('fill', '#1e293b');      // slate-800: dunkler Kern
+      startKreis.setAttribute('stroke', '#94a3b8');    // slate-400: grauer Rand
+      startKreis.setAttribute('stroke-width', '2');
+      svg.appendChild(startKreis);
+
+      /* ── Endpunkt-Markierung (Kreis bei Ergebnis) ───────────── */
+      const endKreis = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      endKreis.setAttribute('cx', x2);
+      endKreis.setAttribute('cy', lineY);
+      endKreis.setAttribute('r', '7');
+      endKreis.setAttribute('fill', bogFarbe);         // Bogenfarbe: smaragd oder rosé
+      endKreis.setAttribute('stroke', '#0f172a');      // slate-900: dunkler Rand für Kontrast
+      endKreis.setAttribute('stroke-width', '2');
+      svg.appendChild(endKreis);
+
+      /* ── Beschriftung über Startpunkt: "Start: a" ───────────── */
+      const startLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      startLabel.setAttribute('x', x1);
+      startLabel.setAttribute('y', lineY - bogRadius - 8); // über dem Bogen
+      startLabel.setAttribute('text-anchor', 'middle');
+      startLabel.setAttribute('font-size', '10');
+      startLabel.setAttribute('fill', '#94a3b8'); // slate-400
+      startLabel.classList.add('strahl-text');
+      startLabel.textContent = `Start: ${a}`;
+      svg.appendChild(startLabel);
+
+      /* ── Beschriftung über Endpunkt: Ergebnis ───────────────── */
+      const endLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      endLabel.setAttribute('x', x2);
+      endLabel.setAttribute('y', lineY - 12); // direkt über dem Endkreis
+      endLabel.setAttribute('text-anchor', 'middle');
+      endLabel.setAttribute('font-size', '11');
+      endLabel.setAttribute('font-weight', 'bold');
+      endLabel.setAttribute('fill', bogFarbe); // Farbe passend zum Bogen
+      endLabel.classList.add('strahl-text');
+      endLabel.textContent = endZahl;
+      svg.appendChild(endLabel);
+    }
+
+    /* ══════════════════════════════════════════════════════════ */
+    /* QUIZ-LOGIK                                                */
+    /* ══════════════════════════════════════════════════════════ */
+
+    /* ── Antwort prüfen ───────────────────────────────────────── */
+    function checkAnswer() {
+      if (geprueft) return; // Doppelklick verhindern
+      geprueft = true;
+
+      const input    = document.getElementById('rechnung-input');
+      const eingabe  = parseInt(input.value, 10); // Benutzereingabe als ganze Zahl
+
+      if (isNaN(eingabe)) {
+        // Kein gültiger Wert eingetragen
+        showFeedback('Bitte eine Zahl eingeben!', false);
+        geprueft = false; // Nochmals versuchen erlauben
+        return;
+      }
+
+      if (eingabe === korrekt) {
+        /* ── Richtige Antwort ────────────────────────────────── */
+        score++;                             // Punktestand erhöhen
+        updateScore();                       // Anzeige aktualisieren
+        showFeedback(`✓ Richtig! ${a} ${mode === 'addition' ? '+' : '−'} ${b} = ${korrekt}`, true);
+        allesPunkteFaerben();               // Punkte-Visualisierung smaragd färben
+
+        // Nach 1.2 Sekunden automatisch zur nächsten Aufgabe wechseln
+        setTimeout(newAufgabe, 1200);
+
+      } else {
+        /* ── Falsche Antwort ─────────────────────────────────── */
+        showFeedback(`✗ Nicht ganz. Richtig wäre: ${korrekt}`, false);
+
+        // Nach 2 Sekunden nächste Aufgabe (mehr Zeit zum Lesen)
+        setTimeout(newAufgabe, 2000);
+      }
+    }
+
+    /* ── Feedback-Nachricht anzeigen ──────────────────────────── */
+    function showFeedback(text, richtig) {
+      const box = document.getElementById('feedback-box');
+      box.textContent = text;
+
+      // Farbe je nach Richtig/Falsch + Einblend-Animation
+      box.className = `mt-4 text-center text-lg font-semibold min-h-[28px] feedback-anim ${
+        richtig ? 'text-emerald-300' : 'text-rose-400'
+      }`;
+      // text-emerald-300: smaragd für richtige Antwort
+      // text-rose-400: rosé für falsche Antwort
+    }
+
+    /* ── Punktestand-Anzeige aktualisieren ───────────────────── */
+    function updateScore() {
+      document.getElementById('rechnung-score').textContent = score;
+    }
+
+    /* ── Enter-Taste zum Prüfen nutzen ───────────────────────── */
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        // Enter nur im Quiz-Kontext auslösen (wenn Input fokussiert)
+        const input = document.getElementById('rechnung-input');
+        if (document.activeElement === input || !geprueft) {
+          checkAnswer();
+        }
+      }
+    });
+
+    /* ══════════════════════════════════════════════════════════ */
+    /* INITIALISIERUNG                                           */
+    /* ══════════════════════════════════════════════════════════ */
+
+    /* ── Fußzeile: aktuelles Jahr eintragen ─────────────────── */
+    document.getElementById('y').textContent = new Date().getFullYear();
+
+    /* ── Erste Aufgabe beim Laden der Seite generieren ───────── */
+    newAufgabe();
+
+  </script>
+
+  <!-- ── Top-Bar laden ─────────────────────────────────────── -->
+  <!-- Lädt die gemeinsame Navigationsleiste aus topbar.html   -->
+  <script>
+    window.__i18nBase = '../'; // Basis-Pfad für i18n-Dateien setzen
+    fetch('../topbar.html')
+      .then(res => res.text())
+      .then(html => {
+        // HTML der Top-Bar in den Container einfügen
+        document.getElementById('topbar-container').innerHTML = html;
+        // Globales Script nachladen (Login, Sprache, Theme, etc.)
+        const s = document.createElement('script');
+        s.src = '../script.js';
+        document.body.appendChild(s);
+      });
+  </script>
+
+</body>
+</html>

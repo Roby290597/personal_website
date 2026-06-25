@@ -1,0 +1,1187 @@
+<!doctype html>
+<html lang="de">
+
+<head>
+  <!-- Zeichenkodierung und Viewport für mobile Geräte -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+  <!-- Seitentitel und Beschreibung für SEO -->
+  <title>Mal &amp; Geteilt · Klasse 3 · Mathe Akademie</title>
+  <meta name="description" content="Lerne Multiplikation und Division für die 3. Klasse – mit Gruppen-Visualisierung, Teilen-Darstellung und einem gemischten Quiz." />
+
+  <!-- Favicon und App-Icons -->
+  <link rel="icon" href="../../favicon.ico">
+  <link rel="manifest" href="../../site.webmanifest">
+  <link rel="apple-touch-icon" href="../../apple-touch-icon.png">
+
+  <!-- Tailwind CSS über CDN für Utility-Klassen -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Globale Theme-Variablen und Light/Dark-Mode-Stile -->
+  <link rel="stylesheet" href="../../style.css?v=1.0">
+
+  <style>
+    /* ── Eingabefeld-Stil: Zahlen-Spinner ausblenden ──────────── */
+    /* Die kleinen Pfeilchen im Zahlenfeld werden versteckt */
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type=number] {
+      -moz-appearance: textfield; /* Firefox: kein Spinner */
+    }
+
+    /* ── Sanfter Übergangseffekt für Tab-Buttons ─────────────── */
+    /* Farbe ändert sich fließend beim Klick */
+    .tab-btn {
+      transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    }
+
+    /* ── Feedback-Einblend-Animation ─────────────────────────── */
+    /* Richtig/Falsch-Meldung erscheint sanft von oben */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .feedback-anim {
+      animation: fadeIn 0.25s ease forwards;
+    }
+
+    /* ── Pop-Animation für korrekte Antworten ────────────────── */
+    /* Der SVG "hüpft" kurz, wenn die Antwort richtig ist */
+    @keyframes popIn {
+      0%   { transform: scale(1); }
+      40%  { transform: scale(1.06); }
+      100% { transform: scale(1); }
+    }
+    .pop-anim {
+      animation: popIn 0.35s ease;
+    }
+
+    /* ── SVG-Dots: Farbübergang beim Einfärben ───────────────── */
+    /* Smaragd-Kreise wechseln die Farbe fließend */
+    .dot-circle {
+      transition: fill 0.4s ease, opacity 0.4s ease;
+    }
+
+    /* ── Schrift im SVG einheitlich setzen ───────────────────── */
+    .svg-text {
+      font-family: ui-sans-serif, system-ui, sans-serif;
+    }
+
+    /* ── Schrift für Mono-Elemente (Zahlen) ─────────────────── */
+    .mono-text {
+      font-family: ui-monospace, monospace;
+    }
+
+    /* ── Zusammenfassung am Ende des Gemischten Quiz ────────── */
+    /* Einblenden der Abschluss-Karte */
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .slide-up-anim {
+      animation: slideUp 0.4s ease forwards;
+    }
+  </style>
+</head>
+
+<!-- Dunkles Hintergrund-Design, Vollbild-Höhe, Flex-Spalte -->
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col">
+
+  <!-- ── Top-Bar Container ──────────────────────────────────────── -->
+  <!-- Die gemeinsame Navigationsleiste wird per fetch() nachgeladen -->
+  <header class="border-b border-slate-800 bg-slate-950/80 backdrop-blur sticky top-0 z-50">
+    <div id="topbar-container"></div>
+  </header>
+
+  <!-- ── Hauptinhalt der Seite ─────────────────────────────────── -->
+  <main class="mx-auto max-w-3xl w-full px-4 flex-1 pb-16">
+
+    <!-- ════════════════════════════════════════════════════════ -->
+    <!-- HERO-BEREICH: Titel, Badge, Zurück-Link                 -->
+    <!-- ════════════════════════════════════════════════════════ -->
+    <section class="pt-10 pb-6">
+
+      <!-- Link zurück zur Akademie-Übersicht -->
+      <a href="../../academy.html"
+         class="inline-flex items-center gap-1 text-sm text-slate-400 hover:text-emerald-300 transition-colors mb-6 group">
+        <!-- Pfeil bewegt sich beim Hover leicht nach links -->
+        <span class="group-hover:-translate-x-0.5 transition-transform">←</span>
+        Zurück zur Akademie
+      </a>
+
+      <!-- Klassen-Badge: zeigt Klasse und Themengebiet -->
+      <div class="flex items-center gap-2 mb-3">
+        <span class="inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-xs font-medium text-emerald-300">
+          <!-- Kleiner leuchtender Punkt als Deko-Element -->
+          <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+          Klasse 3 · Grundlagen
+        </span>
+      </div>
+
+      <!-- Haupt-Seitentitel mit Akzentfarbe -->
+      <h1 class="text-3xl md:text-4xl font-semibold tracking-tight">
+        Mal &amp;
+        <!-- Das Wort "Geteilt" leuchtet in Smaragdgrün -->
+        <span class="text-emerald-300">Geteilt</span>
+      </h1>
+
+      <!-- Kurze Beschreibung des Lernziels -->
+      <p class="mt-3 text-slate-300 text-sm md:text-base max-w-xl">
+        Lerne Multiplikation als Gruppen zählen und Division als gleichmäßiges Aufteilen –
+        mit bunten Visualisierungen und einem gemischten Quiz.
+      </p>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════════ -->
+    <!-- THEORIE-BOX: Erklärungen zu × und ÷                    -->
+    <!-- ════════════════════════════════════════════════════════ -->
+    <section class="mb-6">
+      <!-- Dreispaltig auf mittleren Bildschirmen, einspalt. auf Mobil -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+        <!-- Karte 1: Multiplikation erklären -->
+        <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+          <!-- Titel in Smaragdgrün für Multiplikation -->
+          <h3 class="text-base font-semibold text-emerald-300 mb-3">✖ Multiplikation</h3>
+          <p class="text-sm text-slate-300 leading-relaxed">
+            <strong class="text-slate-100">3 × 4</strong> bedeutet:
+            3 Gruppen mit je 4 Dingen.
+          </p>
+          <!-- Beispiel in Monospace-Schrift, farblich hervorgehoben -->
+          <div class="mt-3 rounded-2xl bg-slate-800/60 px-4 py-3 text-sm font-mono text-emerald-300">
+            3 × 4 = 12
+          </div>
+          <p class="mt-3 text-xs text-slate-400 leading-relaxed">
+            Wir zählen <strong class="text-slate-300">3 Gruppen</strong> mit je
+            <strong class="text-slate-300">4 Punkten</strong> = 12 insgesamt.
+          </p>
+        </div>
+
+        <!-- Karte 2: Division erklären -->
+        <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+          <!-- Titel in Himmelblau für Division -->
+          <h3 class="text-base font-semibold text-sky-300 mb-3">➗ Division</h3>
+          <p class="text-sm text-slate-300 leading-relaxed">
+            <strong class="text-slate-100">12 ÷ 4</strong> bedeutet:
+            12 Dinge auf 4 Gruppen aufteilen.
+          </p>
+          <!-- Beispiel in Himmelblau -->
+          <div class="mt-3 rounded-2xl bg-slate-800/60 px-4 py-3 text-sm font-mono text-sky-300">
+            12 ÷ 4 = 3
+          </div>
+          <p class="mt-3 text-xs text-slate-400 leading-relaxed">
+            Jede der <strong class="text-slate-300">4 Gruppen</strong> bekommt
+            <strong class="text-slate-300">3 Punkte</strong>.
+          </p>
+        </div>
+
+        <!-- Karte 3: Zusammenhang erklären -->
+        <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+          <!-- Titel in Gelb/Bernstein für den Zusammenhang -->
+          <h3 class="text-base font-semibold text-amber-300 mb-3">🔄 Zusammenhang</h3>
+          <p class="text-sm text-slate-300 leading-relaxed">
+            Multiplikation und Division sind <strong class="text-slate-100">Umkehroperationen</strong>.
+          </p>
+          <!-- Zwei Beispiele: Hinweg und Rückweg -->
+          <div class="mt-3 rounded-2xl bg-slate-800/60 px-4 py-3 text-sm font-mono text-amber-300 space-y-1">
+            <div>3 × 4 = 12</div>
+            <!-- Pfeil zeigt den Zusammenhang -->
+            <div class="text-slate-400 text-xs">↕ Umkehren</div>
+            <div>12 ÷ 4 = 3</div>
+          </div>
+          <p class="mt-3 text-xs text-slate-400 leading-relaxed">
+            Wenn du × kennst, kannst du ÷ leicht lösen!
+          </p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════════ -->
+    <!-- ABSCHNITT 1: Multiplikation als Gruppen (Punkte-Array) -->
+    <!-- ════════════════════════════════════════════════════════ -->
+    <section class="mb-6">
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+
+        <!-- Kopfzeile mit Überschrift und Punktestand -->
+        <div class="flex items-center justify-between mb-1">
+          <h2 class="text-lg font-semibold text-slate-200">✖ Multiplikation als Gruppen</h2>
+          <!-- Punktestand wird durch updateMultiScore() aktualisiert -->
+          <div class="flex items-center gap-2 text-sm text-slate-400">
+            <span>Punkte:</span>
+            <span id="multi-score"
+                  class="font-bold text-emerald-300 text-base tabular-nums">0</span>
+          </div>
+        </div>
+
+        <!-- Beschreibung des aktuellen Rechteck-Arrays -->
+        <!-- Wird durch newMultiAufgabe() dynamisch befüllt -->
+        <p id="multi-array-label" class="text-xs text-slate-400 mb-4">
+          Klicke auf "Neue Aufgabe" um zu starten.
+        </p>
+
+        <!-- SVG-Container für das Punkte-Array (Reihen × Spalten) -->
+        <!-- viewBox="0 0 320 200": 320px breit, 200px hoch -->
+        <div class="overflow-x-auto flex justify-center mb-4">
+          <svg id="multi-svg"
+               viewBox="0 0 320 200"
+               class="block"
+               style="width:320px; height:200px;"
+               aria-label="Punkte-Array für die Multiplikation">
+            <!-- Wird durch buildArray() befüllt -->
+          </svg>
+        </div>
+
+        <!-- Kommutativgesetz: "Das ist dasselbe wie b × a!" -->
+        <!-- Wird sichtbar, sobald eine Aufgabe generiert wurde -->
+        <div id="multi-kommutativ"
+             class="mb-4 text-center text-xs text-amber-300/80 hidden">
+          <!-- Inhalt wird durch newMultiAufgabe() gesetzt -->
+        </div>
+
+        <!-- Aufgaben-Anzeige: große Multiplikations-Rechnung -->
+        <div class="flex items-center justify-center mb-5">
+          <!-- Aufgaben-Text, z.B. "3 × 5 = ?" -->
+          <div id="multi-aufgabe"
+               class="text-4xl md:text-5xl font-bold tracking-tight text-slate-100 text-center">
+            <!-- Startet leer, wird durch newMultiAufgabe() gesetzt -->
+            …
+          </div>
+        </div>
+
+        <!-- Eingabezeile: Zahlenfeld, Prüfen- und Weiter-Button -->
+        <div class="flex gap-3 items-center justify-center">
+
+          <!-- Zahlen-Eingabefeld für das Produkt -->
+          <input
+            id="multi-input"
+            type="number"
+            min="4"
+            max="48"
+            placeholder="?"
+            autocomplete="off"
+            class="w-24 text-center text-2xl font-bold rounded-2xl
+                   border border-slate-700 bg-slate-800
+                   text-slate-100 placeholder-slate-500
+                   focus:outline-none focus:border-emerald-400
+                   py-3 transition-colors"
+          />
+
+          <!-- Antwort prüfen -->
+          <button
+            onclick="checkMulti()"
+            class="px-6 py-3 rounded-2xl font-semibold text-sm
+                   bg-emerald-400 text-slate-950
+                   hover:bg-emerald-300 transition-colors active:scale-95">
+            Prüfen ✓
+          </button>
+
+          <!-- Aufgabe ohne Prüfung überspringen -->
+          <button
+            onclick="newMultiAufgabe()"
+            class="px-4 py-3 rounded-2xl font-semibold text-sm
+                   border border-slate-700 text-slate-300
+                   hover:border-slate-500 transition-colors active:scale-95">
+            Neue Aufgabe
+          </button>
+
+        </div>
+
+        <!-- Feedback-Bereich: wird durch showMultiFeedback() befüllt -->
+        <div id="multi-feedback"
+             class="mt-4 text-center text-lg font-semibold min-h-[28px]">
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════════ -->
+    <!-- ABSCHNITT 2: Division als Aufteilen (Eimer-Visualisierung) -->
+    <!-- ════════════════════════════════════════════════════════ -->
+    <section class="mb-6">
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+
+        <!-- Kopfzeile mit Überschrift und Punktestand -->
+        <div class="flex items-center justify-between mb-1">
+          <h2 class="text-lg font-semibold text-slate-200">➗ Division als Aufteilen</h2>
+          <!-- Punktestand wird durch updateDivScore() aktualisiert -->
+          <div class="flex items-center gap-2 text-sm text-slate-400">
+            <span>Punkte:</span>
+            <span id="div-score"
+                  class="font-bold text-sky-300 text-base tabular-nums">0</span>
+          </div>
+        </div>
+
+        <!-- Beschreibung der Aufgabe: z.B. "24 Punkte auf 4 Kinder" -->
+        <!-- Wird durch newDivAufgabe() dynamisch befüllt -->
+        <p id="div-aufgabe-label" class="text-xs text-slate-400 mb-4">
+          Klicke auf "Neue Aufgabe" um zu starten.
+        </p>
+
+        <!-- SVG-Container für die Gruppen-Darstellung -->
+        <!-- viewBox="0 0 320 160": Platz für bis zu 6 Eimer nebeneinander -->
+        <div class="overflow-x-auto flex justify-center mb-4">
+          <svg id="div-svg"
+               viewBox="0 0 320 160"
+               class="block"
+               style="width:320px; height:160px;"
+               aria-label="Gruppen-Darstellung für die Division">
+            <!-- Wird durch buildDivisionVisual() befüllt -->
+          </svg>
+        </div>
+
+        <!-- Aufgaben-Anzeige: große Divisions-Rechnung -->
+        <div class="flex items-center justify-center mb-5">
+          <!-- Aufgaben-Text, z.B. "24 ÷ 4 = ?" -->
+          <div id="div-aufgabe"
+               class="text-4xl md:text-5xl font-bold tracking-tight text-slate-100 text-center">
+            …
+          </div>
+        </div>
+
+        <!-- Eingabezeile: Zahlenfeld, Prüfen- und Weiter-Button -->
+        <div class="flex gap-3 items-center justify-center">
+
+          <!-- Zahlen-Eingabefeld für den Quotienten -->
+          <input
+            id="div-input"
+            type="number"
+            min="1"
+            max="12"
+            placeholder="?"
+            autocomplete="off"
+            class="w-24 text-center text-2xl font-bold rounded-2xl
+                   border border-slate-700 bg-slate-800
+                   text-slate-100 placeholder-slate-500
+                   focus:outline-none focus:border-sky-400
+                   py-3 transition-colors"
+          />
+
+          <!-- Antwort prüfen -->
+          <button
+            onclick="checkDiv()"
+            class="px-6 py-3 rounded-2xl font-semibold text-sm
+                   bg-sky-400 text-slate-950
+                   hover:bg-sky-300 transition-colors active:scale-95">
+            Prüfen ✓
+          </button>
+
+          <!-- Neue Aufgabe generieren -->
+          <button
+            onclick="newDivAufgabe()"
+            class="px-4 py-3 rounded-2xl font-semibold text-sm
+                   border border-slate-700 text-slate-300
+                   hover:border-slate-500 transition-colors active:scale-95">
+            Neue Aufgabe
+          </button>
+
+        </div>
+
+        <!-- Feedback-Bereich: wird durch showDivFeedback() befüllt -->
+        <div id="div-feedback"
+             class="mt-4 text-center text-lg font-semibold min-h-[28px]">
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════════ -->
+    <!-- ABSCHNITT 3: Gemischtes Quiz (× und ÷ gemischt)        -->
+    <!-- ════════════════════════════════════════════════════════ -->
+    <section class="mb-8">
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+
+        <!-- Kopfzeile mit Titel und aktuellem Fortschritt -->
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-lg font-semibold text-slate-200">🎲 Gemischtes Quiz</h2>
+          <!-- Zeigt "X / 10" an – wie viele Fragen korrekt beantwortet -->
+          <div class="flex items-center gap-2 text-sm text-slate-400">
+            <span>Ergebnis:</span>
+            <span id="gemischt-score"
+                  class="font-bold text-amber-300 text-base tabular-nums">0 / 10</span>
+          </div>
+        </div>
+
+        <!-- Fortschrittsbalken: zeigt wie weit man im Quiz ist -->
+        <div class="w-full bg-slate-800 rounded-full h-2 mb-6">
+          <!-- Breite wird durch updateGemischtProgress() gesetzt -->
+          <div id="gemischt-progress-bar"
+               class="bg-amber-400 h-2 rounded-full transition-all duration-500"
+               style="width: 0%">
+          </div>
+        </div>
+
+        <!-- Aufgaben-Anzeige: zeigt entweder "?" oder die Zusammenfassung -->
+        <!-- Wird durch newGemischtAufgabe() oder showGemischtSummary() ersetzt -->
+        <div id="gemischt-content">
+
+          <!-- Aufgaben-Text: z.B. "7 × 8 = ?" oder "56 ÷ 7 = ?" -->
+          <div class="flex items-center justify-center mb-6">
+            <div id="gemischt-aufgabe"
+                 class="text-4xl md:text-5xl font-bold tracking-tight text-slate-100 text-center">
+              <!-- Startet leer, wird durch startGemischt() gesetzt -->
+              …
+            </div>
+          </div>
+
+          <!-- Eingabezeile: Zahlenfeld und Prüfen-Button -->
+          <div class="flex gap-3 items-center justify-center">
+
+            <!-- Zahlen-Eingabefeld für das Ergebnis -->
+            <input
+              id="gemischt-input"
+              type="number"
+              min="1"
+              max="72"
+              placeholder="?"
+              autocomplete="off"
+              class="w-24 text-center text-2xl font-bold rounded-2xl
+                     border border-slate-700 bg-slate-800
+                     text-slate-100 placeholder-slate-500
+                     focus:outline-none focus:border-amber-400
+                     py-3 transition-colors"
+            />
+
+            <!-- Antwort prüfen – Enter-Taste funktioniert ebenfalls -->
+            <button
+              onclick="checkGemischt()"
+              class="px-6 py-3 rounded-2xl font-semibold text-sm
+                     bg-amber-400 text-slate-950
+                     hover:bg-amber-300 transition-colors active:scale-95">
+              Prüfen ✓
+            </button>
+
+          </div>
+
+          <!-- Feedback-Bereich für das gemischte Quiz -->
+          <div id="gemischt-feedback"
+               class="mt-4 text-center text-lg font-semibold min-h-[28px]">
+          </div>
+
+        </div><!-- Ende gemischt-content -->
+
+        <!-- Start-Button: erscheint vor dem ersten Quiz und nach jedem Durchlauf -->
+        <div id="gemischt-start-area" class="text-center mt-4">
+          <button
+            onclick="startGemischt()"
+            class="px-8 py-3 rounded-2xl font-semibold text-sm
+                   bg-amber-400 text-slate-950
+                   hover:bg-amber-300 transition-colors active:scale-95">
+            Quiz starten 🚀
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+  </main><!-- Ende des Hauptinhalts -->
+
+  <!-- ── Fußzeile ──────────────────────────────────────────────── -->
+  <!-- Wird nach dem JavaScript ausgefüllt -->
+  <footer class="py-6 text-center text-xs text-slate-500">
+    © <span id="y"></span> Brandon Hank · Düsseldorf
+  </footer>
+
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <!-- JAVASCRIPT: Gesamte Interaktionslogik                     -->
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <script>
+    /* ════════════════════════════════════════════════════════
+       ABSCHNITT 1: MULTIPLIKATION – Globale Zustandsvariablen
+    ════════════════════════════════════════════════════════ */
+
+    let multiA       = 0;     /* Anzahl der Reihen (Gruppen) im Punkte-Array */
+    let multiB       = 0;     /* Anzahl der Spalten (Punkte pro Gruppe) */
+    let multiKorrekt = 0;     /* Richtiges Produkt: multiA × multiB */
+    let multiScore   = 0;     /* Anzahl richtig beantworteter Multiplikations-Aufgaben */
+    let multiGeprueft = false; /* Verhindert Doppelklick auf "Prüfen" */
+
+    /* ════════════════════════════════════════════════════════
+       ABSCHNITT 2: DIVISION – Globale Zustandsvariablen
+    ════════════════════════════════════════════════════════ */
+
+    let divTotal     = 0;     /* Gesamtzahl der Punkte, die aufgeteilt werden */
+    let divDivisor   = 0;     /* Anzahl der Gruppen (Kinder/Eimer) */
+    let divKorrekt   = 0;     /* Richtiger Quotient: divTotal ÷ divDivisor */
+    let divScore     = 0;     /* Anzahl richtig beantworteter Divisions-Aufgaben */
+    let divGeprueft  = false; /* Verhindert Doppelklick auf "Prüfen" */
+
+    /* ════════════════════════════════════════════════════════
+       ABSCHNITT 3: GEMISCHTES QUIZ – Globale Zustandsvariablen
+    ════════════════════════════════════════════════════════ */
+
+    let gemischtAufgaben  = [];   /* Liste der 10 Aufgaben für den aktuellen Durchgang */
+    let gemischtIndex     = 0;    /* Aktuelle Frage-Nummer (0–9) */
+    let gemischtRichtig   = 0;    /* Anzahl richtiger Antworten im aktuellen Durchgang */
+    let gemischtKorrekt   = 0;    /* Richtige Antwort der aktuellen Aufgabe */
+    let gemischtGeprueft  = false; /* Verhindert Doppelklick auf "Prüfen" */
+    let gemischtAktiv     = false; /* true = Quiz läuft gerade */
+
+    /* ════════════════════════════════════════════════════════
+       HILFSFUNKTIONEN
+    ════════════════════════════════════════════════════════ */
+
+    /* ── Zufallszahl im Bereich [min, max] inclusive ──────────── */
+    function zufall(min, max) {
+      /* Math.random() → [0,1), * Bereich → [0, Bereich), floor → ganze Zahl */
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    /* ════════════════════════════════════════════════════════
+       SVG-HILFSFUNKTIONEN
+    ════════════════════════════════════════════════════════ */
+
+    /* ── Einen einzelnen SVG-Kreis (Punkt) erzeugen ──────────── */
+    /* cx, cy: Mittelpunkt; r: Radius; farbe: Füllfarbe (Hex) */
+    function machePunkt(cx, cy, r, farbe) {
+      /* SVG-Elemente müssen im SVG-Namespace erstellt werden */
+      const kreis = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      kreis.setAttribute('cx', cx);        /* x-Koordinate des Mittelpunkts */
+      kreis.setAttribute('cy', cy);        /* y-Koordinate des Mittelpunkts */
+      kreis.setAttribute('r', r);          /* Radius in SVG-Einheiten */
+      kreis.setAttribute('fill', farbe);   /* Füllfarbe, z.B. '#34d399' (emerald) */
+      kreis.classList.add('dot-circle');   /* CSS-Klasse für Farbübergang */
+      return kreis; /* Fertigen Kreis zurückgeben */
+    }
+
+    /* ── SVG-Textknoten erzeugen ─────────────────────────────── */
+    /* x, y: Position; text: Inhalt; farbe: Textfarbe; groesse: font-size */
+    function macheText(x, y, text, farbe, groesse, fettdruck) {
+      const elem = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      elem.setAttribute('x', x);
+      elem.setAttribute('y', y);
+      elem.setAttribute('text-anchor', 'middle');  /* Mittig ausrichten */
+      elem.setAttribute('fill', farbe);
+      elem.setAttribute('font-size', groesse || '12');
+      if (fettdruck) elem.setAttribute('font-weight', 'bold');
+      elem.classList.add('svg-text');    /* Einheitliche Schriftart */
+      elem.textContent = text;
+      return elem;
+    }
+
+    /* ════════════════════════════════════════════════════════
+       ABSCHNITT 1: MULTIPLIKATION – Funktionen
+    ════════════════════════════════════════════════════════ */
+
+    /* ── Punkte-Array aufbauen (a Reihen × b Spalten) ─────────── */
+    /* a: Anzahl Reihen (Gruppen), b: Anzahl Spalten (pro Gruppe) */
+    /* Das Array wird in das SVG mit id="multi-svg" gezeichnet */
+    function buildArray(a, b) {
+      const svg = document.getElementById('multi-svg');
+      svg.innerHTML = ''; /* Alten Inhalt löschen */
+
+      /* Geometrie-Konstanten für das Punkte-Raster */
+      const r       = 10;   /* Radius jedes Kreises in SVG-Einheiten */
+      const abstand = 28;   /* Abstand von Mittelpunkt zu Mittelpunkt (= 2r + Lücke) */
+      const startX  = 20;   /* x-Startposition des ersten Kreises */
+      const startY  = 20;   /* y-Startposition des ersten Kreises */
+
+      /* Für jede Reihe (Gruppe) ... */
+      for (let reihe = 0; reihe < a; reihe++) {
+        /* ... und jede Spalte (Punkt in der Gruppe) */
+        for (let spalte = 0; spalte < b; spalte++) {
+          /* x-Position: Startposition + Spalten-Index × Abstand */
+          const cx = startX + spalte * abstand;
+          /* y-Position: Startposition + Reihen-Index × Abstand */
+          const cy = startY + reihe * abstand;
+
+          /* Smaragdgrüner Punkt (#34d399 = emerald-400 in Tailwind) */
+          const punkt = machePunkt(cx, cy, r, '#34d399');
+          svg.appendChild(punkt); /* Punkt ins SVG einfügen */
+        }
+      }
+
+      /* ── Reihen-Beschriftung rechts neben jeder Reihe ───────── */
+      /* Zeigt "Reihe 1: b Punkte" etc. */
+      for (let reihe = 0; reihe < a; reihe++) {
+        const labelX = startX + b * abstand + 4; /* Rechts neben der letzten Spalte */
+        const labelY = startY + reihe * abstand + 4; /* Vertikal zentriert zur Reihe */
+        /* Beschriftung: "× 1 Gruppe" etc. dezent in grau */
+        const label = macheText(labelX, labelY, `Gruppe ${reihe + 1}`, '#475569', '9');
+        label.setAttribute('text-anchor', 'start'); /* Links ausgerichtet */
+        svg.appendChild(label);
+      }
+    }
+
+    /* ── Neue Multiplikations-Aufgabe generieren ─────────────── */
+    /* a ∈ [2,6] Reihen, b ∈ [2,8] Spalten – passt in das 320×200 SVG */
+    function newMultiAufgabe() {
+      multiGeprueft = false; /* Sperrflag zurücksetzen */
+
+      /* Zufällige Werte im erlaubten Bereich */
+      multiA = zufall(2, 6); /* Anzahl Gruppen (Reihen) */
+      multiB = zufall(2, 8); /* Punkte pro Gruppe (Spalten) */
+      multiKorrekt = multiA * multiB; /* Richtiges Ergebnis */
+
+      /* Aufgaben-Text anzeigen: z.B. "3 × 5 = ?" */
+      document.getElementById('multi-aufgabe').textContent =
+        `${multiA} × ${multiB} = ?`;
+
+      /* Array-Beschriftung unter der SVG-Überschrift */
+      document.getElementById('multi-array-label').textContent =
+        `${multiA} Gruppen mit je ${multiB} Punkten = __ Punkte`;
+
+      /* Kommutativgesetz anzeigen: "Dasselbe wie b × a!" */
+      const kommDiv = document.getElementById('multi-kommutativ');
+      kommDiv.textContent =
+        `💡 Das ist dasselbe wie ${multiB} × ${multiA} = ${multiKorrekt}`;
+      kommDiv.classList.remove('hidden'); /* Sichtbar machen */
+
+      /* Eingabefeld leeren und fokussieren */
+      const input = document.getElementById('multi-input');
+      input.value = '';
+      input.focus();
+
+      /* Altes Feedback löschen */
+      document.getElementById('multi-feedback').textContent = '';
+      document.getElementById('multi-feedback').className =
+        'mt-4 text-center text-lg font-semibold min-h-[28px]';
+
+      /* SVG-Array neu zeichnen */
+      buildArray(multiA, multiB);
+    }
+
+    /* ── Multiplikations-Antwort prüfen ──────────────────────── */
+    function checkMulti() {
+      if (multiGeprueft) return; /* Doppelklick verhindern */
+      multiGeprueft = true;
+
+      const input   = document.getElementById('multi-input');
+      const eingabe = parseInt(input.value, 10); /* Benutzereingabe als ganze Zahl */
+
+      /* Kein gültiger Wert? Fehler anzeigen, weiter versuchen erlauben */
+      if (isNaN(eingabe)) {
+        showMultiFeedback('Bitte eine Zahl eingeben!', false);
+        multiGeprueft = false;
+        return;
+      }
+
+      if (eingabe === multiKorrekt) {
+        /* ── Richtig! ─────────────────────────────────────── */
+        multiScore++;                /* Punktestand erhöhen */
+        updateMultiScore();          /* Anzeige aktualisieren */
+        showMultiFeedback(
+          `✓ Richtig! ${multiA} × ${multiB} = ${multiKorrekt}`, true
+        );
+        /* Alle Punkte smaragd einfärben als visuelle Bestätigung */
+        allePunkteSmaragd('multi-svg');
+        /* Pop-Animation am SVG */
+        animateSvg('multi-svg');
+        /* Nach 1.2 Sekunden automatisch zur nächsten Aufgabe */
+        setTimeout(newMultiAufgabe, 1200);
+      } else {
+        /* ── Falsch! ──────────────────────────────────────── */
+        showMultiFeedback(
+          `✗ Nicht ganz. ${multiA} × ${multiB} = ${multiKorrekt}`, false
+        );
+        /* Mehr Zeit zum Lesen der richtigen Antwort */
+        setTimeout(newMultiAufgabe, 2200);
+      }
+    }
+
+    /* ── Multiplikations-Feedback anzeigen ───────────────────── */
+    /* text: Nachricht; richtig: true = grün, false = rot */
+    function showMultiFeedback(text, richtig) {
+      const box = document.getElementById('multi-feedback');
+      box.textContent = text;
+      /* Farbe je nach richtig/falsch + Einblend-Animation */
+      box.className = `mt-4 text-center text-lg font-semibold min-h-[28px] feedback-anim ${
+        richtig ? 'text-emerald-300' : 'text-rose-400'
+      }`;
+    }
+
+    /* ── Multiplikations-Punktestand aktualisieren ───────────── */
+    function updateMultiScore() {
+      document.getElementById('multi-score').textContent = multiScore;
+    }
+
+    /* ════════════════════════════════════════════════════════
+       ABSCHNITT 2: DIVISION – Funktionen
+    ════════════════════════════════════════════════════════ */
+
+    /* ── Divisions-Visualisierung aufbauen ───────────────────── */
+    /* total: Gesamtpunkte; divisor: Anzahl Gruppen/Eimer */
+    /* Zeichnet 'divisor' Eimer, jeder mit 'total/divisor' Punkten */
+    function buildDivisionVisual(total, divisor) {
+      const svg = document.getElementById('div-svg');
+      svg.innerHTML = ''; /* Alten Inhalt löschen */
+
+      const proGruppe = total / divisor; /* Punkte pro Gruppe (ganze Zahl, kein Rest) */
+
+      /* Geometrie: Eimer gleichmäßig über die SVG-Breite verteilen */
+      const svgBreite = 320;       /* Breite des SVG in Einheiten */
+      const eBreite   = 42;        /* Breite eines Eimers in SVG-Einheiten */
+      const eHoehe    = 50;        /* Höhe eines Eimers */
+      const eStartY   = 95;        /* y-Position Oberkante des Eimers */
+      /* Abstand zwischen Eimern = gleichmäßig verteilt */
+      const abstand   = svgBreite / (divisor + 1);
+
+      /* ── Für jeden Eimer ─────────────────────────────────────── */
+      for (let i = 0; i < divisor; i++) {
+        /* Mittelpunkt des Eimers horizontal */
+        const mx = abstand * (i + 1);
+
+        /* ── Eimer-Rechteck zeichnen ──────────────────────────── */
+        /* Das Rechteck symbolisiert einen Eimer oder eine Gruppe */
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('x', mx - eBreite / 2);        /* Links oben x */
+        rect.setAttribute('y', eStartY);                  /* Links oben y */
+        rect.setAttribute('width', eBreite);              /* Breite */
+        rect.setAttribute('height', eHoehe);              /* Höhe */
+        rect.setAttribute('rx', '6');                     /* Abgerundete Ecken */
+        rect.setAttribute('fill', 'none');                /* Kein Füllung */
+        rect.setAttribute('stroke', '#334155');           /* slate-700: Rahmenfarbe */
+        rect.setAttribute('stroke-width', '2');
+        svg.appendChild(rect);
+
+        /* ── Eimer-Nummer unter dem Rechteck ─────────────────── */
+        /* z.B. "Kind 1", "Kind 2" etc. */
+        const numLabel = macheText(
+          mx,
+          eStartY + eHoehe + 14,   /* Unterhalb des Eimers */
+          `Kind ${i + 1}`,
+          '#64748b',                /* slate-500: dezentes Grau */
+          '9'
+        );
+        svg.appendChild(numLabel);
+
+        /* ── Punkte im Eimer zeichnen ─────────────────────────── */
+        /* Punkte werden in Reihen angeordnet (max. 4 pro Reihe) */
+        const maxProReihe = 4;   /* Maximal 4 Punkte nebeneinander im Eimer */
+        const punktR      = 5;   /* Radius der Punkte im Eimer (kleiner als Array) */
+        const pAbstand    = 10;  /* Abstand zwischen den Punkten */
+
+        for (let p = 0; p < proGruppe; p++) {
+          /* Reihe und Spalte berechnen */
+          const reihe  = Math.floor(p / maxProReihe); /* Welche Reihe? */
+          const spalte = p % maxProReihe;              /* Welche Spalte? */
+          /* Startpunkt für Punkte innerhalb des Eimers */
+          const pStartX = mx - ((Math.min(proGruppe, maxProReihe) - 1) * pAbstand) / 2;
+          const pStartY = eStartY + 12;               /* Etwas vom oberen Rand */
+          const px = pStartX + spalte * pAbstand;     /* x-Position des Punktes */
+          const py = pStartY + reihe  * pAbstand;     /* y-Position des Punktes */
+
+          /* Himmelblauer Punkt (#38bdf8 = sky-400 in Tailwind) */
+          const punkt = machePunkt(px, py, punktR, '#38bdf8');
+          svg.appendChild(punkt);
+        }
+
+        /* ── Anzahl-Beschriftung oben am Eimer ───────────────── */
+        /* Zeigt die Anzahl der Punkte pro Gruppe */
+        const anzLabel = macheText(
+          mx,
+          eStartY - 6,    /* Etwas oberhalb des Eimers */
+          `${proGruppe}`,
+          '#38bdf8',      /* sky-400: gleiche Farbe wie die Punkte */
+          '11',
+          true            /* Fettdruck */
+        );
+        svg.appendChild(anzLabel);
+      }
+
+      /* ── Gesamt-Beschriftung oben ─────────────────────────── */
+      const gesamtLabel = macheText(
+        160,    /* Mitte des SVG */
+        14,     /* Oben */
+        `${total} Punkte werden aufgeteilt auf ${divisor} Kinder`,
+        '#94a3b8',  /* slate-400 */
+        '9'
+      );
+      svg.appendChild(gesamtLabel);
+    }
+
+    /* ── Neue Divisions-Aufgabe generieren ───────────────────── */
+    /* Nur saubere Divisionen ohne Rest für die 3. Klasse */
+    function newDivAufgabe() {
+      divGeprueft = false; /* Sperrflag zurücksetzen */
+
+      /* Erlaubte Divisoren: 2, 3, 4, 6 */
+      const moeglicheDivisoren = [2, 3, 4, 6];
+
+      /* Zufälligen Divisor wählen */
+      divDivisor = moeglicheDivisoren[zufall(0, moeglicheDivisoren.length - 1)];
+
+      /* Quotienten im Bereich [2, 8] wählen (kleines 1×1) */
+      const quotient = zufall(2, 8);
+
+      /* Gesamtzahl = Divisor × Quotient (garantiert kein Rest) */
+      divTotal   = divDivisor * quotient;
+      divKorrekt = quotient; /* Richtige Antwort */
+
+      /* Aufgaben-Text anzeigen: z.B. "24 ÷ 4 = ?" */
+      document.getElementById('div-aufgabe').textContent =
+        `${divTotal} ÷ ${divDivisor} = ?`;
+
+      /* Beschriftung: erklärt die Aufgabe in Worten */
+      document.getElementById('div-aufgabe-label').textContent =
+        `${divTotal} Punkte gleichmäßig auf ${divDivisor} Kinder aufteilen. Wie viele bekommt jedes Kind?`;
+
+      /* Eingabefeld leeren und fokussieren */
+      const input = document.getElementById('div-input');
+      input.value = '';
+      input.focus();
+
+      /* Altes Feedback löschen */
+      document.getElementById('div-feedback').textContent = '';
+      document.getElementById('div-feedback').className =
+        'mt-4 text-center text-lg font-semibold min-h-[28px]';
+
+      /* Visualisierung neu zeichnen */
+      buildDivisionVisual(divTotal, divDivisor);
+    }
+
+    /* ── Divisions-Antwort prüfen ────────────────────────────── */
+    function checkDiv() {
+      if (divGeprueft) return; /* Doppelklick verhindern */
+      divGeprueft = true;
+
+      const input   = document.getElementById('div-input');
+      const eingabe = parseInt(input.value, 10); /* Benutzereingabe als ganze Zahl */
+
+      /* Kein gültiger Wert? Fehler anzeigen */
+      if (isNaN(eingabe)) {
+        showDivFeedback('Bitte eine Zahl eingeben!', false);
+        divGeprueft = false;
+        return;
+      }
+
+      if (eingabe === divKorrekt) {
+        /* ── Richtig! ─────────────────────────────────────── */
+        divScore++;               /* Punktestand erhöhen */
+        updateDivScore();         /* Anzeige aktualisieren */
+        showDivFeedback(
+          `✓ Richtig! ${divTotal} ÷ ${divDivisor} = ${divKorrekt}`, true
+        );
+        /* Alle Punkte smaragd einfärben */
+        allePunkteSmaragd('div-svg');
+        animateSvg('div-svg');
+        /* Nach 1.2 Sekunden zur nächsten Aufgabe */
+        setTimeout(newDivAufgabe, 1200);
+      } else {
+        /* ── Falsch! ──────────────────────────────────────── */
+        showDivFeedback(
+          `✗ Nicht ganz. ${divTotal} ÷ ${divDivisor} = ${divKorrekt}`, false
+        );
+        setTimeout(newDivAufgabe, 2200);
+      }
+    }
+
+    /* ── Divisions-Feedback anzeigen ─────────────────────────── */
+    function showDivFeedback(text, richtig) {
+      const box = document.getElementById('div-feedback');
+      box.textContent = text;
+      box.className = `mt-4 text-center text-lg font-semibold min-h-[28px] feedback-anim ${
+        richtig ? 'text-sky-300' : 'text-rose-400'
+      }`;
+    }
+
+    /* ── Divisions-Punktestand aktualisieren ─────────────────── */
+    function updateDivScore() {
+      document.getElementById('div-score').textContent = divScore;
+    }
+
+    /* ════════════════════════════════════════════════════════
+       ABSCHNITT 3: GEMISCHTES QUIZ – Funktionen
+    ════════════════════════════════════════════════════════ */
+
+    /* ── 10 gemischte Aufgaben (× und ÷) generieren ──────────── */
+    /* Gibt eine Liste von Aufgaben-Objekten zurück */
+    function erzeugeGemischtAufgaben() {
+      const liste = []; /* Leere Liste für die 10 Aufgaben */
+
+      for (let i = 0; i < 10; i++) {
+        /* Zufällig Multiplikation oder Division wählen */
+        const istMal = zufall(0, 1) === 0; /* 50/50 Chance */
+
+        if (istMal) {
+          /* ── Multiplikations-Aufgabe ─────────────────────── */
+          const a = zufall(2, 9);  /* Erste Zahl */
+          const b = zufall(2, 9);  /* Zweite Zahl */
+          liste.push({
+            text:    `${a} × ${b} = ?`,  /* Aufgaben-Text */
+            antwort: a * b,               /* Richtige Antwort */
+            typ:     'mal'                /* Art der Aufgabe */
+          });
+        } else {
+          /* ── Divisions-Aufgabe ───────────────────────────── */
+          /* Nur saubere Divisionen, wie in Abschnitt 2 */
+          const divisoren = [2, 3, 4, 6, 7, 8, 9];
+          const divisor   = divisoren[zufall(0, divisoren.length - 1)];
+          const quotient  = zufall(2, 9);
+          const total     = divisor * quotient; /* Kein Rest */
+          liste.push({
+            text:    `${total} ÷ ${divisor} = ?`, /* Aufgaben-Text */
+            antwort: quotient,                      /* Richtige Antwort */
+            typ:     'geteilt'                      /* Art der Aufgabe */
+          });
+        }
+      }
+
+      return liste; /* Fertige Liste zurückgeben */
+    }
+
+    /* ── Neues Quiz starten ───────────────────────────────────── */
+    function startGemischt() {
+      /* 10 frische Aufgaben generieren */
+      gemischtAufgaben = erzeugeGemischtAufgaben();
+      gemischtIndex    = 0;   /* Beim ersten Task beginnen */
+      gemischtRichtig  = 0;   /* Zähler zurücksetzen */
+      gemischtAktiv    = true;
+
+      /* Start-Button verstecken, Quiz-Inhalt zeigen */
+      document.getElementById('gemischt-start-area').classList.add('hidden');
+      document.getElementById('gemischt-content').classList.remove('hidden');
+
+      /* Erste Aufgabe laden */
+      ladeGemischtAufgabe();
+    }
+
+    /* ── Aktuelle Aufgabe anzeigen ────────────────────────────── */
+    function ladeGemischtAufgabe() {
+      gemischtGeprueft = false; /* Sperrflag zurücksetzen */
+
+      /* Aktuelle Aufgabe aus der Liste holen */
+      const aufgabe = gemischtAufgaben[gemischtIndex];
+      gemischtKorrekt = aufgabe.antwort; /* Richtige Antwort merken */
+
+      /* Aufgaben-Text anzeigen */
+      document.getElementById('gemischt-aufgabe').textContent = aufgabe.text;
+
+      /* Eingabefeld leeren und fokussieren */
+      const input = document.getElementById('gemischt-input');
+      input.value = '';
+      input.focus();
+
+      /* Altes Feedback löschen */
+      document.getElementById('gemischt-feedback').textContent = '';
+      document.getElementById('gemischt-feedback').className =
+        'mt-4 text-center text-lg font-semibold min-h-[28px]';
+
+      /* Fortschrittsbalken und Ergebnis-Anzeige aktualisieren */
+      updateGemischtProgress();
+    }
+
+    /* ── Gemischte Quiz-Antwort prüfen ───────────────────────── */
+    function checkGemischt() {
+      if (!gemischtAktiv || gemischtGeprueft) return; /* Sicherheitscheck */
+      gemischtGeprueft = true;
+
+      const input   = document.getElementById('gemischt-input');
+      const eingabe = parseInt(input.value, 10); /* Benutzereingabe */
+
+      /* Kein gültiger Wert? Fehler anzeigen */
+      if (isNaN(eingabe)) {
+        showGemischtFeedback('Bitte eine Zahl eingeben!', false);
+        gemischtGeprueft = false;
+        return;
+      }
+
+      const aufgabe = gemischtAufgaben[gemischtIndex]; /* Aktuelle Aufgabe */
+
+      if (eingabe === gemischtKorrekt) {
+        /* ── Richtig! ─────────────────────────────────────── */
+        gemischtRichtig++;  /* Richtig-Zähler erhöhen */
+        showGemischtFeedback(`✓ Richtig! ${aufgabe.text.replace('?', gemischtKorrekt)}`, true);
+      } else {
+        /* ── Falsch! ──────────────────────────────────────── */
+        showGemischtFeedback(
+          `✗ Richtig wäre: ${aufgabe.text.replace('?', gemischtKorrekt)}`, false
+        );
+      }
+
+      /* Zur nächsten Aufgabe oder Zusammenfassung nach kurzer Pause */
+      setTimeout(() => {
+        gemischtIndex++; /* Nächste Aufgabe */
+        if (gemischtIndex >= gemischtAufgaben.length) {
+          /* Alle 10 Fragen beantwortet → Zusammenfassung zeigen */
+          zeigGemischtZusammenfassung();
+        } else {
+          /* Noch mehr Fragen → nächste laden */
+          ladeGemischtAufgabe();
+        }
+      }, 1400);
+    }
+
+    /* ── Fortschrittsbalken und Ergebnis-Text aktualisieren ──── */
+    function updateGemischtProgress() {
+      /* Fortschritt in Prozent (0–100) */
+      const prozent = (gemischtIndex / gemischtAufgaben.length) * 100;
+      document.getElementById('gemischt-progress-bar').style.width = `${prozent}%`;
+
+      /* Ergebnis-Anzeige: "X / 10" */
+      document.getElementById('gemischt-score').textContent =
+        `${gemischtRichtig} / ${gemischtAufgaben.length}`;
+    }
+
+    /* ── Gemischtes Quiz Feedback anzeigen ───────────────────── */
+    function showGemischtFeedback(text, richtig) {
+      const box = document.getElementById('gemischt-feedback');
+      box.textContent = text;
+      box.className = `mt-4 text-center text-lg font-semibold min-h-[28px] feedback-anim ${
+        richtig ? 'text-amber-300' : 'text-rose-400'
+      }`;
+    }
+
+    /* ── Zusammenfassung nach dem 10-Fragen-Durchlauf ────────── */
+    function zeigGemischtZusammenfassung() {
+      gemischtAktiv = false; /* Quiz beendet */
+
+      /* Fortschrittsbalken auf 100% setzen */
+      document.getElementById('gemischt-progress-bar').style.width = '100%';
+      document.getElementById('gemischt-score').textContent =
+        `${gemischtRichtig} / ${gemischtAufgaben.length}`;
+
+      /* Bewertung je nach Punktzahl */
+      let bewertung = '';
+      let bewertungFarbe = '';
+      if (gemischtRichtig === 10) {
+        bewertung      = '🏆 Perfekt! Du bist ein Mathe-Profi!';
+        bewertungFarbe = 'text-amber-300';
+      } else if (gemischtRichtig >= 8) {
+        bewertung      = '⭐ Sehr gut! Fast perfekt!';
+        bewertungFarbe = 'text-emerald-300';
+      } else if (gemischtRichtig >= 6) {
+        bewertung      = '👍 Gut gemacht! Weiter üben!';
+        bewertungFarbe = 'text-sky-300';
+      } else if (gemischtRichtig >= 4) {
+        bewertung      = '💪 Nicht schlecht – nochmal versuchen!';
+        bewertungFarbe = 'text-slate-300';
+      } else {
+        bewertung      = '📚 Übe weiter – du schaffst das!';
+        bewertungFarbe = 'text-rose-300';
+      }
+
+      /* Quiz-Inhalt durch Zusammenfassung ersetzen */
+      const content = document.getElementById('gemischt-content');
+      /* slide-up-anim: Karte erscheint fließend von unten */
+      content.innerHTML = `
+        <div class="text-center slide-up-anim">
+          <!-- Große Punktzahl in der Mitte -->
+          <div class="text-6xl font-bold text-amber-300 mb-2">
+            ${gemischtRichtig}<span class="text-3xl text-slate-500"> / 10</span>
+          </div>
+          <!-- Bewertungstext je nach Ergebnis -->
+          <div class="text-xl font-semibold ${bewertungFarbe} mb-6">
+            ${bewertung}
+          </div>
+          <!-- Kurzinfo: richtig vs. falsch -->
+          <div class="flex justify-center gap-8 mb-6 text-sm text-slate-400">
+            <div>
+              <!-- Anzahl richtiger Antworten -->
+              <span class="text-2xl font-bold text-emerald-300">${gemischtRichtig}</span>
+              <div>Richtig</div>
+            </div>
+            <div>
+              <!-- Anzahl falscher Antworten -->
+              <span class="text-2xl font-bold text-rose-400">${10 - gemischtRichtig}</span>
+              <div>Falsch</div>
+            </div>
+          </div>
+          <!-- Nochmal-Button -->
+          <button
+            onclick="startGemischt()"
+            class="px-8 py-3 rounded-2xl font-semibold text-sm
+                   bg-amber-400 text-slate-950
+                   hover:bg-amber-300 transition-colors active:scale-95">
+            Nochmal spielen 🔁
+          </button>
+        </div>
+      `;
+      /* Start-Bereich ausgeblendet lassen (Nochmal-Button ist jetzt im content) */
+      document.getElementById('gemischt-start-area').classList.add('hidden');
+    }
+
+    /* ════════════════════════════════════════════════════════
+       GEMEINSAME HILFSFUNKTIONEN FÜR VISUELLE EFFEKTE
+    ════════════════════════════════════════════════════════ */
+
+    /* ── Alle Punkte in einem SVG smaragd einfärben ──────────── */
+    /* svgId: die ID des SVG-Elements, das eingefärbt werden soll */
+    function allePunkteSmaragd(svgId) {
+      const svg = document.getElementById(svgId);
+      /* Alle Kreise im SVG suchen und smaragd einfärben */
+      const kreise = svg.querySelectorAll('circle');
+      kreise.forEach(kreis => {
+        kreis.setAttribute('fill', '#34d399'); /* emerald-400 */
+        kreis.setAttribute('opacity', '1');    /* Voll sichtbar */
+      });
+    }
+
+    /* ── Kurze Pop-Animation am SVG auslösen ─────────────────── */
+    /* Gibt visuelles Feedback wenn die Antwort richtig ist */
+    function animateSvg(svgId) {
+      const svg = document.getElementById(svgId);
+      svg.classList.remove('pop-anim'); /* Animation zurücksetzen */
+      /* Kurze Verzögerung damit die Animation neu startet */
+      void svg.offsetWidth; /* Reflow erzwingen */
+      svg.classList.add('pop-anim');
+    }
+
+    /* ════════════════════════════════════════════════════════
+       ENTER-TASTE: In welchem Bereich fokussiert ist
+    ════════════════════════════════════════════════════════ */
+
+    /* ── Enter-Taste zum Prüfen in allen Abschnitten ─────────── */
+    document.addEventListener('keydown', function(e) {
+      if (e.key !== 'Enter') return; /* Nur auf Enter reagieren */
+
+      const aktiv = document.activeElement; /* Aktuell fokussiertes Element */
+
+      /* Multiplikation: Enter im Multi-Input → prüfen */
+      if (aktiv && aktiv.id === 'multi-input') {
+        checkMulti();
+      }
+      /* Division: Enter im Div-Input → prüfen */
+      else if (aktiv && aktiv.id === 'div-input') {
+        checkDiv();
+      }
+      /* Gemischtes Quiz: Enter im Gemischt-Input → prüfen */
+      else if (aktiv && aktiv.id === 'gemischt-input') {
+        checkGemischt();
+      }
+    });
+
+    /* ════════════════════════════════════════════════════════
+       INITIALISIERUNG: Beim Laden der Seite
+    ════════════════════════════════════════════════════════ */
+
+    /* ── Fußzeile: aktuelles Jahr automatisch eintragen ─────── */
+    document.getElementById('y').textContent = new Date().getFullYear();
+
+    /* ── Erste Multiplikations-Aufgabe generieren ───────────── */
+    /* Wird automatisch aufgerufen, sobald die Seite geladen ist */
+    newMultiAufgabe();
+
+    /* ── Erste Divisions-Aufgabe generieren ─────────────────── */
+    newDivAufgabe();
+
+    /* Das gemischte Quiz startet erst nach Klick auf "Quiz starten" */
+
+  </script>
+
+  <!-- ── Top-Bar dynamisch laden ───────────────────────────────── -->
+  <!-- Die Navigationsleiste wird aus topbar.html nachgeladen -->
+  <script>
+    /* Basis-Pfad für i18n-Dateien setzen (zwei Ebenen nach oben) */
+    window.__i18nBase = '../../';
+
+    /* topbar.html per fetch() laden und in den Container einfügen */
+    fetch('../../topbar.html')
+      .then(r => r.text())           /* Antwort als Text lesen */
+      .then(html => {
+        /* HTML in den vorbereiteten Container einfügen */
+        document.getElementById('topbar-container').innerHTML = html;
+
+        /* Globales Script nachladen: Login, Sprache, Theme usw. */
+        const s = document.createElement('script');
+        s.src = '../../script.js';   /* Pfad zum gemeinsamen Script */
+        document.body.appendChild(s); /* Am Ende des Body einfügen */
+      });
+  </script>
+
+</body>
+</html>

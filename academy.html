@@ -126,25 +126,25 @@
 
   <script>
     const COURSES = [
-      { g:1, lvl:'base', n:8,  t:{de:'Zahlen bis 20', en:'Numbers to 20'}, d:{de:'Zählen, vergleichen und Zahlen sicher schreiben.', en:'Count, compare and write numbers with confidence.'}, tags:['Zählen','Zahlenraum'] },
-      { g:1, lvl:'base', n:7,  t:{de:'Plus & Minus bis 20', en:'Plus & Minus to 20'}, d:{de:'Erste Addition und Subtraktion im Zahlenraum bis 20.', en:'First addition and subtraction up to 20.'}, tags:['Addition','Subtraktion'] },
-      { g:1, lvl:'base', n:6,  t:{de:'Formen & Muster', en:'Shapes & Patterns'}, d:{de:'Kreis, Dreieck und Quadrat erkennen, Muster fortsetzen.', en:'Spot circles, triangles, squares and continue patterns.'}, tags:['Geometrie','Muster'] },
+      { g:1, lvl:'base', n:8,  t:{de:'Zahlen bis 20', en:'Numbers to 20'}, d:{de:'Zählen, vergleichen und Zahlen sicher schreiben.', en:'Count, compare and write numbers with confidence.'}, tags:['Zählen','Zahlenraum'], url:'academy_file/1_klasse/zahlenbis20.html' },
+      { g:1, lvl:'base', n:7,  t:{de:'Plus & Minus bis 20', en:'Plus & Minus to 20'}, d:{de:'Erste Addition und Subtraktion im Zahlenraum bis 20.', en:'First addition and subtraction up to 20.'}, tags:['Addition','Subtraktion'], url:'academy_file/1_klasse/plusminusbis20.html' },
+      { g:1, lvl:'base', n:6,  t:{de:'Formen & Muster', en:'Shapes & Patterns'}, d:{de:'Kreis, Dreieck und Quadrat erkennen, Muster fortsetzen.', en:'Spot circles, triangles, squares and continue patterns.'}, tags:['Geometrie','Muster'], url:'academy_file/1_klasse/formenmuster.html' },
 
-      { g:2, lvl:'base', n:9,  t:{de:'Zahlen bis 100', en:'Numbers to 100'}, d:{de:'Stellenwerte verstehen – Zehner und Einer.', en:'Understand place value – tens and ones.'}, tags:['Stellenwert'] },
-      { g:2, lvl:'base', n:12, t:{de:'Das kleine Einmaleins', en:'Times Tables 1–10'}, d:{de:'Die Reihen 1 bis 10 spielerisch auswendig lernen.', en:'Learn the rows 1 to 10 by heart, playfully.'}, tags:['Einmaleins'] },
-      { g:2, lvl:'base', n:8,  t:{de:'Uhrzeit & Geld', en:'Time & Money'}, d:{de:'Die Uhr lesen und mit Euro und Cent rechnen.', en:'Read the clock and calculate with euros and cents.'}, tags:['Uhrzeit','Geld'] },
+      { g:2, lvl:'base', n:9,  t:{de:'Zahlen bis 100', en:'Numbers to 100'}, d:{de:'Stellenwerte verstehen – Zehner und Einer.', en:'Understand place value – tens and ones.'}, tags:['Stellenwert'], url: "academy_file/2_klasse/zahlenbis100.html" },
+      { g:2, lvl:'base', n:12, t:{de:'Das kleine Einmaleins', en:'Times Tables 1–10'}, d:{de:'Die Reihen 1 bis 10 spielerisch auswendig lernen.', en:'Learn the rows 1 to 10 by heart, playfully.'}, tags:['Einmaleins'], url: "academy_file/2_klasse/daskleineeinmaleins.html" },
+      { g:2, lvl:'base', n:8,  t:{de:'Uhrzeit & Geld', en:'Time & Money'}, d:{de:'Die Uhr lesen und mit Euro und Cent rechnen.', en:'Read the clock and calculate with euros and cents.'}, tags:['Uhrzeit','Geld'], url: "academy_file/2_klasse/uhrzeitgeld.html" },
 
-      { g:3, lvl:'base', n:10, t:{de:'Schriftlich Rechnen', en:'Column Arithmetic'}, d:{de:'Addieren und Subtrahieren mit Übertrag bis 1000.', en:'Add and subtract with carrying up to 1000.'}, tags:['Addition','Subtraktion'] },
-      { g:3, lvl:'base', n:11, t:{de:'Mal & Geteilt', en:'Multiply & Divide'}, d:{de:'Multiplikation und Division sicher anwenden.', en:'Apply multiplication and division confidently.'}, tags:['Multiplikation','Division'] },
-      { g:3, lvl:'base', n:7,  t:{de:'Flächen & Umfang', en:'Area & Perimeter'}, d:{de:'Rechtecke messen und den Umfang bestimmen.', en:'Measure rectangles and find the perimeter.'}, tags:['Geometrie'] },
+      { g:3, lvl:'base', n:10, t:{de:'Schriftlich Rechnen', en:'Column Arithmetic'}, d:{de:'Addieren und Subtrahieren mit Übertrag bis 1000.', en:'Add and subtract with carrying up to 1000.'}, tags:['Addition','Subtraktion'], url: "academy_file/3_klasse/schriftlichrechnen.html" },
+      { g:3, lvl:'base', n:11, t:{de:'Mal & Geteilt', en:'Multiply & Divide'}, d:{de:'Multiplikation und Division sicher anwenden.', en:'Apply multiplication and division confidently.'}, tags:['Multiplikation','Division'], url: "academy_file/3_klasse/malgeteilt.html" },
+      { g:3, lvl:'base', n:7,  t:{de:'Flächen & Umfang', en:'Area & Perimeter'}, d:{de:'Rechtecke messen und den Umfang bestimmen.', en:'Measure rectangles and find the perimeter.'}, tags:['Geometrie'], url: "academy_file/3_klasse/flachenumfang.html" },
 
-      { g:4, lvl:'base', n:10, t:{de:'Schriftlich Multiplizieren', en:'Long Multiplication'}, d:{de:'Mehrstellige Zahlen multiplizieren und dividieren.', en:'Multiply and divide multi-digit numbers.'}, tags:['Multiplikation','Division'] },
-      { g:4, lvl:'base', n:9,  t:{de:'Größen & Einheiten', en:'Units & Measures'}, d:{de:'Längen, Gewichte und Zeitspannen umrechnen.', en:'Convert lengths, weights and durations.'}, tags:['Einheiten'] },
-      { g:4, lvl:'base', n:7,  t:{de:'Symmetrie & Körper', en:'Symmetry & Solids'}, d:{de:'Spiegelachsen finden, Würfel und Quader erkunden.', en:'Find axes of symmetry, explore cubes and cuboids.'}, tags:['Geometrie'] },
+      { g:4, lvl:'base', n:10, t:{de:'Schriftlich Multiplizieren', en:'Long Multiplication'}, d:{de:'Mehrstellige Zahlen multiplizieren und dividieren.', en:'Multiply and divide multi-digit numbers.'}, tags:['Multiplikation','Division'], url: "academy_file/4_klasse/schriftlichmultiplizieren.html" },
+      { g:4, lvl:'base', n:9,  t:{de:'Größen & Einheiten', en:'Units & Measures'}, d:{de:'Längen, Gewichte und Zeitspannen umrechnen.', en:'Convert lengths, weights and durations.'}, tags:['Einheiten'], url: "academy_file/4_klasse/groessen Einheiten.html" },
+      { g:4, lvl:'base', n:7,  t:{de:'Symmetrie & Körper', en:'Symmetry & Solids'}, d:{de:'Spiegelachsen finden, Würfel und Quader erkunden.', en:'Find axes of symmetry, explore cubes and cuboids.'}, tags:['Geometrie'], url: "academy_file/4_klasse/symmetriekoerper.html" },
 
-      { g:5, lvl:'build', n:9,  t:{de:'Große Zahlen & Stellenwert', en:'Large Numbers & Place Value'}, d:{de:'Millionen lesen, runden und ordnen.', en:'Read, round and order numbers into the millions.'}, tags:['Zahlen','Runden'] },
-      { g:5, lvl:'build', n:11, t:{de:'Grundrechenarten & Terme', en:'Operations & Terms'}, d:{de:'Rechenregeln und Klammern – Punkt vor Strich.', en:'Order of operations and brackets.'}, tags:['Terme','Rechenregeln'] },
-      { g:5, lvl:'build', n:8,  t:{de:'Flächeninhalt', en:'Area'}, d:{de:'Flächen von Rechteck und Dreieck berechnen.', en:'Calculate the area of rectangles and triangles.'}, tags:['Geometrie'] },
+      { g:5, lvl:'build', n:9,  t:{de:'Große Zahlen & Stellenwert', en:'Large Numbers & Place Value'}, d:{de:'Millionen lesen, runden und ordnen.', en:'Read, round and order numbers into the millions.'}, tags:['Zahlen','Runden'], url: "academy_file/5_klasse/groesse_zahlen_stellenwert.html" },
+      { g:5, lvl:'build', n:11, t:{de:'Grundrechenarten & Terme', en:'Operations & Terms'}, d:{de:'Rechenregeln und Klammern – Punkt vor Strich.', en:'Order of operations and brackets.'}, tags:['Terme','Rechenregeln'], url: "academy_file/5_klasse/grundrechenarten_terme.html" },
+      { g:5, lvl:'build', n:8,  t:{de:'Flächeninhalt', en:'Area'}, d:{de:'Flächen von Rechteck und Dreieck berechnen.', en:'Calculate the area of rectangles and triangles.'}, tags:['Geometrie'], url: "academy_file/5_klasse/flaecheninhalt.html" },
 
       { g:6, lvl:'build', n:12, t:{de:'Brüche verstehen', en:'Understanding Fractions'}, d:{de:'Brüche kürzen, erweitern und vergleichen.', en:'Reduce, expand and compare fractions.'}, tags:['Brüche'] },
       { g:6, lvl:'build', n:10, t:{de:'Dezimalzahlen', en:'Decimals'}, d:{de:'Mit dem Komma rechnen und Brüche umwandeln.', en:'Calculate with decimals and convert fractions.'}, tags:['Dezimalzahlen'] },

@@ -1,0 +1,1761 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <!-- Zeichenkodierung: UTF-8 damit Umlaute (ä, ö, ü) korrekt angezeigt werden -->
+  <meta charset="UTF-8" />
+  <!-- Viewport: Seite passt sich an Handys und Tablets an -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Seitentitel im Browser-Tab -->
+  <title>Zahlen bis 100 – Mathe-Akademie</title>
+
+  <!-- Favicon: kleines Symbol im Browser-Tab, zwei Ebenen höher -->
+  <link rel="icon" href="../../favicon.ico" />
+  <!-- Apple Touch Icon: Symbol für iPhone-Homescreen -->
+  <link rel="apple-touch-icon" href="../../apple-touch-icon.png" />
+  <!-- Web-App-Manifest: Metadaten für „Auf Startseite hinzufügen" -->
+  <link rel="manifest" href="../../site.webmanifest" />
+
+  <!-- Tailwind CSS via CDN: Ermöglicht alle Utility-Klassen direkt im HTML -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Eigenes Stylesheet (zwei Ebenen höher), mit Version um Browser-Cache zu umgehen -->
+  <link rel="stylesheet" href="../../style.css?v=1.0" />
+
+  <style>
+    /*
+     * Eigene CSS-Regeln, die Tailwind nicht abdeckt
+     * ─────────────────────────────────────────────
+     */
+
+    /* Feedback-Box: schöne Animation beim Einblenden */
+    .feedback-box {
+      animation: fadeIn 0.25s ease;
+    }
+
+    /* Keyframe-Animation: Element blendet von unsichtbar zu sichtbar ein */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Zehner-Block (blau/teal): stellt einen Zehner (10er-Stange) dar */
+    .block-zehner {
+      fill: #0d9488;          /* teal-600: sattgrünblau für Zehner-Stangen */
+      stroke: #99f6e4;        /* teal-200: heller Rand damit Blöcke sich abheben */
+      stroke-width: 1.5;
+    }
+
+    /* Einer-Block (smaragdgrün): stellt eine Einheit (1er-Würfel) dar */
+    .block-einer {
+      fill: #059669;          /* emerald-600: sattes Grün für Einer */
+      stroke: #6ee7b7;        /* emerald-300: heller Rand */
+      stroke-width: 1;
+    }
+
+    /* Eingabefelder für Zehner und Einer: Standard-Aussehen */
+    .stellen-input {
+      width: 4rem;            /* 64px: schmal, da max. 1 Ziffer (Zehner 1–9) */
+      text-align: center;
+      font-size: 1.5rem;      /* 24px: groß genug für Grundschüler */
+      font-weight: 700;       /* fett */
+      border-radius: 0.75rem; /* abgerundete Ecken */
+      border: 2px solid #475569; /* slate-600: sichtbarer Rahmen */
+      background: #1e293b;    /* slate-800: dunkler Hintergrund */
+      color: #fff;
+      padding: 0.5rem;
+      transition: border-color 0.2s;
+      outline: none;
+    }
+
+    /* Eingabefeld: aktiv/fokussiert → grüner Rahmen */
+    .stellen-input:focus {
+      border-color: #34d399;  /* emerald-400: helles Grün */
+    }
+
+    /* Zahlenstrahl-Marker: Punkt auf dem Strahl */
+    .strahl-punkt {
+      transition: cx 0.4s ease, opacity 0.3s;
+    }
+
+    /* Vergleichs-Operator-Buttons: deaktiviert wirken grauer */
+    .vgl-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;    /* Verbots-Cursor: Button ist gesperrt */
+    }
+
+    /* Puls-Animation für „Nächste Aufgabe"-Button → zieht Aufmerksamkeit auf sich */
+    @keyframes pulsGreen {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.4); }
+      50%       { box-shadow: 0 0 0 8px rgba(52, 211, 153, 0); }
+    }
+    .puls-gruen {
+      animation: pulsGreen 1.4s ease-in-out infinite;
+    }
+
+    /* Lese-Aufgaben-Display: große digitale Zahlendarstellung */
+    .zahl-display {
+      font-size: 4rem;        /* 64px: sehr groß, gut für Kinder erkennbar */
+      font-weight: 800;
+      font-family: ui-monospace, monospace; /* Monospace: alle Ziffern gleich breit */
+      line-height: 1;
+      letter-spacing: 0.05em;
+      color: #f0fdf4;         /* fast weiß mit grünlichem Schimmer */
+      text-shadow: 0 0 24px rgba(52, 211, 153, 0.35); /* leuchtendes Grün-Glühen */
+    }
+
+    /* Zahlenstrahl-Linie */
+    .nstrahl-linie {
+      stroke: #334155;        /* slate-700 */
+      stroke-width: 2;
+    }
+
+    /* Zahlenstrahl-Tick (kurzer senkrechter Strich bei jeder 10er-Marke) */
+    .nstrahl-tick {
+      stroke: #475569;        /* slate-600 */
+      stroke-width: 2;
+    }
+
+    /* Zahlenstrahl-Beschriftung (0, 10, 20 ...) */
+    .nstrahl-label {
+      fill: #94a3b8;          /* slate-400 */
+      font-size: 10px;
+      text-anchor: middle;
+      font-family: ui-monospace, monospace;
+      pointer-events: none;   /* Klicks sollen durchgehen */
+      user-select: none;
+    }
+
+    /* Zahlenstrahl-Punkt: Markierung für eine Zahl */
+    .nstrahl-dot {
+      stroke-width: 2.5;
+      transition: opacity 0.3s ease;
+    }
+
+    /* Zahlenstrahl-Punkt-Label: Zahl über dem Punkt */
+    .nstrahl-dot-label {
+      font-size: 10px;
+      font-family: ui-monospace, monospace;
+      text-anchor: middle;
+      pointer-events: none;
+      user-select: none;
+      font-weight: 700;
+    }
+  </style>
+</head>
+
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col">
+  <!--
+    bg-slate-950 → sehr dunkler Hintergrund (fast schwarz)
+    text-slate-100 → sehr heller Text (fast weiß)
+    min-h-screen → mindestens so hoch wie der Bildschirm
+    flex flex-col → Inhalte übereinander anordnen (Flexbox, senkrecht)
+  -->
+
+  <!-- Topbar-Container: wird per JavaScript mit dem Inhalt von ../../topbar.html befüllt -->
+  <div id="topbar-container"></div>
+
+  <!-- Haupt-Wrapper: Inhalte horizontal zentrieren, Abstand oben/unten -->
+  <main class="flex-1 max-w-4xl mx-auto w-full px-4 py-10">
+    <!--
+      flex-1 → nimmt den verfügbaren Platz zwischen Topbar und Footer ein
+      max-w-4xl → maximale Breite ~896px, damit Zeilen nicht zu lang werden
+      mx-auto → zentriert den Block horizontal (left + right margin: auto)
+      w-full → nutzt die volle verfügbare Breite bis max-w-4xl
+      px-4 → waagerechter Innenabstand (16px links & rechts)
+      py-10 → senkrechter Innenabstand (40px oben & unten)
+    -->
+
+    <!-- Zurück-Link zur Akademie-Übersicht -->
+    <a
+      href="../../academy.html"
+      class="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-emerald-300 mb-8 transition-colors"
+    >
+      <!--
+        inline-flex → Link verhält sich wie Inline-Block, Pfeil und Text nebeneinander
+        items-center → Pfeil und Text vertikal zentriert
+        gap-2 → 8px Abstand
+        text-sm → kleine Schrift (14px)
+        text-slate-400 → mittleres Grau
+        hover:text-emerald-300 → bei Hover: helles Grün
+        mb-8 → 32px Abstand nach unten
+        transition-colors → weicher Farbübergang
+      -->
+      ← Zurück zur Akademie
+    </a>
+
+    <!-- ═══════════════════════════════════════════
+         SEITENÜBERSCHRIFT
+         ═══════════════════════════════════════════ -->
+    <header class="mb-10">
+      <!-- mb-10 → 40px Abstand nach unten -->
+
+      <!-- Kategorie-Badge (kleiner grüner Hinweis über der Überschrift) -->
+      <span class="inline-block text-xs font-semibold tracking-widest uppercase text-emerald-400 mb-3">
+        <!--
+          inline-block → kein Zeilenumbruch, aber Box-Eigenschaften
+          text-xs → sehr kleine Schrift (12px)
+          font-semibold → halbfett
+          tracking-widest → sehr großer Buchstabenabstand
+          uppercase → Großbuchstaben
+          text-emerald-400 → sattgrüner Farbton
+          mb-3 → 12px Abstand nach unten
+        -->
+        Klasse 2 · Grundlagen
+      </span>
+
+      <!-- Haupt-Seitenüberschrift -->
+      <h1 class="text-4xl font-bold text-white mb-3">
+        <!-- text-4xl → große Schrift (36px), font-bold → fett, mb-3 → kleiner Abstand nach unten -->
+        Zahlen bis 100
+      </h1>
+
+      <!-- Kurze Beschreibung des Lerninhalts -->
+      <p class="text-slate-400 text-lg max-w-xl">
+        <!--
+          text-slate-400 → mittleres Grau
+          text-lg → etwas größere Schrift (18px)
+          max-w-xl → max. Breite ~512px damit Text nicht zu breit wird
+        -->
+        Lerne Zehner und Einer kennen, erkenne Stellenwerte und vergleiche zweistellige Zahlen auf dem Zahlenstrahl!
+      </p>
+    </header>
+
+    <!-- ═══════════════════════════════════════════
+         SECTION 1: STELLENWERT-VISUALISIERUNG
+         ═══════════════════════════════════════════ -->
+    <section
+      class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6 mb-8"
+      aria-labelledby="stellen-heading"
+    >
+      <!--
+        rounded-3xl → sehr abgerundete Ecken (24px) – freundlicher Look für Kinder
+        border border-slate-800 → dünner dunkler Rahmen
+        bg-slate-900/30 → leicht transparentes Dunkelblau als Karten-Hintergrund
+        p-6 → Innenabstand 24px auf allen Seiten
+        mb-8 → 32px Abstand nach unten
+        aria-labelledby → Barrierefreiheit: verknüpft Sektion mit ihrer Überschrift
+      -->
+
+      <!-- Abschnitts-Header mit Titel und Untertitel -->
+      <div class="flex items-start gap-4 mb-6">
+        <!--
+          flex → Emoji und Text nebeneinander
+          items-start → oben ausrichten
+          gap-4 → 16px Abstand zwischen Icon und Text
+          mb-6 → 24px Abstand nach unten
+        -->
+
+        <!-- Icon-Box (Emoji als visueller Anker für Kinder) -->
+        <div class="text-3xl select-none" aria-hidden="true">🧱</div>
+        <!--
+          text-3xl → Emoji groß genug (30px) damit es als Orientierungspunkt dient
+          select-none → Emoji kann nicht markiert werden
+          aria-hidden → Screenreader überspringen das dekorative Emoji
+        -->
+
+        <div>
+          <h2 id="stellen-heading" class="text-xl font-bold text-emerald-300 mb-1">
+            <!-- text-xl → 20px, font-bold → fett, text-emerald-300 → helles Grün -->
+            Stellenwert-Visualisierung
+          </h2>
+          <p class="text-slate-400 text-sm">
+            <!-- text-sm → 14px, text-slate-400 → mittleres Grau -->
+            Wie viele Zehner und wie viele Einer hat diese Zahl?
+          </p>
+        </div>
+      </div>
+
+      <!-- SVG-Bereich: Zehner-Stangen (blau) und Einer-Würfel (grün) -->
+      <div class="flex justify-center mb-5">
+        <!--
+          flex justify-center → SVG wird horizontal zentriert
+          mb-5 → 20px Abstand nach unten
+        -->
+        <svg
+          id="stellen-svg"
+          viewBox="0 0 400 200"
+          width="400"
+          height="200"
+          role="img"
+          aria-label="Stellenwert-Darstellung der aktuellen Zahl"
+          class="rounded-2xl bg-slate-800/40 border border-slate-700 block"
+          style="max-width: 100%;"
+        >
+          <!--
+            viewBox="0 0 400 200" → internes Koordinatensystem: 400 breit, 200 hoch
+            width/height → tatsächliche Größe in Pixeln
+            role="img" + aria-label → Barrierefreiheit für Screenreader
+            rounded-2xl → abgerundete Ecken (16px)
+            bg-slate-800/40 → leicht transparenter dunkler Hintergrund
+            border border-slate-700 → dezenter Rahmen
+            max-width: 100% → schrumpft auf kleinen Bildschirmen
+          -->
+          <!-- Wird per buildBlocks(n) befüllt -->
+        </svg>
+      </div>
+
+      <!-- Aufgabentext und aktuell angezeigte Zahl -->
+      <div class="text-center mb-4">
+        <!-- text-center → alles horizontal zentriert, mb-4 → 16px Abstand -->
+
+        <p class="text-slate-300 text-base mb-2">
+          <!-- text-slate-300 → helles Grau, text-base → 16px, mb-2 → 8px Abstand -->
+          Diese Zahl hat
+          <!-- Die Zahl wird groß und grün hervorgehoben -->
+          <span
+            id="stellen-zahl"
+            class="text-3xl font-bold text-emerald-300 mx-2 tabular-nums"
+          >
+            <!--
+              text-3xl → 30px, sehr auffällig
+              font-bold → fett
+              text-emerald-300 → helles Grün
+              mx-2 → 8px Abstand links und rechts
+              tabular-nums → Ziffern gleichbreit (kein Tanz beim Wechsel)
+            -->
+          </span>
+          Zehner und Einer.
+        </p>
+      </div>
+
+      <!-- Eingabe-Bereich: Zehner und Einer -->
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-6 mb-4">
+        <!--
+          flex-col → auf Mobilgeräten untereinander
+          sm:flex-row → ab 640px nebeneinander
+          items-center → vertikal zentriert
+          justify-center → horizontal zentriert
+          gap-6 → 24px Abstand zwischen den Feldern
+          mb-4 → 16px Abstand nach unten
+        -->
+
+        <!-- Zehner-Eingabe -->
+        <div class="flex items-center gap-3">
+          <!-- flex items-center → Label und Feld auf einer Höhe, gap-3 → 12px Abstand -->
+
+          <!-- Farbiger Zehnerbaustein als Label-Icon -->
+          <span
+            class="inline-block w-6 h-12 rounded bg-teal-600 border border-teal-300 flex-shrink-0"
+            aria-hidden="true"
+            title="Zehner-Stange"
+          ></span>
+          <!--
+            inline-block → nimmt Breite und Höhe an
+            w-6 h-12 → 24×48px: schmales, hohes Rechteck = Zehner-Stange
+            rounded → leicht abgerundete Ecken
+            bg-teal-600 → blaues Teal für Zehner
+            border border-teal-300 → heller Rand
+            flex-shrink-0 → Ikon wird nicht kleiner
+          -->
+
+          <!-- Label-Text -->
+          <label for="inp-zehner" class="text-slate-300 text-sm font-medium">
+            <!-- for="inp-zehner" → verbindet Label mit dem Eingabefeld (Barrierefreiheit) -->
+            Zehner
+          </label>
+
+          <!-- Zehner-Eingabefeld -->
+          <input
+            id="inp-zehner"
+            type="number"
+            min="0"
+            max="9"
+            placeholder="?"
+            class="stellen-input"
+            aria-label="Anzahl der Zehner eingeben"
+          />
+          <!--
+            type="number" → Zahlentastatur auf Mobilgeräten
+            min="0" max="9" → Zehner können 0 bis 9 sein (bis 90)
+            placeholder="?" → zeigt Fragezeichen wenn leer
+            class="stellen-input" → eigene CSS-Regel oben im <style>-Block
+          -->
+        </div>
+
+        <!-- Trennzeichen zwischen Zehner- und Einer-Eingabe -->
+        <span class="text-slate-500 text-2xl font-bold select-none" aria-hidden="true">+</span>
+        <!--
+          text-slate-500 → mittleres Grau (dezent)
+          text-2xl → 24px, gut sichtbar
+          select-none → nicht markierbar
+        -->
+
+        <!-- Einer-Eingabe -->
+        <div class="flex items-center gap-3">
+          <!-- Farbiger Einer-Würfel als Label-Icon -->
+          <span
+            class="inline-block w-5 h-5 rounded bg-emerald-600 border border-emerald-300 flex-shrink-0"
+            aria-hidden="true"
+            title="Einer-Würfel"
+          ></span>
+          <!--
+            w-5 h-5 → 20×20px: kleines Quadrat = Einer-Würfel
+            bg-emerald-600 → grüner Einer
+            border border-emerald-300 → heller Rand
+          -->
+
+          <!-- Label-Text -->
+          <label for="inp-einer" class="text-slate-300 text-sm font-medium">
+            Einer
+          </label>
+
+          <!-- Einer-Eingabefeld -->
+          <input
+            id="inp-einer"
+            type="number"
+            min="0"
+            max="9"
+            placeholder="?"
+            class="stellen-input"
+            aria-label="Anzahl der Einer eingeben"
+          />
+        </div>
+      </div>
+
+      <!-- Prüfen-Button -->
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <!--
+          flex-col sm:flex-row → Mobil untereinander, ab sm nebeneinander
+          items-center → vertikal zentriert
+          justify-center → horizontal zentriert
+          gap-4 → 16px Abstand
+        -->
+
+        <button
+          onclick="checkStellenwert()"
+          class="px-6 py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-base transition-colors"
+        >
+          <!--
+            px-6 py-3 → Innenabstand: 24px waagerecht, 12px senkrecht
+            rounded-2xl → stark abgerundete Ecken
+            bg-emerald-500 → sattes Grün
+            hover:bg-emerald-400 → heller bei Hover
+            text-slate-950 → sehr dunkler Text (kontraststark auf grünem Grund)
+            font-bold → fett
+            transition-colors → weicher Farbübergang beim Hover
+          -->
+          Prüfen ✓
+        </button>
+
+        <!-- Neue Aufgabe Button -->
+        <button
+          onclick="newStellenwertZahl()"
+          class="px-6 py-3 rounded-2xl bg-slate-700 hover:bg-slate-600 text-slate-100 font-bold text-base transition-colors"
+        >
+          <!--
+            bg-slate-700 → dunkles Grau als Sekundär-Button
+            hover:bg-slate-600 → heller bei Hover
+            text-slate-100 → heller Text
+          -->
+          Neue Zahl →
+        </button>
+      </div>
+
+      <!-- Feedback-Bereich: erscheint nach dem Prüfen -->
+      <div
+        id="stellen-feedback"
+        class="mt-4 text-base font-semibold min-h-[1.5rem] text-center"
+        aria-live="assertive"
+      >
+        <!--
+          mt-4 → 16px Abstand nach oben
+          font-semibold → halbfett
+          min-h-[1.5rem] → Mindesthöhe verhindert Layout-Sprung
+          aria-live="assertive" → Screenreader liest sofort vor
+        -->
+      </div>
+
+      <!-- Punkte-Anzeige -->
+      <div class="flex items-center justify-center gap-2 text-sm text-slate-400 mt-3">
+        <!-- justify-center → zentriert, gap-2 → 8px Abstand, mt-3 → 12px nach oben -->
+        <span>Richtig:</span>
+        <span id="stellen-score" class="text-emerald-400 font-bold text-base">0</span>
+        <!--
+          text-emerald-400 → grüner Zähler
+          font-bold text-base → fett, 16px
+        -->
+      </div>
+
+      <!-- Theorie-Hinweis direkt unter der Aufgabe -->
+      <div class="mt-5 rounded-2xl bg-slate-800/60 border border-slate-700/60 p-4">
+        <!--
+          mt-5 → 20px Abstand nach oben
+          rounded-2xl → abgerundete Ecken
+          bg-slate-800/60 → leicht transparentes Dunkel
+          border border-slate-700/60 → dezenter Rahmen
+          p-4 → 16px Innenabstand
+        -->
+        <p class="text-slate-300 text-sm font-medium mb-1">
+          <!-- text-sm → 14px, font-medium → mittlere Dicke, mb-1 → 4px Abstand -->
+          💡 So geht's:
+        </p>
+        <p class="text-slate-400 text-sm">
+          <!-- text-sm → 14px, text-slate-400 → mittleres Grau -->
+          <strong class="text-teal-300">Zehner</strong> = blaue Stangen (je 10 Einheiten hoch) ·
+          <strong class="text-emerald-300">Einer</strong> = kleine grüne Quadrate ·
+          Beispiel: <strong class="text-white">73</strong> = <strong class="text-teal-300">7 Zehner</strong> + <strong class="text-emerald-300">3 Einer</strong> = <strong class="text-white">70 + 3</strong>
+        </p>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════
+         SECTION 2: ZAHLEN LESEN & SCHREIBEN
+         ═══════════════════════════════════════════ -->
+    <section
+      class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6 mb-8"
+      aria-labelledby="lesen-heading"
+    >
+      <!-- Abschnitts-Header -->
+      <div class="flex items-start gap-4 mb-6">
+        <div class="text-3xl select-none" aria-hidden="true">🔢</div>
+        <div>
+          <h2 id="lesen-heading" class="text-xl font-bold text-emerald-300 mb-1">
+            Zahlen lesen & schreiben
+          </h2>
+          <p class="text-slate-400 text-sm">
+            Sieh dir die Zahl an und schreibe sie als Zehner + Einer!
+          </p>
+        </div>
+      </div>
+
+      <!-- Große Zahlendarstellung wie ein "Display" -->
+      <div class="flex flex-col items-center gap-6">
+        <!-- flex-col → untereinander, items-center → zentriert -->
+
+        <!-- Digitales Display für die angezeigte Zahl -->
+        <div
+          class="rounded-2xl bg-slate-800 border border-emerald-500/30 px-10 py-5 text-center"
+          aria-label="Angezeigte Zahl"
+        >
+          <!--
+            rounded-2xl → abgerundete Ecken (16px)
+            bg-slate-800 → dunkler Hintergrund
+            border border-emerald-500/30 → dezent grüner Rahmen
+            px-10 py-5 → großzügiger Innenabstand für den Display-Look
+            text-center → zentriert
+          -->
+
+          <!-- Kleine Beschriftung über der Zahl -->
+          <p class="text-xs text-slate-500 uppercase tracking-widest mb-1">
+            <!-- text-xs → 12px, text-slate-500 → mittleres Grau, tracking-widest → gesperrt -->
+            Zahl
+          </p>
+
+          <!-- Die eigentliche Zahl in großer Schrift -->
+          <div id="lesen-zahl" class="zahl-display tabular-nums">
+            <!--
+              class="zahl-display" → eigene CSS-Regel: riesige, glühende Zahl
+              tabular-nums → alle Ziffern gleich breit (2-stellige Zahlen springen nicht)
+            -->
+          </div>
+        </div>
+
+        <!-- Aufgabentext: Zehner + Einer eintragen -->
+        <p class="text-slate-300 text-base text-center">
+          <!-- text-center → zentriert, text-base → 16px -->
+          Schreibe als: <strong class="text-teal-300">____ Zehner × 10</strong> + <strong class="text-emerald-300">____ Einer</strong>
+        </p>
+
+        <!-- Eingabe-Felder: Zehner × 10 + Einer -->
+        <div class="flex items-center flex-wrap justify-center gap-3">
+          <!--
+            flex → nebeneinander
+            items-center → vertikal zentriert
+            flex-wrap → umbrechend wenn Platz knapp
+            justify-center → horizontal zentriert
+            gap-3 → 12px Abstand zwischen den Elementen
+          -->
+
+          <!-- Zehner-Eingabe (z. B. 4 für „40") -->
+          <input
+            id="lesen-zehner"
+            type="number"
+            min="0"
+            max="9"
+            placeholder="?"
+            class="stellen-input"
+            aria-label="Zehner eingeben (z.B. 4 für 40)"
+          />
+
+          <!-- Multiplikations-Symbol und 10 -->
+          <span class="text-slate-400 text-xl font-bold select-none" aria-hidden="true">× 10 +</span>
+          <!--
+            text-xl → 20px, deutlich aber nicht zu dominant
+            select-none → nicht markierbar
+          -->
+
+          <!-- Einer-Eingabe (z. B. 5 für „5") -->
+          <input
+            id="lesen-einer"
+            type="number"
+            min="0"
+            max="9"
+            placeholder="?"
+            class="stellen-input"
+            aria-label="Einer eingeben (z.B. 5 für 5)"
+          />
+
+          <!-- Ergebnis-Hinweis rechts neben den Feldern -->
+          <span class="text-slate-500 text-base select-none" aria-hidden="true">= ?</span>
+        </div>
+
+        <!-- Prüfen-Button für Lese-Aufgabe -->
+        <div class="flex flex-col sm:flex-row items-center gap-4">
+          <button
+            onclick="checkLesen()"
+            class="px-6 py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-base transition-colors"
+          >
+            Prüfen ✓
+          </button>
+
+          <!-- Neue Aufgabe Button -->
+          <button
+            onclick="newLeseaufgabe()"
+            class="px-6 py-3 rounded-2xl bg-slate-700 hover:bg-slate-600 text-slate-100 font-bold text-base transition-colors"
+          >
+            Neue Zahl →
+          </button>
+        </div>
+
+        <!-- Feedback-Bereich für Lese-Aufgabe -->
+        <div
+          id="lesen-feedback"
+          class="text-base font-semibold min-h-[1.5rem] text-center"
+          aria-live="assertive"
+        >
+          <!--
+            min-h-[1.5rem] → Mindesthöhe verhindert Layout-Sprung beim Einblenden
+            aria-live="assertive" → Screenreader liest sofort vor
+          -->
+        </div>
+
+        <!-- Punkte-Anzeige für Lese-Aufgabe -->
+        <div class="flex items-center gap-2 text-sm text-slate-400">
+          <span>Richtig:</span>
+          <span id="lesen-score" class="text-emerald-400 font-bold text-base">0</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════
+         SECTION 3: ZAHLENSTRAHL 0–100 + VERGLEICHEN
+         ═══════════════════════════════════════════ -->
+    <section
+      class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6 mb-10"
+      aria-labelledby="vergleich-heading"
+    >
+      <!-- Abschnitts-Header -->
+      <div class="flex items-start gap-4 mb-6">
+        <div class="text-3xl select-none" aria-hidden="true">🐊</div>
+        <div>
+          <h2 id="vergleich-heading" class="text-xl font-bold text-emerald-300 mb-1">
+            Zahlenstrahl & Vergleichen
+          </h2>
+          <p class="text-slate-400 text-sm">
+            Vergleiche die zwei Zahlen – dann siehst du beide auf dem Zahlenstrahl!
+          </p>
+        </div>
+      </div>
+
+      <!-- Vergleichs-Aufgabe: zwei große Zahlen -->
+      <div class="flex flex-col items-center gap-6">
+        <!-- flex-col → untereinander, items-center → zentriert -->
+
+        <!-- Die zwei zu vergleichenden Zahlen -->
+        <div class="flex items-center justify-center gap-6 sm:gap-12">
+          <!--
+            items-center → vertikal zentriert
+            gap-6 sm:gap-12 → 24px Abstand (Mobil), 48px (ab sm)
+          -->
+
+          <!-- Linke Zahl (wird per JS befüllt) -->
+          <div class="text-center">
+            <!-- Farbige Markierungs-Linie über der Zahl (zeigt Farbe des Punktes auf dem Strahl) -->
+            <div class="h-1.5 w-full rounded-full bg-teal-400 mb-2 opacity-80" aria-hidden="true"></div>
+            <!--
+              h-1.5 → 6px hoch: schmale Linie
+              w-full → volle Breite des Containers
+              rounded-full → vollständig rund (Pille)
+              bg-teal-400 → teal-Farbe passend zum linken Strahl-Punkt
+              mb-2 → 8px Abstand nach unten
+              opacity-80 → leicht transparent
+            -->
+            <span
+              id="vgl-links"
+              class="text-6xl font-bold text-white tabular-nums"
+            >
+              <!--
+                text-6xl → 60px: sehr groß und klar erkennbar für Kinder
+                font-bold → fett
+                tabular-nums → Ziffern gleich breit
+              -->
+            </span>
+          </div>
+
+          <!-- Symbol-Platzhalter zwischen den Zahlen -->
+          <span
+            id="vgl-symbol"
+            class="text-5xl font-bold text-emerald-300 w-12 text-center opacity-0 transition-opacity duration-300"
+            aria-live="polite"
+          >
+            <!--
+              text-5xl → 48px
+              opacity-0 → anfangs unsichtbar (wird nach Antwort eingeblendet)
+              transition-opacity duration-300 → weicher Übergang (300ms)
+              aria-live="polite" → Screenreader liest vor wenn sich der Inhalt ändert
+            -->
+          </span>
+
+          <!-- Rechte Zahl (wird per JS befüllt) -->
+          <div class="text-center">
+            <div class="h-1.5 w-full rounded-full bg-violet-400 mb-2 opacity-80" aria-hidden="true"></div>
+            <!--
+              bg-violet-400 → lila/violett: anderes Farbe als der linke Punkt (teal)
+              So kann man die beiden Zahlen auf dem Zahlenstrahl leicht unterscheiden
+            -->
+            <span
+              id="vgl-rechts"
+              class="text-6xl font-bold text-white tabular-nums"
+            >
+            </span>
+          </div>
+        </div>
+
+        <!-- Drei Operator-Buttons: kleiner, gleich, größer -->
+        <div class="flex gap-4" role="group" aria-label="Vergleichszeichen auswählen">
+          <!--
+            flex → nebeneinander
+            gap-4 → 16px Abstand zwischen Buttons
+            role="group" → Barrierefreiheit: kennzeichnet als Gruppe
+          -->
+
+          <!-- Button „kleiner als" -->
+          <button
+            class="vgl-btn w-16 h-16 rounded-2xl border-2 border-slate-600 bg-slate-800 text-white text-3xl font-bold hover:border-emerald-400 hover:bg-emerald-900/40 transition-all"
+            onclick="checkVergleich('<')"
+            aria-label="Kleiner als"
+          >
+            <!--
+              vgl-btn → CSS-Klasse für disabled-Stil (siehe oben)
+              w-16 h-16 → 64×64px: quadratisch
+              rounded-2xl → stark abgerundete Ecken
+              border-2 border-slate-600 → sichtbarer Rahmen
+              bg-slate-800 → dunkler Hintergrund
+              text-3xl font-bold → großes, fettes Symbol
+              hover:border-emerald-400 → grüner Rand bei Hover
+              hover:bg-emerald-900/40 → leicht grüner Hintergrund bei Hover
+              transition-all → alle CSS-Eigenschaften weich übergehen
+            -->
+            &lt;
+            <!-- &lt; ist die HTML-Entität für "<" → würde sonst als HTML-Tag interpretiert -->
+          </button>
+
+          <!-- Button „gleich" -->
+          <button
+            class="vgl-btn w-16 h-16 rounded-2xl border-2 border-slate-600 bg-slate-800 text-white text-3xl font-bold hover:border-emerald-400 hover:bg-emerald-900/40 transition-all"
+            onclick="checkVergleich('=')"
+            aria-label="Gleich"
+          >
+            =
+          </button>
+
+          <!-- Button „größer als" -->
+          <button
+            class="vgl-btn w-16 h-16 rounded-2xl border-2 border-slate-600 bg-slate-800 text-white text-3xl font-bold hover:border-emerald-400 hover:bg-emerald-900/40 transition-all"
+            onclick="checkVergleich('>')"
+            aria-label="Größer als"
+          >
+            &gt;
+            <!-- &gt; ist die HTML-Entität für ">" -->
+          </button>
+        </div>
+
+        <!-- Feedback-Box für Vergleichs-Aufgabe -->
+        <div
+          id="vgl-feedback"
+          class="text-base font-semibold min-h-[1.5rem] text-center"
+          aria-live="assertive"
+        >
+        </div>
+
+        <!-- Zahlenstrahl 0–100: erscheint nach richtiger Antwort -->
+        <div class="w-full overflow-x-auto">
+          <!--
+            w-full → volle Breite des Containers
+            overflow-x-auto → horizontales Scrollen wenn SVG zu breit ist
+          -->
+          <svg
+            id="vergleich-strahl"
+            viewBox="0 0 560 70"
+            width="560"
+            height="70"
+            role="img"
+            aria-label="Zahlenstrahl von 0 bis 100 mit den verglichenen Zahlen"
+            class="block mx-auto"
+            style="max-width: 100%;"
+          >
+            <!--
+              viewBox="0 0 560 70" → internes Koordinatensystem: 560 breit, 70 hoch
+              block mx-auto → zentriert das SVG
+              max-width: 100% → schrumpft auf kleinen Bildschirmen
+            -->
+            <!-- Wird per drawStrahl() befüllt bzw. aktualisiert -->
+          </svg>
+        </div>
+
+        <!-- „Nächste Aufgabe"-Button (erscheint nach Beantwortung) -->
+        <button
+          id="vgl-weiter"
+          onclick="newVergleich()"
+          class="hidden px-6 py-3 rounded-2xl bg-slate-700 hover:bg-emerald-500 hover:text-slate-950 text-slate-100 font-bold text-base transition-all puls-gruen"
+          aria-label="Nächste Vergleichs-Aufgabe laden"
+        >
+          <!--
+            hidden → standardmäßig unsichtbar (Tailwind: display: none)
+            hover:bg-emerald-500 → bei Hover: grüner Hintergrund
+            hover:text-slate-950 → bei Hover: sehr dunkler Text
+            puls-gruen → Puls-Animation aus dem <style>-Block
+          -->
+          Nächste Aufgabe →
+        </button>
+
+        <!-- Punkte-Anzeige für Vergleichs-Aufgabe -->
+        <div class="flex items-center gap-2 text-sm text-slate-400">
+          <span>Richtig:</span>
+          <span id="vgl-score" class="text-emerald-400 font-bold text-base">0</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════
+         THEORIE-BOX: 3-SPALTIG
+         ═══════════════════════════════════════════ -->
+    <section aria-labelledby="theorie-heading" class="mb-10">
+      <!-- mb-10 → 40px Abstand nach unten -->
+
+      <!-- Überschrift der Theorie-Box -->
+      <h2
+        id="theorie-heading"
+        class="text-lg font-bold text-slate-300 mb-4 flex items-center gap-2"
+      >
+        <!--
+          text-lg → 18px
+          font-bold → fett
+          text-slate-300 → helles Grau
+          mb-4 → 16px Abstand nach unten
+          flex items-center gap-2 → Emoji und Text auf einer Linie
+        -->
+        <span aria-hidden="true">📚</span>
+        Wissens-Boxen
+      </h2>
+
+      <!-- Dreispaltiges Raster (auf Mobil einspaltig) -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <!--
+          grid → CSS Grid Layout
+          grid-cols-1 → eine Spalte auf kleinen Bildschirmen
+          sm:grid-cols-3 → drei Spalten ab 640px
+          gap-4 → 16px Abstand zwischen den Karten
+        -->
+
+        <!-- ── Theorie-Karte 1: Stellenwerte ── -->
+        <div class="rounded-2xl border border-emerald-400/20 bg-slate-900/50 p-5">
+          <!--
+            rounded-2xl → abgerundete Ecken (16px)
+            border-emerald-400/20 → grüner Rahmen, 20% Deckkraft (sehr dezent)
+            bg-slate-900/50 → halbtransparentes Dunkelblau
+            p-5 → Innenabstand 20px
+          -->
+
+          <!-- Karten-Titel -->
+          <h3 class="text-emerald-300 font-semibold mb-3 flex items-center gap-2">
+            <!-- text-emerald-300 → helles Grün, font-semibold → halbfett -->
+            <span class="text-xl" aria-hidden="true">🧱</span>
+            Stellenwerte
+          </h3>
+
+          <!-- Karten-Inhalt: wichtige Regeln zu Stellenwerten -->
+          <ul class="text-slate-300 text-sm space-y-2">
+            <!--
+              text-sm → 14px
+              space-y-2 → 8px Abstand zwischen Listenpunkten
+            -->
+            <li class="flex gap-2">
+              <!-- gap-2 → 8px Abstand zwischen Pfeil-Bullet und Text -->
+              <span class="text-emerald-400 flex-shrink-0">▶</span>
+              <!-- flex-shrink-0 → Bullet-Pfeil wird nicht kleiner -->
+              <span>Jede Zahl hat <strong class="text-teal-300">Zehner</strong> und <strong class="text-emerald-300">Einer</strong>.</span>
+            </li>
+            <li class="flex gap-2">
+              <span class="text-emerald-400 flex-shrink-0">▶</span>
+              <span><strong class="text-white">73 = 7 × 10 + 3</strong> → 7 Zehner, 3 Einer</span>
+            </li>
+            <li class="flex gap-2">
+              <span class="text-emerald-400 flex-shrink-0">▶</span>
+              <span>Die <strong class="text-teal-300">Zehnerstelle</strong> steht links, die <strong class="text-emerald-300">Einerstelle</strong> steht rechts.</span>
+            </li>
+            <li class="flex gap-2">
+              <span class="text-emerald-400 flex-shrink-0">▶</span>
+              <span><strong class="text-white">10</strong> Einer ergeben <strong class="text-white">1</strong> Zehner!</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- ── Theorie-Karte 2: Zahlenstrahl bis 100 ── -->
+        <div class="rounded-2xl border border-emerald-400/20 bg-slate-900/50 p-5">
+          <h3 class="text-emerald-300 font-semibold mb-3 flex items-center gap-2">
+            <span class="text-xl" aria-hidden="true">📏</span>
+            Zahlenstrahl bis 100
+          </h3>
+
+          <ul class="text-slate-300 text-sm space-y-2">
+            <li class="flex gap-2">
+              <span class="text-emerald-400 flex-shrink-0">▶</span>
+              <span>Der Strahl geht von <strong class="text-white">0</strong> bis <strong class="text-white">100</strong>.</span>
+            </li>
+            <li class="flex gap-2">
+              <span class="text-emerald-400 flex-shrink-0">▶</span>
+              <span>Jeder <strong class="text-teal-300">Zehner-Schritt</strong> (0, 10, 20 ...) ist markiert.</span>
+            </li>
+            <li class="flex gap-2">
+              <span class="text-emerald-400 flex-shrink-0">▶</span>
+              <span>Zahlen weiter <strong class="text-white">rechts</strong> sind größer als Zahlen weiter links.</span>
+            </li>
+            <li class="flex gap-2">
+              <span class="text-emerald-400 flex-shrink-0">▶</span>
+              <span>50 liegt genau in der <strong class="text-white">Mitte</strong> des Strahls.</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- ── Theorie-Karte 3: Tipps zum Zählen ── -->
+        <div class="rounded-2xl border border-emerald-400/20 bg-slate-900/50 p-5">
+          <h3 class="text-emerald-300 font-semibold mb-3 flex items-center gap-2">
+            <span class="text-xl" aria-hidden="true">💡</span>
+            Tipps zum Zählen
+          </h3>
+
+          <ul class="text-slate-300 text-sm space-y-2">
+            <li class="flex gap-2">
+              <span class="text-emerald-400 flex-shrink-0">▶</span>
+              <span>Zähle zuerst die <strong class="text-teal-300">Zehner-Stangen</strong>, dann die <strong class="text-emerald-300">Einer-Würfel</strong>.</span>
+            </li>
+            <li class="flex gap-2">
+              <span class="text-emerald-400 flex-shrink-0">▶</span>
+              <span>Bei <strong class="text-white">45</strong>: Zähle 10, 20, 30, 40 (4 Stangen) + 5 Würfel.</span>
+            </li>
+            <li class="flex gap-2">
+              <span class="text-emerald-400 flex-shrink-0">▶</span>
+              <span><strong class="text-white">Krokodil-Regel:</strong> Das Maul frisst die <strong class="text-emerald-300">größere</strong> Zahl!</span>
+            </li>
+            <li class="flex gap-2">
+              <span class="text-emerald-400 flex-shrink-0">▶</span>
+              <span>Übe täglich – du schaffst das!</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ═══════════════════════════════════════════
+       FOOTER
+       ═══════════════════════════════════════════ -->
+  <footer class="py-6 text-center text-xs text-slate-500">
+    <!--
+      py-6 → 24px Innenabstand oben und unten
+      text-center → zentrierter Text
+      text-xs → sehr kleine Schrift (12px)
+      text-slate-500 → mittleres Grau (dezent)
+    -->
+    © <span id="y"></span> Brandon Hank · Düsseldorf
+  </footer>
+
+  <!-- ═══════════════════════════════════════════
+       JAVASCRIPT
+       ═══════════════════════════════════════════ -->
+  <script>
+    /*
+     * ════════════════════════════════════════════════════════════════
+     *  GLOBALE HILFSFUNKTIONEN
+     * ════════════════════════════════════════════════════════════════
+     */
+
+    /**
+     * zufallszahl(min, max)
+     * Gibt eine zufällige ganze Zahl zwischen min und max zurück (beide inklusive).
+     *
+     * Warum Math.floor?
+     *   → Math.random() liefert eine Kommazahl: 0.0 bis 0.999...
+     *   → * (max - min + 1) skaliert auf den gewünschten Bereich
+     *   → Math.floor rundet nach UNTEN zur nächsten ganzen Zahl
+     *
+     * Beispiel: zufallszahl(10, 99) → irgendeine Zahl von 10 bis 99
+     */
+    function zufallszahl(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    /**
+     * createSVGElement(tag)
+     * Erstellt ein SVG-Element mit dem richtigen XML-Namespace.
+     *
+     * Warum createElementNS() statt createElement()?
+     *   → SVG-Elemente brauchen den SVG-Namespace damit der Browser sie
+     *     als echte SVG-Elemente erkennt und korrekt zeichnet.
+     *   → Ohne Namespace zeichnet der Browser rein gar nichts!
+     */
+    function createSVGElement(tag) {
+      // 'http://www.w3.org/2000/svg' ist der offizielle W3C-SVG-Namespace
+      return document.createElementNS('http://www.w3.org/2000/svg', tag);
+    }
+
+
+    /*
+     * ════════════════════════════════════════════════════════════════
+     *  SECTION 1: STELLENWERT-VISUALISIERUNG
+     * ════════════════════════════════════════════════════════════════
+     */
+
+    // Merkt sich die aktuell angezeigte Zahl (wird von newStellenwertZahl gesetzt)
+    let aktuelleStellenwertZahl = 0;
+
+    // Zählt die korrekten Antworten in Sektion 1
+    let stellenwertScore = 0;
+
+    /**
+     * buildBlocks(n)
+     * Zeichnet die Stellenwert-Blöcke für die Zahl n in das SVG.
+     *
+     * Darstellungs-Konzept (Dienes-Material):
+     *   - Zehner (blue/teal):  Schmale Rechtecke, 10 Einheiten hoch
+     *                          Breite: 18px, Höhe: 90px
+     *                          Stehen nebeneinander, bis zu 9 Stangen
+     *   - Einer (emerald):     Kleine Quadrate, 1 Einheit
+     *                          Breite: 14px, Höhe: 14px
+     *                          Max 9 Stück, rechts neben den Zehnern
+     *
+     * Layout im SVG (viewBox 0 0 400 200):
+     *   - Zehner-Stangen starten bei x=20, y=30
+     *   - Einer-Quadrate starten rechts neben den Zehnern
+     *   - Abstand zwischen Stangen/Würfeln: 4px
+     *
+     * @param {number} n - Zahl zwischen 10 und 99
+     */
+    function buildBlocks(n) {
+      // SVG-Element aus dem DOM holen
+      const svg = document.getElementById('stellen-svg');
+      svg.innerHTML = ''; // Vorherigen Inhalt löschen
+
+      // ── Zehner und Einer berechnen ─────────────────────────────────
+      // Math.floor(n / 10) → ganzzahliger Anteil → Zehner
+      // Beispiel: Math.floor(73 / 10) = 7
+      const zehner = Math.floor(n / 10);
+
+      // n % 10 → Rest der Division durch 10 → Einer
+      // Beispiel: 73 % 10 = 3
+      const einer  = n % 10;
+
+      // ── Geometrie-Konstanten ───────────────────────────────────────
+      const STANGEN_BREITE  = 18;   // Breite einer Zehner-Stange in SVG-Einheiten
+      const STANGEN_HOEHE   = 90;   // Höhe einer Zehner-Stange (= 10 × 9px pro Einheit)
+      const STANGEN_ABSTAND = 6;    // horizontaler Abstand zwischen Stangen
+      const EINER_GROESSE   = 15;   // Breite und Höhe eines Einer-Würfels
+      const EINER_ABSTAND   = 4;    // Abstand zwischen Einer-Würfeln
+      const Y_START         = 25;   // y-Position der Oberkante (Stangen und Würfel)
+      const X_START         = 20;   // x-Position der ersten Zehner-Stange
+
+      // ── Zehner-Stangen zeichnen ────────────────────────────────────
+      for (let i = 0; i < zehner; i++) {
+        // x-Position der aktuellen Stange: jede Stange ist STANGEN_BREITE + STANGEN_ABSTAND breit
+        const x = X_START + i * (STANGEN_BREITE + STANGEN_ABSTAND);
+
+        // Äußeres Rechteck: die Stange selbst
+        const rect = createSVGElement('rect');
+        rect.setAttribute('x', x);                  // x-Position
+        rect.setAttribute('y', Y_START);             // y-Position (Oberkante)
+        rect.setAttribute('width', STANGEN_BREITE);  // Breite der Stange
+        rect.setAttribute('height', STANGEN_HOEHE);  // Höhe der Stange
+        rect.setAttribute('rx', '3');                // abgerundete Ecken (3px Radius)
+        rect.setAttribute('class', 'block-zehner');  // CSS-Klasse: teal-Farbe
+        svg.appendChild(rect);
+
+        // Kleine waagerechte Linien als Unterteilung (zeigt: 10 Einheiten)
+        // 9 Linien teilen die Stange in 10 gleiche Abschnitte
+        for (let j = 1; j < 10; j++) {
+          // y-Position der Unterteilungs-Linie: gleichmäßig verteilt
+          const lineY = Y_START + j * (STANGEN_HOEHE / 10);
+
+          const linie = createSVGElement('line');
+          linie.setAttribute('x1', x);                     // Startpunkt x (linke Kante der Stange)
+          linie.setAttribute('y1', lineY);                  // Startpunkt y
+          linie.setAttribute('x2', x + STANGEN_BREITE);    // Endpunkt x (rechte Kante)
+          linie.setAttribute('y2', lineY);                  // Endpunkt y (gleich → waagerecht)
+          linie.setAttribute('stroke', '#99f6e4');          // teal-200: helle Farbe
+          linie.setAttribute('stroke-width', '0.8');        // sehr dünn (dezent)
+          linie.setAttribute('opacity', '0.5');             // halbtransparent
+          svg.appendChild(linie);
+        }
+      }
+
+      // ── Einer-Würfel zeichnen ──────────────────────────────────────
+      // Einer starten rechts von den Zehner-Stangen
+      // x-Startposition: nach allen Stangen + etwas Abstand
+      const einerXStart = X_START + zehner * (STANGEN_BREITE + STANGEN_ABSTAND) + 10;
+
+      // Einer werden in 2 Reihen (oben: max 5, unten: Rest) angeordnet
+      // Das macht das Zählen leichter (wie Würfelbilder / Fünfer-Gruppen)
+      const EINER_PRO_REIHE = 5; // maximal 5 Würfel pro Reihe
+
+      for (let i = 0; i < einer; i++) {
+        // Reihe und Spalte im Raster berechnen
+        const reihe  = Math.floor(i / EINER_PRO_REIHE); // 0 = erste Reihe, 1 = zweite Reihe
+        const spalte = i % EINER_PRO_REIHE;              // 0 bis 4
+
+        // x-Position: Startwert + Spalten-Index × (Würfelgröße + Abstand)
+        const x = einerXStart + spalte * (EINER_GROESSE + EINER_ABSTAND);
+        // y-Position: pro Reihe nach unten verschieben + kleiner Offset zum Ausrichten
+        const y = Y_START + reihe * (EINER_GROESSE + EINER_ABSTAND + 2);
+
+        const rect = createSVGElement('rect');
+        rect.setAttribute('x', x);
+        rect.setAttribute('y', y);
+        rect.setAttribute('width', EINER_GROESSE);   // quadratisch: gleiche Breite
+        rect.setAttribute('height', EINER_GROESSE);  // ... und gleiche Höhe
+        rect.setAttribute('rx', '3');                // leicht abgerundete Ecken
+        rect.setAttribute('class', 'block-einer');   // CSS-Klasse: emerald-Farbe
+        svg.appendChild(rect);
+      }
+
+      // ── Beschriftung: Zehner-Stangen-Label ────────────────────────
+      if (zehner > 0) {
+        // Label "X Zehner" unter die Stangen
+        const label = createSVGElement('text');
+        // x-Position: Mitte der Zehner-Gruppe
+        const labelX = X_START + (zehner * (STANGEN_BREITE + STANGEN_ABSTAND)) / 2 - STANGEN_ABSTAND / 2;
+        label.setAttribute('x', labelX);
+        label.setAttribute('y', Y_START + STANGEN_HOEHE + 18); // unter den Stangen
+        label.setAttribute('text-anchor', 'middle');
+        label.setAttribute('fill', '#5eead4');       // teal-300
+        label.setAttribute('font-size', '11');
+        label.setAttribute('font-family', 'ui-sans-serif, sans-serif');
+        label.setAttribute('font-weight', '600');
+        label.textContent = `${zehner} Zehner`;
+        svg.appendChild(label);
+      }
+
+      // ── Beschriftung: Einer-Label ──────────────────────────────────
+      if (einer > 0) {
+        const einerLabelX = einerXStart + Math.min(einer, EINER_PRO_REIHE) * (EINER_GROESSE + EINER_ABSTAND) / 2 - EINER_ABSTAND / 2;
+        const label = createSVGElement('text');
+        label.setAttribute('x', einerLabelX);
+        label.setAttribute('y', Y_START + STANGEN_HOEHE + 18);
+        label.setAttribute('text-anchor', 'middle');
+        label.setAttribute('fill', '#6ee7b7');       // emerald-300
+        label.setAttribute('font-size', '11');
+        label.setAttribute('font-family', 'ui-sans-serif, sans-serif');
+        label.setAttribute('font-weight', '600');
+        label.textContent = `${einer} Einer`;
+        svg.appendChild(label);
+      }
+    }
+
+    /**
+     * newStellenwertZahl()
+     * Wählt eine neue Zufallszahl (10–99) und aktualisiert SVG und Anzeige.
+     * Setzt auch die Eingabefelder und das Feedback zurück.
+     */
+    function newStellenwertZahl() {
+      // Neue Zufallszahl zwischen 10 und 99
+      // (unter 10 hätte keine Zehner, über 99 gibt es 3-stellige Zahlen → außerhalb des Themas)
+      aktuelleStellenwertZahl = zufallszahl(10, 99);
+
+      // Blöcke im SVG neu zeichnen
+      buildBlocks(aktuelleStellenwertZahl);
+
+      // Zahl in der Überschrift anzeigen (großer grüner Text)
+      document.getElementById('stellen-zahl').textContent = aktuelleStellenwertZahl;
+
+      // Eingabefelder leeren und Feedback-Text löschen
+      document.getElementById('inp-zehner').value = '';
+      document.getElementById('inp-einer').value  = '';
+      document.getElementById('stellen-feedback').textContent = '';
+      document.getElementById('stellen-feedback').style.color = '';
+
+      // Fokus auf das Zehner-Feld setzen damit der Nutzer direkt tippen kann
+      document.getElementById('inp-zehner').focus();
+    }
+
+    /**
+     * checkStellenwert()
+     * Liest die Eingaben aus den Zehner- und Einer-Feldern und prüft sie.
+     *
+     * Logik:
+     *   einZehner × 10 + einEiner === aktuelleStellenwertZahl
+     *
+     * Feedback:
+     *   Richtig → grüner Text, Score++, neue Aufgabe nach 1500ms
+     *   Falsch  → roter Text mit Erklärung, neue Aufgabe nach 2500ms
+     */
+    function checkStellenwert() {
+      // Eingabefelder und Feedback-Element holen
+      const inpZ   = document.getElementById('inp-zehner');
+      const inpE   = document.getElementById('inp-einer');
+      const fb     = document.getElementById('stellen-feedback');
+
+      // parseInt() wandelt Text in eine Ganzzahl um (Basis 10)
+      // Eingabefelder liefern immer Strings, auch bei type="number"
+      const einZehner = parseInt(inpZ.value, 10);
+      const einEiner  = parseInt(inpE.value, 10);
+
+      // Prüfen ob beide Felder ausgefüllt sind
+      // isNaN() → "is Not a Number" → true wenn kein gültiger Zahlenwert
+      if (isNaN(einZehner) || isNaN(einEiner)) {
+        fb.textContent = 'Bitte beide Felder ausfüllen!';
+        fb.style.color = '#f59e0b'; // amber-400: Warnorange
+        return; // Funktion hier verlassen, keine Auswertung
+      }
+
+      // Berechne den Wert aus den Eingaben
+      const gegebenerWert = einZehner * 10 + einEiner;
+
+      // Erwartete Werte zum Vergleich berechnen
+      const erwartetZehner = Math.floor(aktuelleStellenwertZahl / 10);
+      const erwartetEiner  = aktuelleStellenwertZahl % 10;
+
+      if (gegebenerWert === aktuelleStellenwertZahl) {
+        // ✓ Richtig!
+        fb.textContent = `✓ Super! ${aktuelleStellenwertZahl} = ${erwartetZehner} Zehner + ${erwartetEiner} Einer = ${erwartetZehner * 10} + ${erwartetEiner}`;
+        fb.style.color = '#34d399'; // emerald-400: grün
+
+        // Score erhöhen und anzeigen
+        stellenwertScore++;
+        document.getElementById('stellen-score').textContent = stellenwertScore;
+
+        // Felder deaktivieren damit nicht nochmal eingegeben wird
+        inpZ.disabled = true;
+        inpE.disabled = true;
+
+        // Nach 1500ms (1,5 Sekunden) neue Aufgabe generieren
+        setTimeout(function() {
+          inpZ.disabled = false; // Felder wieder aktivieren
+          inpE.disabled = false;
+          newStellenwertZahl(); // nächste Aufgabe
+        }, 1500); // 1500 Millisekunden = 1,5 Sekunden
+
+      } else {
+        // ✗ Falsch – richtige Antwort erklären
+        fb.textContent = `✗ Leider falsch. ${aktuelleStellenwertZahl} hat ${erwartetZehner} Zehner und ${erwartetEiner} Einer (${erwartetZehner * 10} + ${erwartetEiner}).`;
+        fb.style.color = '#f87171'; // red-400: rot
+
+        // Felder deaktivieren
+        inpZ.disabled = true;
+        inpE.disabled = true;
+
+        // Nach 2500ms (2,5 Sekunden) neue Aufgabe (mehr Zeit zum Lesen der Erklärung)
+        setTimeout(function() {
+          inpZ.disabled = false;
+          inpE.disabled = false;
+          newStellenwertZahl();
+        }, 2500); // 2500 Millisekunden = 2,5 Sekunden
+      }
+    }
+
+
+    /*
+     * ════════════════════════════════════════════════════════════════
+     *  SECTION 2: ZAHLEN LESEN & SCHREIBEN
+     * ════════════════════════════════════════════════════════════════
+     */
+
+    // Die aktuell angezeigte Zahl in der Lese-Aufgabe
+    let aktuelleLeseZahl = 0;
+
+    // Zählt richtige Antworten in Sektion 2
+    let leseScore = 0;
+
+    /**
+     * newLeseaufgabe()
+     * Generiert eine neue Lese-Aufgabe: wählt Zufallszahl (10–99) und zeigt sie im Display.
+     * Setzt Eingabefelder und Feedback zurück.
+     */
+    function newLeseaufgabe() {
+      // Neue Zufallszahl zwischen 10 und 99
+      aktuelleLeseZahl = zufallszahl(10, 99);
+
+      // Zahl im Display anzeigen
+      document.getElementById('lesen-zahl').textContent = aktuelleLeseZahl;
+
+      // Eingabefelder leeren
+      document.getElementById('lesen-zehner').value = '';
+      document.getElementById('lesen-einer').value  = '';
+
+      // Feedback löschen
+      document.getElementById('lesen-feedback').textContent = '';
+      document.getElementById('lesen-feedback').style.color = '';
+
+      // Fokus auf das Zehner-Feld setzen
+      document.getElementById('lesen-zehner').focus();
+    }
+
+    /**
+     * checkLesen()
+     * Prüft die Eingaben in der Lese-Aufgabe.
+     *
+     * Formel: eingabeZehner × 10 + eingabeEiner === aktuelleLeseZahl
+     *
+     * Die Aufgabe fragt: „Schreibe als Zehner × 10 + Einer"
+     * Für 45: 4 × 10 + 5 = 45 ✓
+     */
+    function checkLesen() {
+      // Eingabefelder holen
+      const inpZ = document.getElementById('lesen-zehner');
+      const inpE = document.getElementById('lesen-einer');
+      const fb   = document.getElementById('lesen-feedback');
+
+      // Werte auslesen und zu Ganzzahlen konvertieren
+      const eingabeZehner = parseInt(inpZ.value, 10);
+      const eingabeEiner  = parseInt(inpE.value, 10);
+
+      // Beide Felder müssen ausgefüllt sein
+      if (isNaN(eingabeZehner) || isNaN(eingabeEiner)) {
+        fb.textContent = 'Bitte beide Felder ausfüllen!';
+        fb.style.color = '#f59e0b'; // amber-400: Warnorange
+        return;
+      }
+
+      // Berechneten Wert mit der Aufgaben-Zahl vergleichen
+      const berechneterWert = eingabeZehner * 10 + eingabeEiner;
+
+      // Erwartete Werte
+      const erwartetZ = Math.floor(aktuelleLeseZahl / 10);
+      const erwartetE = aktuelleLeseZahl % 10;
+
+      if (berechneterWert === aktuelleLeseZahl) {
+        // ✓ Richtig!
+        fb.textContent = `✓ Klasse! ${aktuelleLeseZahl} = ${eingabeZehner} × 10 + ${eingabeEiner}`;
+        fb.style.color = '#34d399'; // emerald-400: grün
+
+        leseScore++;
+        document.getElementById('lesen-score').textContent = leseScore;
+
+        // Felder sperren, neue Aufgabe nach 1500ms
+        inpZ.disabled = true;
+        inpE.disabled = true;
+
+        setTimeout(function() {
+          inpZ.disabled = false;
+          inpE.disabled = false;
+          newLeseaufgabe();
+        }, 1500);
+
+      } else {
+        // ✗ Falsch
+        fb.textContent = `✗ Nicht ganz. ${aktuelleLeseZahl} = ${erwartetZ} × 10 + ${erwartetE}`;
+        fb.style.color = '#f87171'; // red-400: rot
+
+        // Felder sperren, neue Aufgabe nach 2500ms
+        inpZ.disabled = true;
+        inpE.disabled = true;
+
+        setTimeout(function() {
+          inpZ.disabled = false;
+          inpE.disabled = false;
+          newLeseaufgabe();
+        }, 2500);
+      }
+    }
+
+
+    /*
+     * ════════════════════════════════════════════════════════════════
+     *  SECTION 3: ZAHLENSTRAHL 0–100 + VERGLEICHEN
+     * ════════════════════════════════════════════════════════════════
+     */
+
+    // Die zwei Zahlen der aktuellen Vergleichs-Aufgabe (global für checkVergleich)
+    let vglLinksZahl  = 0;
+    let vglRechtsZahl = 0;
+
+    // Guard: verhindert mehrfache Antworten vor dem Weiter-Klick
+    let vglBeantwortet = false;
+
+    // Zählt richtige Antworten in Sektion 3
+    let vglScore = 0;
+
+    /**
+     * drawStrahl(dotLinks, dotRechts, sichtbar)
+     * Zeichnet den Zahlenstrahl 0–100 im SVG.
+     * Optional: zwei farbige Punkte für die verglichenen Zahlen.
+     *
+     * Koordinaten (viewBox 0 0 560 70):
+     *   - Linie: y = 40
+     *   - Ticks bei 0, 10, 20, ..., 100: von y=33 bis y=47
+     *   - Labels (0, 10, ...): y = 58
+     *   - Punkte: cy = 22, Radius 7
+     *
+     * @param {number|null} dotLinks  - Zahl für den linken (teal) Punkt, oder null
+     * @param {number|null} dotRechts - Zahl für den rechten (violetten) Punkt, oder null
+     * @param {boolean}     sichtbar  - true: Punkte anzeigen; false: nur Grundstrahl
+     */
+    function drawStrahl(dotLinks, dotRechts, sichtbar) {
+      const svg = document.getElementById('vergleich-strahl');
+      svg.innerHTML = ''; // Alten Inhalt löschen
+
+      // ── Geometrie-Konstanten ───────────────────────────────────────
+      const X_START    = 25;    // x-Position der Zahl 0 (linkes Ende)
+      const X_ENDE     = 535;   // x-Position der Zahl 100 (rechtes Ende)
+      const BREITE     = X_ENDE - X_START; // 510 SVG-Einheiten = Strecke 0 bis 100
+      const Y_LINIE    = 40;   // y-Position der horizontalen Hauptlinie
+      const Y_TICK_O   = 33;   // Tick-Strich oben
+      const Y_TICK_U   = 47;   // Tick-Strich unten
+      const Y_LABEL    = 58;   // y-Position der Beschriftungstexte
+      const Y_PUNKT    = 22;   // y-Position der Mittelpunkte der Zahlen-Dots
+      const R_PUNKT    = 7;    // Radius der Zahlen-Dots
+
+      /**
+       * Hilfsfunktion: Zahl → x-Position auf dem Strahl
+       * Lineares Verhältnis: 0 → X_START, 100 → X_ENDE
+       * @param {number} n - Zahl zwischen 0 und 100
+       * @returns {number} x-Koordinate
+       */
+      function numToX(n) {
+        return X_START + (n / 100) * BREITE;
+      }
+
+      // ── Horizontale Linie zeichnen ─────────────────────────────────
+      const linie = createSVGElement('line');
+      linie.setAttribute('x1', X_START);
+      linie.setAttribute('y1', Y_LINIE);
+      linie.setAttribute('x2', X_ENDE);
+      linie.setAttribute('y2', Y_LINIE);
+      linie.setAttribute('class', 'nstrahl-linie');
+      svg.appendChild(linie);
+
+      // ── Pfeilspitze rechts am Linienende ──────────────────────────
+      const pfeil = createSVGElement('polygon');
+      pfeil.setAttribute('points', `${X_ENDE + 2},${Y_LINIE} ${X_ENDE - 5},${Y_LINIE - 4} ${X_ENDE - 5},${Y_LINIE + 4}`);
+      pfeil.setAttribute('fill', '#334155'); // slate-700
+      svg.appendChild(pfeil);
+
+      // ── Ticks und Beschriftungen für jede 10er-Marke ──────────────
+      // Schleife: 0, 10, 20, ..., 100 → 11 Marken insgesamt
+      for (let i = 0; i <= 100; i += 10) {
+        // x-Position dieser Marke auf dem Strahl
+        const x = numToX(i);
+
+        // Senkrechter Tick-Strich
+        const tick = createSVGElement('line');
+        tick.setAttribute('x1', x);
+        tick.setAttribute('y1', Y_TICK_O);
+        tick.setAttribute('x2', x);
+        tick.setAttribute('y2', Y_TICK_U);
+        tick.setAttribute('class', 'nstrahl-tick');
+        svg.appendChild(tick);
+
+        // Beschriftungs-Text unter dem Tick
+        const label = createSVGElement('text');
+        label.setAttribute('x', x);
+        label.setAttribute('y', Y_LABEL);
+        label.setAttribute('class', 'nstrahl-label');
+        label.textContent = i; // Die Zahl (0, 10, 20 ...)
+        svg.appendChild(label);
+      }
+
+      // ── Zwei farbige Punkte zeichnen (nur wenn sichtbar === true) ──
+      // Nach richtiger Antwort werden die beiden Zahlen als Punkte markiert
+      if (sichtbar && dotLinks !== null && dotRechts !== null) {
+
+        // ── Linker Punkt (teal/türkis) für die linke Zahl ────────────
+        const xLinks = numToX(dotLinks); // x-Position der linken Zahl
+
+        // Verbindungslinie vom Punkt nach unten zur Zahlenstrahl-Linie
+        const verbL = createSVGElement('line');
+        verbL.setAttribute('x1', xLinks);
+        verbL.setAttribute('y1', Y_PUNKT + R_PUNKT); // Start: Unterkante des Punktes
+        verbL.setAttribute('x2', xLinks);
+        verbL.setAttribute('y2', Y_LINIE);             // Ende: Hauptlinie
+        verbL.setAttribute('stroke', '#2dd4bf');        // teal-400
+        verbL.setAttribute('stroke-width', '1.5');
+        verbL.setAttribute('stroke-dasharray', '3 2'); // gestrichelt → dezenter
+        verbL.setAttribute('opacity', '0.6');
+        svg.appendChild(verbL);
+
+        // Kreis (Punkt) für die linke Zahl
+        const punktL = createSVGElement('circle');
+        punktL.setAttribute('cx', xLinks);
+        punktL.setAttribute('cy', Y_PUNKT);
+        punktL.setAttribute('r', R_PUNKT);
+        punktL.setAttribute('fill', '#0d9488');        // teal-600: Füllfarbe
+        punktL.setAttribute('stroke', '#2dd4bf');      // teal-400: Rand
+        punktL.setAttribute('stroke-width', '2');
+        punktL.setAttribute('class', 'nstrahl-dot strahl-punkt');
+        svg.appendChild(punktL);
+
+        // Zahl-Label über dem linken Punkt
+        const labelL = createSVGElement('text');
+        labelL.setAttribute('x', xLinks);
+        labelL.setAttribute('y', Y_PUNKT - R_PUNKT - 3); // etwas über dem Punkt
+        labelL.setAttribute('fill', '#5eead4');          // teal-300
+        labelL.setAttribute('class', 'nstrahl-dot-label');
+        labelL.textContent = dotLinks;
+        svg.appendChild(labelL);
+
+        // ── Rechter Punkt (violett) für die rechte Zahl ───────────────
+        const xRechts = numToX(dotRechts);
+
+        // Verbindungslinie rechter Punkt
+        const verbR = createSVGElement('line');
+        verbR.setAttribute('x1', xRechts);
+        verbR.setAttribute('y1', Y_PUNKT + R_PUNKT);
+        verbR.setAttribute('x2', xRechts);
+        verbR.setAttribute('y2', Y_LINIE);
+        verbR.setAttribute('stroke', '#a78bfa');        // violet-400
+        verbR.setAttribute('stroke-width', '1.5');
+        verbR.setAttribute('stroke-dasharray', '3 2');
+        verbR.setAttribute('opacity', '0.6');
+        svg.appendChild(verbR);
+
+        // Kreis (Punkt) für die rechte Zahl
+        const punktR = createSVGElement('circle');
+        punktR.setAttribute('cx', xRechts);
+        punktR.setAttribute('cy', Y_PUNKT);
+        punktR.setAttribute('r', R_PUNKT);
+        punktR.setAttribute('fill', '#7c3aed');         // violet-600
+        punktR.setAttribute('stroke', '#a78bfa');       // violet-400
+        punktR.setAttribute('stroke-width', '2');
+        punktR.setAttribute('class', 'nstrahl-dot strahl-punkt');
+        svg.appendChild(punktR);
+
+        // Zahl-Label über dem rechten Punkt
+        const labelR = createSVGElement('text');
+        labelR.setAttribute('x', xRechts);
+        labelR.setAttribute('y', Y_PUNKT - R_PUNKT - 3);
+        labelR.setAttribute('fill', '#c4b5fd');         // violet-300
+        labelR.setAttribute('class', 'nstrahl-dot-label');
+        labelR.textContent = dotRechts;
+        svg.appendChild(labelR);
+      }
+    }
+
+    /**
+     * newVergleich()
+     * Generiert zwei zufällige Zahlen (10–99) für die Vergleichs-Aufgabe.
+     *
+     * Besonderheit: Mit 15% Wahrscheinlichkeit werden gleiche Zahlen gewählt,
+     * damit der Nutzer auch den „="-Button üben kann (sonst wäre es sehr selten).
+     *
+     * Setzt UI zurück: Symbol ausblenden, Buttons aktivieren, Feedback leeren.
+     */
+    function newVergleich() {
+      // Erste Zufallszahl zwischen 10 und 99
+      vglLinksZahl  = zufallszahl(10, 99);
+
+      // 15% Chance auf gleiche Zahl (damit „=" auch vorkommt)
+      // Math.random() < 0.15 → ist in 15 von 100 Fällen true
+      if (Math.random() < 0.15) {
+        vglRechtsZahl = vglLinksZahl; // Beide gleich
+      } else {
+        vglRechtsZahl = zufallszahl(10, 99); // Verschiedene Zufallszahl
+      }
+
+      // Zahlen in die Anzeige-Elemente schreiben
+      document.getElementById('vgl-links').textContent  = vglLinksZahl;
+      document.getElementById('vgl-rechts').textContent = vglRechtsZahl;
+
+      // Symbol-Platzhalter ausblenden (von der letzten Aufgabe)
+      const sym = document.getElementById('vgl-symbol');
+      sym.style.opacity = '0';  // unsichtbar (CSS transition übernimmt den Übergang)
+      sym.textContent   = '';   // Text leeren
+
+      // Feedback-Text und Farbe zurücksetzen
+      const fb = document.getElementById('vgl-feedback');
+      fb.textContent   = '';
+      fb.style.color   = '';
+
+      // „Nächste Aufgabe"-Button ausblenden
+      document.getElementById('vgl-weiter').classList.add('hidden');
+
+      // Alle Operator-Buttons wieder aktivieren
+      document.querySelectorAll('.vgl-btn').forEach(function(btn) {
+        btn.disabled = false; // false = klickbar
+      });
+
+      // Guard zurücksetzen: neue Antwort ist ab jetzt möglich
+      vglBeantwortet = false;
+
+      // Zahlenstrahl ohne Punkte zeichnen (wird erst nach Antwort mit Punkten neu gezeichnet)
+      drawStrahl(null, null, false);
+    }
+
+    /**
+     * checkVergleich(op)
+     * Prüft ob der gewählte Vergleichsoperator korrekt ist.
+     *
+     * @param {string} op - Der gewählte Operator: '<', '=', oder '>'
+     *
+     * Ablauf:
+     * 1. Guard prüfen (schon beantwortet? → sofort zurück)
+     * 2. Richtigen Operator ermitteln
+     * 3. Feedback anzeigen
+     * 4. Zahlenstrahl mit beiden Punkten zeichnen
+     * 5. Buttons sperren, „Weiter"-Button einblenden
+     */
+    function checkVergleich(op) {
+      // Guard: wenn bereits beantwortet, nichts tun
+      if (vglBeantwortet) return;
+
+      // Guard setzen: ab jetzt keine weitere Antwort möglich
+      vglBeantwortet = true;
+
+      // ── Richtigen Operator bestimmen ───────────────────────────────
+      let richtigerOp;
+      if (vglLinksZahl < vglRechtsZahl) {
+        richtigerOp = '<'; // linke Zahl ist kleiner
+      } else if (vglLinksZahl > vglRechtsZahl) {
+        richtigerOp = '>'; // linke Zahl ist größer
+      } else {
+        richtigerOp = '='; // beide gleich
+      }
+
+      // ── Richtiges Symbol einblenden ────────────────────────────────
+      const sym = document.getElementById('vgl-symbol');
+      // HTML-Entitäten vermeiden: wir nutzen textContent (kein HTML-Parsing)
+      sym.textContent   = richtigerOp; // '<', '>' oder '='
+      sym.style.opacity = '1';         // einblenden (CSS transition: 300ms)
+
+      // ── Feedback-Element befüllen ──────────────────────────────────
+      const fb = document.getElementById('vgl-feedback');
+
+      if (op === richtigerOp) {
+        // ✓ Richtig!
+        fb.textContent = `✓ Richtig! ${vglLinksZahl} ${richtigerOp} ${vglRechtsZahl}`;
+        fb.style.color = '#34d399'; // emerald-400: grün
+
+        // Score erhöhen und anzeigen
+        vglScore++;
+        document.getElementById('vgl-score').textContent = vglScore;
+
+      } else {
+        // ✗ Falsch – richtige Antwort zeigen
+        fb.textContent = `✗ Nicht ganz. Richtig: ${vglLinksZahl} ${richtigerOp} ${vglRechtsZahl}`;
+        fb.style.color = '#f87171'; // red-400: rot
+      }
+
+      // ── Zahlenstrahl mit Punkten zeichnen ─────────────────────────
+      // Beide Zahlen als farbige Punkte auf dem Strahl markieren
+      drawStrahl(vglLinksZahl, vglRechtsZahl, true);
+
+      // ── Alle Operator-Buttons deaktivieren ────────────────────────
+      document.querySelectorAll('.vgl-btn').forEach(function(btn) {
+        btn.disabled = true; // nicht mehr klickbar
+      });
+
+      // ── „Nächste Aufgabe"-Button einblenden ───────────────────────
+      // classList.remove('hidden') entfernt Tailwinds display:none
+      document.getElementById('vgl-weiter').classList.remove('hidden');
+    }
+
+
+    /*
+     * ════════════════════════════════════════════════════════════════
+     *  TASTATUR-EINGABE: Enter-Taste für alle Eingabefelder
+     * ════════════════════════════════════════════════════════════════
+     */
+
+    // Enter-Taste im Zehner-Feld (Stellenwert) → Prüfen ausführen
+    document.getElementById('inp-zehner').addEventListener('keydown', function(e) {
+      // e.key → Name der gedrückten Taste als String
+      if (e.key === 'Enter') {
+        // Bei Enter: zuerst zum Einer-Feld springen (damit der Nutzer es ausfüllen kann)
+        // Nur wenn das Einer-Feld noch leer ist:
+        const einErField = document.getElementById('inp-einer');
+        if (einErField.value === '') {
+          einErField.focus(); // Fokus zum nächsten Feld
+        } else {
+          checkStellenwert(); // Beide Felder ausgefüllt → direkt prüfen
+        }
+      }
+    });
+
+    // Enter-Taste im Einer-Feld (Stellenwert) → direkt Prüfen
+    document.getElementById('inp-einer').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') checkStellenwert();
+    });
+
+    // Enter-Taste im Zehner-Feld (Lesen) → zum Einer-Feld oder Prüfen
+    document.getElementById('lesen-zehner').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        const einErField = document.getElementById('lesen-einer');
+        if (einErField.value === '') {
+          einErField.focus();
+        } else {
+          checkLesen();
+        }
+      }
+    });
+
+    // Enter-Taste im Einer-Feld (Lesen) → direkt Prüfen
+    document.getElementById('lesen-einer').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') checkLesen();
+    });
+
+
+    /*
+     * ════════════════════════════════════════════════════════════════
+     *  INITIALISIERUNG: Beim Laden der Seite alles starten
+     * ════════════════════════════════════════════════════════════════
+     */
+
+    // Erste Stellenwert-Aufgabe generieren (Section 1)
+    newStellenwertZahl();
+
+    // Erste Lese-Aufgabe generieren (Section 2)
+    newLeseaufgabe();
+
+    // Erste Vergleichs-Aufgabe generieren + leeren Zahlenstrahl zeichnen (Section 3)
+    newVergleich();
+
+    // ── Footer-Jahr setzen ─────────────────────────────────────────
+    // new Date() → aktuelles Datum und Uhrzeit des Browsers
+    // .getFullYear() → gibt die vierstellige Jahreszahl zurück (z. B. 2026)
+    document.getElementById('y').textContent = new Date().getFullYear();
+  </script>
+
+  <!--
+    Topbar laden:
+    1. window.__i18nBase wird gesetzt BEVOR der Topbar-Fetch läuft,
+       damit script.js weiß, wo die i18n-Sprachdateien liegen.
+    2. fetch('../../topbar.html') holt den Topbar-HTML-Code.
+    3. Nach erfolgreichem Laden wird script.js dynamisch eingefügt.
+
+    Warum dynamisch?
+    → script.js benötigt die Topbar-Elemente im DOM.
+      Wäre script.js fest im <head>, würde es laufen bevor die Topbar existiert.
+  -->
+  <script>
+    // __i18nBase: Pfad-Präfix für Sprachdateien (../../lang-de.json usw.)
+    // MUSS gesetzt sein bevor script.js läuft!
+    window.__i18nBase = '../../';
+
+    // fetch() → HTTP-Anfrage, gibt ein Promise zurück
+    fetch('../../topbar.html')
+      .then(function(r) {
+        // .text() → liest die HTTP-Antwort als Text (HTML = Text)
+        return r.text();
+      })
+      .then(function(html) {
+        // Geladenes HTML in den Topbar-Container einfügen
+        document.getElementById('topbar-container').innerHTML = html;
+
+        // script.js dynamisch laden: erst NACH dem Einfügen der Topbar
+        // createElement('script') → neues <script>-Element erzeugen
+        const s = document.createElement('script');
+        s.src = '../../script.js'; // Pfad zu script.js (zwei Ebenen höher)
+        // appendChild → fügt das Script dem <body> hinzu → Browser lädt und führt es aus
+        document.body.appendChild(s);
+      });
+  </script>
+</body>
+</html>

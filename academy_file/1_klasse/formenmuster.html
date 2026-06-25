@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <!-- Zeichensatz und Viewport für mobile Geräte -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Formen & Muster – Klasse 1 | MathAcademy</title>
+
+  <!-- Tailwind CSS über CDN – kein Build-Schritt nötig -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Eigene Stylesheet-Datei für Theme-Variablen und globale Stile -->
+  <link rel="stylesheet" href="../style.css?v=1.0" />
+
+  <style>
+    /* ── Animationen ──────────────────────────────────────────── */
+
+    /* Sanftes Erscheinen einer Karte von unten – für neue Quiz-Runden */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Kurzes Wackeln bei falscher Antwort – visuelles Feedback */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%       { transform: translateX(-8px); }
+      40%       { transform: translateX(8px); }
+      60%       { transform: translateX(-6px); }
+      80%       { transform: translateX(6px); }
+    }
+
+    /* Pulsieren des ausgewählten Formen-Buttons – zeigt Auswahl an */
+    @keyframes pulse-border {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(52,211,153,0.4); }
+      50%       { box-shadow: 0 0 0 6px rgba(52,211,153,0); }
+    }
+
+    /* Klasse für Einblend-Animation – wird per JS hinzugefügt/entfernt */
+    .anim-fadein {
+      animation: fadeInUp 0.35s ease both;
+    }
+
+    /* Klasse für Schüttel-Animation – wird kurz bei Fehler gesetzt */
+    .anim-shake {
+      animation: shake 0.4s ease;
+    }
+
+    /* Hervorgehobene Formen-Karte – grüner Leuchtrand */
+    .shape-card-selected {
+      border-color: #34d399 !important; /* emerald-400 */
+      box-shadow: 0 0 0 3px rgba(52,211,153,0.25);
+      animation: pulse-border 1.5s ease infinite;
+    }
+
+    /* SVG-Elemente sollen keine eigenen Klick-Ereignisse auslösen,
+       damit der Klick immer an die übergeordnete Karte weitergeleitet wird */
+    .shape-card svg {
+      pointer-events: none; /* verhindert, dass SVG den Klick "abfängt" */
+    }
+
+    /* Muster-Icons: kleine quadratische SVG-Elemente nebeneinander */
+    .pattern-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0; /* kein Schrumpfen in Flex-Container */
+    }
+
+    /* Quiz-Antwort-Button im Hover-Zustand leicht aufhellen */
+    .btn-answer:hover:not(:disabled) {
+      filter: brightness(1.15);
+    }
+
+    /* Deaktivierter Button nach Antwort-Klick – kein weiterer Klick möglich */
+    .btn-answer:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    /* Richtiger Antwort-Button – grün leuchten lassen */
+    .btn-correct {
+      background-color: #059669 !important; /* emerald-600 */
+      border-color: #34d399 !important;
+      color: #fff !important;
+    }
+
+    /* Falscher Antwort-Button – rot leuchten lassen */
+    .btn-wrong {
+      background-color: #dc2626 !important; /* red-600 */
+      border-color: #f87171 !important;
+      color: #fff !important;
+    }
+
+    /* Info-Panel für Formen-Details – glatter Übergang beim Einblenden */
+    #shape-info {
+      transition: opacity 0.25s ease;
+    }
+
+    /* Fragezeichen-Platzhalter im Muster – pulsiert leicht */
+    @keyframes question-pulse {
+      0%, 100% { opacity: 0.7; }
+      50%       { opacity: 1; }
+    }
+    .question-mark-anim {
+      animation: question-pulse 1.2s ease infinite;
+    }
+  </style>
+</head>
+
+<body class="bg-slate-950 text-slate-100 min-h-screen">
+
+  <!-- Topbar-Container – wird per JS mit ../topbar.html befüllt -->
+  <div id="topbar-container"></div>
+
+  <!-- ══════════════════════════════════════════════════
+       HAUPT-INHALT
+  ══════════════════════════════════════════════════ -->
+  <main class="max-w-4xl mx-auto px-4 pb-16 pt-6">
+
+    <!-- ── Zurück-Link zur Akademie-Übersicht ── -->
+    <a href="../academy.html"
+       class="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-emerald-300 transition-colors mb-6">
+      <!-- Pfeil-Symbol -->
+      ← Zurück zur Akademie
+    </a>
+
+    <!-- ── Seiten-Titel ── -->
+    <div class="mb-10">
+      <!-- Fach-Badge -->
+      <span class="text-xs font-semibold uppercase tracking-widest text-emerald-400 mb-2 block">
+        Klasse 1 · Geometrie
+      </span>
+      <!-- Haupt-Überschrift der Lektion -->
+      <h1 class="text-3xl sm:text-4xl font-bold text-slate-100 mb-3">
+        Formen &amp; Muster
+      </h1>
+      <!-- Kurze Beschreibung was in dieser Lektion gelernt wird -->
+      <p class="text-slate-400 text-base max-w-xl">
+        Lerne die wichtigsten geometrischen Formen kennen, erkenne Muster und trainiere
+        dein Auge für Formen im Alltag.
+      </p>
+    </div>
+
+    <!-- ════════════════════════════════════════════════
+         ABSCHNITT 1: FORMEN-EXPLORER
+    ════════════════════════════════════════════════ -->
+    <section class="mb-14" aria-labelledby="explorer-title">
+
+      <!-- Abschnitts-Überschrift mit nummerierten Schritt-Badge -->
+      <div class="flex items-center gap-3 mb-6">
+        <!-- Runde Nummer "1" -->
+        <span class="w-8 h-8 rounded-full bg-emerald-400 text-slate-950 text-sm font-bold
+                     flex items-center justify-center flex-shrink-0">
+          1
+        </span>
+        <h2 id="explorer-title" class="text-xl font-semibold text-slate-100">
+          Formen-Explorer
+        </h2>
+      </div>
+
+      <!-- Anleitung für den Schüler -->
+      <p class="text-slate-400 text-sm mb-6">
+        Klicke auf eine Form, um mehr darüber zu erfahren.
+      </p>
+
+      <!-- 2×2-Raster der vier Formen-Karten (auf größeren Bildschirmen 4 Spalten) -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6" id="shape-grid">
+
+        <!-- ── Karte: Kreis ── -->
+        <!-- onclick="selectShape('kreis')" → ruft die JavaScript-Funktion auf -->
+        <button
+          id="card-kreis"
+          class="shape-card rounded-3xl border border-slate-800 bg-slate-900/30 p-5
+                 flex flex-col items-center gap-3 cursor-pointer
+                 hover:border-emerald-400/50 transition-colors focus:outline-none
+                 focus:ring-2 focus:ring-emerald-400"
+          onclick="selectShape('kreis')"
+          aria-label="Form Kreis auswählen"
+        >
+          <!-- SVG-Koordinatensystem: 100×100 interne Einheiten, 96px Anzeigegröße -->
+          <!-- viewBox="0 0 100 100" → das SVG hat ein internes Koordinatensystem von 100x100 Einheiten -->
+          <svg viewBox="0 0 100 100" width="96" height="96" aria-hidden="true">
+            <!-- fill="#34d399" → das ist die Farbe emerald-400 aus dem Tailwind-Farbschema -->
+            <!-- opacity="0.85" → leicht transparent damit die Farbe weich wirkt -->
+            <circle cx="50" cy="50" r="38" fill="#34d399" opacity="0.85"/>
+          </svg>
+          <!-- Formen-Name unter dem Symbol -->
+          <span class="text-sm font-semibold text-slate-200">Kreis</span>
+        </button>
+
+        <!-- ── Karte: Dreieck ── -->
+        <button
+          id="card-dreieck"
+          class="shape-card rounded-3xl border border-slate-800 bg-slate-900/30 p-5
+                 flex flex-col items-center gap-3 cursor-pointer
+                 hover:border-emerald-400/50 transition-colors focus:outline-none
+                 focus:ring-2 focus:ring-emerald-400"
+          onclick="selectShape('dreieck')"
+          aria-label="Form Dreieck auswählen"
+        >
+          <!-- points="50,10 90,85 10,85" → drei Eckpunkte (x,y) des Dreiecks
+               Punkt 1: oben-Mitte (50,10)
+               Punkt 2: unten-rechts (90,85)
+               Punkt 3: unten-links (10,85) -->
+          <svg viewBox="0 0 100 100" width="96" height="96" aria-hidden="true">
+            <polygon points="50,10 90,85 10,85" fill="#34d399" opacity="0.85"/>
+          </svg>
+          <span class="text-sm font-semibold text-slate-200">Dreieck</span>
+        </button>
+
+        <!-- ── Karte: Quadrat ── -->
+        <button
+          id="card-quadrat"
+          class="shape-card rounded-3xl border border-slate-800 bg-slate-900/30 p-5
+                 flex flex-col items-center gap-3 cursor-pointer
+                 hover:border-emerald-400/50 transition-colors focus:outline-none
+                 focus:ring-2 focus:ring-emerald-400"
+          onclick="selectShape('quadrat')"
+          aria-label="Form Quadrat auswählen"
+        >
+          <!-- x="8" y="8" → Startpunkt oben-links (8 Einheiten Abstand vom Rand)
+               width="84" height="84" → gleiche Breite und Höhe → Quadrat -->
+          <svg viewBox="0 0 100 100" width="96" height="96" aria-hidden="true">
+            <rect x="8" y="8" width="84" height="84" rx="4" fill="#34d399" opacity="0.85"/>
+            <!-- rx="4" → leicht abgerundete Ecken, damit es freundlicher aussieht -->
+          </svg>
+          <span class="text-sm font-semibold text-slate-200">Quadrat</span>
+        </button>
+
+        <!-- ── Karte: Rechteck ── -->
+        <button
+          id="card-rechteck"
+          class="shape-card rounded-3xl border border-slate-800 bg-slate-900/30 p-5
+                 flex flex-col items-center gap-3 cursor-pointer
+                 hover:border-emerald-400/50 transition-colors focus:outline-none
+                 focus:ring-2 focus:ring-emerald-400"
+          onclick="selectShape('rechteck')"
+          aria-label="Form Rechteck auswählen"
+        >
+          <!-- x="4" y="20" → weiter eingerückt damit die Form breiter als hoch wirkt
+               width="92" height="60" → Breite > Höhe → Rechteck (nicht quadratisch) -->
+          <svg viewBox="0 0 100 100" width="96" height="96" aria-hidden="true">
+            <rect x="4" y="20" width="92" height="60" rx="4" fill="#34d399" opacity="0.85"/>
+          </svg>
+          <span class="text-sm font-semibold text-slate-200">Rechteck</span>
+        </button>
+
+      </div><!-- Ende shape-grid -->
+
+      <!-- Info-Panel: erscheint wenn eine Form angeklickt wird -->
+      <!-- id="shape-info" → wird per JS befüllt und ein-/ausgeblendet -->
+      <div id="shape-info"
+           class="rounded-3xl border border-emerald-400/20 bg-slate-900/30 p-6 hidden anim-fadein"
+           role="region"
+           aria-live="polite"
+           aria-label="Form-Information">
+        <!-- Großer Formen-Name – wird per JS gesetzt -->
+        <h3 id="shape-info-name"
+            class="text-2xl font-bold text-emerald-300 mb-2"></h3>
+        <!-- Fakten-Text – wird per JS gesetzt -->
+        <p id="shape-info-fact"
+           class="text-slate-300 text-base leading-relaxed"></p>
+      </div>
+
+    </section><!-- Ende Abschnitt 1 -->
+
+    <!-- ════════════════════════════════════════════════
+         ABSCHNITT 2: MUSTER ERKENNEN
+    ════════════════════════════════════════════════ -->
+    <section class="mb-14" aria-labelledby="muster-title">
+
+      <!-- Abschnitts-Überschrift -->
+      <div class="flex items-center gap-3 mb-6">
+        <span class="w-8 h-8 rounded-full bg-emerald-400 text-slate-950 text-sm font-bold
+                     flex items-center justify-center flex-shrink-0">
+          2
+        </span>
+        <h2 id="muster-title" class="text-xl font-semibold text-slate-100">
+          Muster erkennen
+        </h2>
+      </div>
+
+      <!-- Karten-Container für das Muster-Spiel -->
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+
+        <!-- Punkte-Anzeige oben rechts in der Karte -->
+        <div class="flex items-center justify-between mb-5">
+          <p class="text-slate-400 text-sm">
+            Was kommt als nächstes? Erkenne das Muster!
+          </p>
+          <!-- Punkte-Zähler: richtig / versucht -->
+          <div class="flex items-center gap-2 text-sm font-semibold">
+            <span class="text-slate-500">Punkte:</span>
+            <!-- id="muster-score" → wird per JS aktualisiert -->
+            <span id="muster-score" class="text-emerald-300">0 / 0</span>
+          </div>
+        </div>
+
+        <!-- Muster-Sequenz: die Folge von Formen + Fragezeichen -->
+        <!-- id="muster-seq" → wird per JS dynamisch befüllt -->
+        <div id="muster-seq"
+             class="flex flex-wrap items-center justify-center gap-2 mb-6 min-h-[80px]"
+             aria-label="Muster-Sequenz">
+          <!-- Inhalt wird durch newMuster() erzeugt -->
+        </div>
+
+        <!-- Feedback-Text nach Antwort-Klick -->
+        <!-- aria-live="polite" → Screenreader liest Änderungen vor -->
+        <p id="muster-feedback"
+           class="text-center text-sm font-semibold min-h-[1.5em] mb-4 transition-all"
+           aria-live="polite">
+        </p>
+
+        <!-- Vier Antwort-Buttons: eine Schaltfläche pro Form -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3" id="muster-btns">
+
+          <!-- onclick="checkPattern('kreis')" → prüft ob Kreis die richtige Antwort ist -->
+          <button
+            id="mbtn-kreis"
+            class="btn-answer rounded-2xl border border-slate-700 bg-slate-800 px-3 py-3
+                   text-sm font-semibold text-slate-200 transition-all"
+            onclick="checkPattern('kreis')"
+          >
+            <!-- Kleines SVG-Icon + Beschriftung nebeneinander -->
+            <span class="flex flex-col items-center gap-2">
+              <!-- shapeSVG() erzeugt das passende SVG als String – hier fest eingebettet
+                   damit die Buttons sofort sichtbar sind ohne JS-Initialisierung -->
+              <svg viewBox="0 0 100 100" width="40" height="40" aria-hidden="true">
+                <circle cx="50" cy="50" r="38" fill="#34d399" opacity="0.85"/>
+              </svg>
+              Kreis
+            </span>
+          </button>
+
+          <button
+            id="mbtn-dreieck"
+            class="btn-answer rounded-2xl border border-slate-700 bg-slate-800 px-3 py-3
+                   text-sm font-semibold text-slate-200 transition-all"
+            onclick="checkPattern('dreieck')"
+          >
+            <span class="flex flex-col items-center gap-2">
+              <svg viewBox="0 0 100 100" width="40" height="40" aria-hidden="true">
+                <polygon points="50,10 90,85 10,85" fill="#34d399" opacity="0.85"/>
+              </svg>
+              Dreieck
+            </span>
+          </button>
+
+          <button
+            id="mbtn-quadrat"
+            class="btn-answer rounded-2xl border border-slate-700 bg-slate-800 px-3 py-3
+                   text-sm font-semibold text-slate-200 transition-all"
+            onclick="checkPattern('quadrat')"
+          >
+            <span class="flex flex-col items-center gap-2">
+              <svg viewBox="0 0 100 100" width="40" height="40" aria-hidden="true">
+                <rect x="8" y="8" width="84" height="84" rx="4" fill="#34d399" opacity="0.85"/>
+              </svg>
+              Quadrat
+            </span>
+          </button>
+
+          <button
+            id="mbtn-rechteck"
+            class="btn-answer rounded-2xl border border-slate-700 bg-slate-800 px-3 py-3
+                   text-sm font-semibold text-slate-200 transition-all"
+            onclick="checkPattern('rechteck')"
+          >
+            <span class="flex flex-col items-center gap-2">
+              <svg viewBox="0 0 100 100" width="40" height="40" aria-hidden="true">
+                <rect x="4" y="20" width="92" height="60" rx="4" fill="#34d399" opacity="0.85"/>
+              </svg>
+              Rechteck
+            </span>
+          </button>
+
+        </div><!-- Ende muster-btns -->
+
+        <!-- Nächstes Muster Button – erscheint nach einer Antwort -->
+        <div class="text-center mt-5">
+          <button
+            id="next-muster-btn"
+            class="hidden rounded-full bg-emerald-400 text-slate-950 font-semibold
+                   px-6 py-2 text-sm hover:bg-emerald-300 transition-colors"
+            onclick="newMuster()"
+          >
+            Nächstes Muster →
+          </button>
+        </div>
+
+      </div><!-- Ende Muster-Karte -->
+    </section><!-- Ende Abschnitt 2 -->
+
+    <!-- ════════════════════════════════════════════════
+         ABSCHNITT 3: FORM-QUIZ
+    ════════════════════════════════════════════════ -->
+    <section class="mb-14" aria-labelledby="quiz-title">
+
+      <!-- Abschnitts-Überschrift -->
+      <div class="flex items-center gap-3 mb-6">
+        <span class="w-8 h-8 rounded-full bg-emerald-400 text-slate-950 text-sm font-bold
+                     flex items-center justify-center flex-shrink-0">
+          3
+        </span>
+        <h2 id="quiz-title" class="text-xl font-semibold text-slate-100">
+          Form-Quiz
+        </h2>
+      </div>
+
+      <!-- Quiz-Karte -->
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+
+        <!-- Kopfzeile mit Anleitung und Punkte-Anzeige -->
+        <div class="flex items-center justify-between mb-5">
+          <p class="text-slate-400 text-sm">
+            Welche Form siehst du? Tippe auf den richtigen Namen!
+          </p>
+          <!-- Punkte-Zähler für das Quiz -->
+          <div class="flex items-center gap-2 text-sm font-semibold">
+            <span class="text-slate-500">Punkte:</span>
+            <!-- id="quiz-score" → wird durch checkFormQuiz() und newFormQuiz() aktualisiert -->
+            <span id="quiz-score" class="text-emerald-300">0 / 0</span>
+          </div>
+        </div>
+
+        <!-- Große Form-Anzeige in der Mitte der Karte -->
+        <!-- id="quiz-shape-display" → wird durch newFormQuiz() mit einem SVG befüllt -->
+        <div id="quiz-shape-display"
+             class="flex items-center justify-center mb-6 min-h-[140px]"
+             aria-label="Angezeigte Form">
+          <!-- SVG wird durch newFormQuiz() eingefügt -->
+        </div>
+
+        <!-- Feedback-Text unter der Form -->
+        <p id="quiz-feedback"
+           class="text-center text-base font-semibold min-h-[1.5em] mb-5 transition-all"
+           aria-live="polite">
+        </p>
+
+        <!-- Vier Antwort-Buttons für das Quiz -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3" id="quiz-btns">
+
+          <!-- onclick="checkFormQuiz('kreis')" → prüft ob Kreis die angezeigte Form ist -->
+          <button
+            id="qbtn-kreis"
+            class="btn-answer rounded-2xl border border-slate-700 bg-slate-800
+                   px-4 py-3 text-sm font-semibold text-slate-200 transition-all"
+            onclick="checkFormQuiz('kreis')"
+          >
+            Kreis
+          </button>
+
+          <button
+            id="qbtn-dreieck"
+            class="btn-answer rounded-2xl border border-slate-700 bg-slate-800
+                   px-4 py-3 text-sm font-semibold text-slate-200 transition-all"
+            onclick="checkFormQuiz('dreieck')"
+          >
+            Dreieck
+          </button>
+
+          <button
+            id="qbtn-quadrat"
+            class="btn-answer rounded-2xl border border-slate-700 bg-slate-800
+                   px-4 py-3 text-sm font-semibold text-slate-200 transition-all"
+            onclick="checkFormQuiz('quadrat')"
+          >
+            Quadrat
+          </button>
+
+          <button
+            id="qbtn-rechteck"
+            class="btn-answer rounded-2xl border border-slate-700 bg-slate-800
+                   px-4 py-3 text-sm font-semibold text-slate-200 transition-all"
+            onclick="checkFormQuiz('rechteck')"
+          >
+            Rechteck
+          </button>
+
+        </div><!-- Ende quiz-btns -->
+
+      </div><!-- Ende Quiz-Karte -->
+    </section><!-- Ende Abschnitt 3 -->
+
+    <!-- ════════════════════════════════════════════════
+         THEORIE-KASTEN (drei Spalten)
+    ════════════════════════════════════════════════ -->
+    <section aria-labelledby="theory-title" class="mb-10">
+
+      <!-- Überschrift des Theorie-Abschnitts -->
+      <h2 id="theory-title" class="text-lg font-semibold text-slate-300 mb-4 uppercase tracking-wide text-sm">
+        Wissens-Ecke
+      </h2>
+
+      <!-- Dreispaltige Karten-Reihe – auf kleinen Bildschirmen gestapelt -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+
+        <!-- ── Theorie-Karte 1: Formen im Alltag ── -->
+        <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+          <!-- Emoji als dekoratives Icon -->
+          <div class="text-2xl mb-3" aria-hidden="true">🏠</div>
+          <h3 class="font-semibold text-emerald-300 mb-2 text-sm">Formen im Alltag</h3>
+          <p class="text-slate-400 text-sm leading-relaxed">
+            Formen begegnen uns überall: ein Pizza-Stück ist ein Dreieck,
+            ein Fenster ist ein Rechteck, eine Uhr ist ein Kreis.
+          </p>
+        </div>
+
+        <!-- ── Theorie-Karte 2: Muster in der Natur ── -->
+        <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+          <div class="text-2xl mb-3" aria-hidden="true">🌿</div>
+          <h3 class="font-semibold text-emerald-300 mb-2 text-sm">Muster in der Natur</h3>
+          <p class="text-slate-400 text-sm leading-relaxed">
+            Muster wiederholen sich nach einer Regel. Erkenne die Regel und
+            du weißt, was als nächstes kommt.
+          </p>
+        </div>
+
+        <!-- ── Theorie-Karte 3: Symmetrie ── -->
+        <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+          <div class="text-2xl mb-3" aria-hidden="true">🪞</div>
+          <h3 class="font-semibold text-emerald-300 mb-2 text-sm">Symmetrie</h3>
+          <p class="text-slate-400 text-sm leading-relaxed">
+            Viele Formen sind symmetrisch: ein Kreis, ein Quadrat und ein
+            Rechteck haben Spiegelachsen.
+          </p>
+        </div>
+
+      </div><!-- Ende Theorie-Spalten -->
+    </section><!-- Ende Theorie-Kasten -->
+
+  </main><!-- Ende main -->
+
+  <!-- ── Fußzeile ── -->
+  <footer class="py-6 text-center text-xs text-slate-500">
+    <!-- © + dynamisches Jahr + Name -->
+    © <span id="y"></span> Brandon Hank · Düsseldorf
+  </footer>
+
+  <!-- ══════════════════════════════════════════════════
+       TOPBAR LADEN: ../topbar.html + ../script.js
+  ══════════════════════════════════════════════════ -->
+  <script>
+    // i18n-Basis-Pfad damit script.js die Sprachdateien findet
+    // "../" → eine Ebene nach oben aus klasse-1/ heraus
+    window.__i18nBase = '../';
+
+    // Topbar dynamisch aus topbar.html laden und einfügen
+    fetch('../topbar.html')
+      .then(res => res.text())  // Antwort als Text-String lesen
+      .then(html => {
+        // HTML der Topbar in den Container einfügen
+        document.getElementById('topbar-container').innerHTML = html;
+
+        // Haupt-Skript nachträglich laden – erst NACH dem Einfügen der Topbar,
+        // damit script.js die darin enthaltenen DOM-Elemente findet
+        const s = document.createElement('script');  // neues <script>-Element erstellen
+        s.src = '../script.js';                       // Pfad zur Hauptskript-Datei
+        document.body.appendChild(s);                 // ans Ende des <body> hängen
+      });
+  </script>
+
+  <!-- ══════════════════════════════════════════════════
+       SEITEN-LOGIK: Formen & Muster
+  ══════════════════════════════════════════════════ -->
+  <script>
+    /* ────────────────────────────────────────────────────────────
+       HILFSFUNKTION: shapeSVG()
+       Erzeugt einen SVG-String für eine gegebene Form.
+
+       Parameter:
+         name    – 'kreis' | 'dreieck' | 'quadrat' | 'rechteck'
+         size    – Anzeigegröße in Pixel (Standard: 100)
+         fill    – Füllfarbe als CSS-Farbwert (Standard: emerald-400)
+         opacity – Transparenz 0–1 (Standard: 1)
+
+       Rückgabewert: fertiger SVG-HTML-String
+    ──────────────────────────────────────────────────────────── */
+    function shapeSVG(name, size = 100, fill = '#34d399', opacity = 1) {
+      // Innere Form je nach übergebenem Namen auswählen
+      let inner = '';
+
+      if (name === 'kreis') {
+        // Kreis: Mittelpunkt (50,50), Radius 38 – passt gut in 100×100 Einheiten
+        inner = `<circle cx="50" cy="50" r="38" fill="${fill}" opacity="${opacity}"/>`;
+
+      } else if (name === 'dreieck') {
+        // Dreieck: drei Punkte – oben Mitte, unten rechts, unten links
+        // points="x1,y1 x2,y2 x3,y3" → Koordinaten der Eckpunkte
+        inner = `<polygon points="50,10 90,85 10,85" fill="${fill}" opacity="${opacity}"/>`;
+
+      } else if (name === 'quadrat') {
+        // Quadrat: gleiche Breite und Höhe (84×84), 8 Einheiten Abstand zum Rand
+        // rx="4" → minimal abgerundete Ecken
+        inner = `<rect x="8" y="8" width="84" height="84" rx="4" fill="${fill}" opacity="${opacity}"/>`;
+
+      } else if (name === 'rechteck') {
+        // Rechteck: breiter als hoch (92×60), damit man den Unterschied zum Quadrat sieht
+        inner = `<rect x="4" y="20" width="92" height="60" rx="4" fill="${fill}" opacity="${opacity}"/>`;
+      }
+
+      // Vollständigen SVG-String zurückgeben
+      // viewBox="0 0 100 100" → internes Koordinatensystem 100×100
+      // width und height steuern die tatsächliche Pixelgröße auf dem Bildschirm
+      return `<svg viewBox="0 0 100 100" width="${size}" height="${size}" aria-hidden="true">${inner}</svg>`;
+    }
+
+    /* ────────────────────────────────────────────────────────────
+       ABSCHNITT 1: FORMEN-EXPLORER LOGIK
+    ──────────────────────────────────────────────────────────── */
+
+    // Fakten-Texte zu jeder Form – als Objekt gespeichert für schnellen Zugriff
+    // Schlüssel = Formname (klein), Wert = Objekt mit Anzeigename und Fakt
+    const FORM_FAKTEN = {
+      kreis: {
+        // Anzeigename mit Großbuchstaben für die Überschrift
+        name: 'Kreis',
+        // Zwei kurze Sätze die für ein Kind leicht verständlich sind
+        fakt: 'Ein Kreis hat keine Ecken und keine Seiten. Er ist überall gleich rund.'
+      },
+      dreieck: {
+        name: 'Dreieck',
+        fakt: 'Ein Dreieck hat 3 Ecken und 3 Seiten. Ein Dach hat die Form eines Dreiecks.'
+      },
+      quadrat: {
+        name: 'Quadrat',
+        fakt: 'Ein Quadrat hat 4 Ecken und 4 gleich lange Seiten.'
+      },
+      rechteck: {
+        name: 'Rechteck',
+        fakt: 'Ein Rechteck hat 4 Ecken. Die langen Seiten sind gleich, die kurzen auch.'
+      }
+    };
+
+    // Speichert den Namen der aktuell ausgewählten Form (oder null wenn keine)
+    let aktuelleForm = null;
+
+    /**
+     * selectShape() – wird aufgerufen wenn der Nutzer auf eine Form-Karte klickt
+     *
+     * @param {string} name – Name der angeklickten Form ('kreis' etc.)
+     */
+    function selectShape(name) {
+      // Alle vier Form-Karten-IDs in einem Array – zum Durchlaufen
+      const alleKarten = ['card-kreis', 'card-dreieck', 'card-quadrat', 'card-rechteck'];
+
+      // Alle Karten auf Standard-Aussehen zurücksetzen (Hervorhebung entfernen)
+      alleKarten.forEach(function(id) {
+        const karte = document.getElementById(id);
+        // shape-card-selected entfernen → kein grüner Rand mehr
+        karte.classList.remove('shape-card-selected');
+      });
+
+      // Angeklickte Karte hervorheben
+      const ausgewaehlteKarte = document.getElementById('card-' + name);
+      // shape-card-selected hinzufügen → grüner Leuchtrand (definiert in <style>)
+      ausgewaehlteKarte.classList.add('shape-card-selected');
+
+      // Aktuelle Form merken
+      aktuelleForm = name;
+
+      // Info-Panel befüllen
+      const panel = document.getElementById('shape-info');          // Referenz auf Info-Div
+      const titelEl = document.getElementById('shape-info-name');   // Überschrift im Panel
+      const faktEl = document.getElementById('shape-info-fact');    // Fakt-Text im Panel
+
+      // Fakten aus dem FORM_FAKTEN-Objekt holen
+      const daten = FORM_FAKTEN[name];
+      titelEl.textContent = daten.name;  // z.B. "Kreis"
+      faktEl.textContent  = daten.fakt;  // z.B. "Ein Kreis hat keine Ecken..."
+
+      // Panel sichtbar machen – falls es versteckt war (hidden-Klasse entfernen)
+      panel.classList.remove('hidden');
+
+      // Einblend-Animation neu starten (kurz entfernen und wieder hinzufügen)
+      panel.classList.remove('anim-fadein');
+      // requestAnimationFrame stellt sicher, dass der Browser zuerst rendert,
+      // bevor die Animation wieder hinzugefügt wird
+      requestAnimationFrame(function() {
+        panel.classList.add('anim-fadein');
+      });
+    }
+
+    /* ────────────────────────────────────────────────────────────
+       ABSCHNITT 2: MUSTER ERKENNEN LOGIK
+    ──────────────────────────────────────────────────────────── */
+
+    /**
+     * PATTERNS – Array aller verfügbaren Muster-Aufgaben
+     *
+     * Jedes Objekt hat:
+     *   seq    – Array mit der Folge von Formen-Namen (ohne die Lösung)
+     *   answer – richtige Antwort (nächste Form in der Folge)
+     *   label  – Muster-Typ als Beschriftung (für Entwickler-Info)
+     */
+    const PATTERNS = [
+      // Muster 1: AB AB – Kreis Quadrat Kreis Quadrat → Kreis
+      { seq: ['kreis','quadrat','kreis','quadrat'],                 answer: 'kreis',    label: 'ABAB' },
+      // Muster 2: ABB ABB – Dreieck Kreis Kreis Dreieck Kreis Kreis → Dreieck
+      { seq: ['dreieck','kreis','kreis','dreieck','kreis','kreis'], answer: 'dreieck',  label: 'ABBAABB' },
+      // Muster 3: ABC ABC – Kreis Dreieck Rechteck Kreis Dreieck → Rechteck
+      { seq: ['kreis','dreieck','rechteck','kreis','dreieck'],      answer: 'rechteck', label: 'ABC' },
+      // Muster 4: AB AB A – Quadrat Kreis Quadrat Kreis Quadrat → Quadrat
+      { seq: ['quadrat','kreis','quadrat','kreis','quadrat'],       answer: 'quadrat',  label: 'ABAB' },
+      // Muster 5: AAB AAB – Kreis Kreis Dreieck Kreis Kreis → Dreieck
+      { seq: ['kreis','kreis','dreieck','kreis','kreis'],           answer: 'dreieck',  label: 'AABAAB' },
+      // Muster 6: AB AB – Rechteck Dreieck Rechteck Dreieck → Rechteck
+      { seq: ['rechteck','dreieck','rechteck','dreieck'],           answer: 'rechteck', label: 'ABAB' },
+    ];
+
+    // Aktuelles Muster-Objekt (wird durch newMuster() gesetzt)
+    let aktuellesMuster = null;
+
+    // Muster-Punkte: richtige Antworten und Gesamtversuche
+    let musterRichtig  = 0;  // Anzahl korrekter Antworten
+    let musterVersuche = 0;  // Gesamtanzahl Versuche
+
+    // Merkt ob schon geantwortet wurde (verhindert Doppelklicks)
+    let musterBeantwortet = false;
+
+    /**
+     * newMuster() – wählt ein zufälliges Muster und baut die Anzeige auf
+     */
+    function newMuster() {
+      // Zufälligen Index im PATTERNS-Array wählen
+      // Math.random() → 0 bis <1, mal Array-Länge, abrunden → ganzzahliger Index
+      const idx = Math.floor(Math.random() * PATTERNS.length);
+      aktuellesMuster = PATTERNS[idx];  // ausgewähltes Muster merken
+
+      // Status zurücksetzen: noch keine Antwort für dieses Muster
+      musterBeantwortet = false;
+
+      // "Weiter"-Button verstecken (war eventuell vom letzten Muster sichtbar)
+      document.getElementById('next-muster-btn').classList.add('hidden');
+
+      // Feedback-Text leeren
+      document.getElementById('muster-feedback').textContent = '';
+      document.getElementById('muster-feedback').className =
+        'text-center text-sm font-semibold min-h-[1.5em] mb-4 transition-all';
+
+      // Alle Antwort-Buttons aktivieren (waren nach letzter Antwort deaktiviert)
+      ['kreis','dreieck','quadrat','rechteck'].forEach(function(form) {
+        const btn = document.getElementById('mbtn-' + form);
+        btn.disabled = false;  // Button klickbar machen
+        // Farbige Klassen aus vorheriger Runde entfernen
+        btn.classList.remove('btn-correct', 'btn-wrong');
+      });
+
+      // Sequenz-Anzeige aufbauen
+      const seqContainer = document.getElementById('muster-seq');
+      seqContainer.innerHTML = '';  // vorherige Anzeige löschen
+
+      // Jede Form in der Sequenz als kleines SVG-Icon einfügen
+      aktuellesMuster.seq.forEach(function(form, index) {
+        // Span-Element als Container für jedes Icon
+        const span = document.createElement('span');
+        span.className = 'pattern-icon';  // CSS-Klasse aus <style> oben
+        // shapeSVG() erzeugt das SVG – Größe 60px für die Musterreihe
+        // '#34d399' → emerald-400, 0.85 Opacity für weiches Aussehen
+        span.innerHTML = shapeSVG(form, 60, '#34d399', 0.85);
+        seqContainer.appendChild(span);
+
+        // Zwischen zwei Icons einen kleinen Pfeil einfügen (visueller Fluss)
+        if (index < aktuellesMuster.seq.length - 1) {
+          const pfeil = document.createElement('span');
+          pfeil.textContent = '→';  // Unicode-Pfeil
+          // text-slate-600 → dezente Farbe damit er nicht zu auffällig ist
+          pfeil.className = 'text-slate-600 text-sm flex-shrink-0 self-center';
+          seqContainer.appendChild(pfeil);
+        }
+      });
+
+      // Pfeil vor dem Fragezeichen
+      const pfeilVorFrage = document.createElement('span');
+      pfeilVorFrage.textContent = '→';
+      pfeilVorFrage.className = 'text-slate-600 text-sm flex-shrink-0 self-center';
+      seqContainer.appendChild(pfeilVorFrage);
+
+      // Fragezeichen als letztes Element – zeigt wo die Antwort hin muss
+      const fragezeichen = document.createElement('span');
+      // question-mark-anim → pulsiert leicht (definiert in <style>)
+      fragezeichen.className = 'question-mark-anim flex items-center justify-center';
+      // Dunkelgraues Quadrat mit großem Fragezeichen
+      fragezeichen.innerHTML = `
+        <span style="
+          width:60px; height:60px;
+          display:flex; align-items:center; justify-content:center;
+          background:#1e293b;
+          border-radius:12px;
+          font-size:28px; font-weight:bold;
+          color:#64748b;
+          border:2px dashed #334155;
+        ">?</span>
+      `;
+      seqContainer.appendChild(fragezeichen);
+
+      // Einblend-Animation für die ganze Sequenz
+      seqContainer.classList.remove('anim-fadein');
+      requestAnimationFrame(function() {
+        seqContainer.classList.add('anim-fadein');
+      });
+    }
+
+    /**
+     * checkPattern() – prüft ob die geklickte Antwort stimmt
+     *
+     * @param {string} gewaehlt – Name der angeklickten Form
+     */
+    function checkPattern(gewaehlt) {
+      // Verhindere Doppelklicks: wenn schon geantwortet, nichts tun
+      if (musterBeantwortet) return;
+      musterBeantwortet = true;  // ab jetzt Klicks ignorieren
+
+      // Versuche hochzählen
+      musterVersuche++;
+
+      // Richtig oder falsch?
+      const istRichtig = (gewaehlt === aktuellesMuster.answer);
+
+      // Feedback-Element holen
+      const feedback = document.getElementById('muster-feedback');
+
+      if (istRichtig) {
+        // Richtige Antwort: Punkte erhöhen, grünes Feedback
+        musterRichtig++;
+        feedback.textContent = '✓ Super! Das war richtig!';
+        // text-emerald-400 → grüner Text für Erfolg
+        feedback.className = 'text-center text-sm font-semibold min-h-[1.5em] mb-4 text-emerald-400';
+        // Richtigen Button grün färben
+        document.getElementById('mbtn-' + gewaehlt).classList.add('btn-correct');
+      } else {
+        // Falsche Antwort: Fehler-Feedback, richtigen Button anzeigen
+        feedback.textContent = '✗ Nicht ganz – die richtige Antwort ist: ' +
+          aktuellesMuster.answer.charAt(0).toUpperCase() + aktuellesMuster.answer.slice(1);
+        // text-red-400 → roter Text für Fehler
+        feedback.className = 'text-center text-sm font-semibold min-h-[1.5em] mb-4 text-red-400';
+        // Falschen Button rot färben
+        document.getElementById('mbtn-' + gewaehlt).classList.add('btn-wrong');
+        // Richtigen Button grün färben (zeigt Schüler was richtig gewesen wäre)
+        document.getElementById('mbtn-' + aktuellesMuster.answer).classList.add('btn-correct');
+        // Schüttel-Animation auf dem Sequenz-Container
+        const seq = document.getElementById('muster-seq');
+        seq.classList.add('anim-shake');
+        // Animation nach 0.4s wieder entfernen damit sie beim nächsten Fehler nochmal läuft
+        setTimeout(function() { seq.classList.remove('anim-shake'); }, 400);
+      }
+
+      // Alle Buttons deaktivieren (keine weiteren Klicks für dieses Muster)
+      ['kreis','dreieck','quadrat','rechteck'].forEach(function(form) {
+        document.getElementById('mbtn-' + form).disabled = true;
+      });
+
+      // Punkte-Anzeige aktualisieren
+      document.getElementById('muster-score').textContent = musterRichtig + ' / ' + musterVersuche;
+
+      // "Nächstes Muster"-Button einblenden
+      document.getElementById('next-muster-btn').classList.remove('hidden');
+    }
+
+    /* ────────────────────────────────────────────────────────────
+       ABSCHNITT 3: FORM-QUIZ LOGIK
+    ──────────────────────────────────────────────────────────── */
+
+    // Alle verfügbaren Form-Namen als Array – wird zufällig ausgewählt
+    const ALLE_FORMEN = ['kreis', 'dreieck', 'quadrat', 'rechteck'];
+
+    // Aktuell angezeigte Form im Quiz
+    let aktuelleQuizForm = null;
+
+    // Quiz-Punkte
+    let quizRichtig  = 0;  // korrekte Antworten
+    let quizVersuche = 0;  // Gesamtversuche
+
+    // Verhindert Mehrfach-Klicks während die nächste Form geladen wird
+    let quizBeantwortet = false;
+
+    /**
+     * newFormQuiz() – zeigt eine neue zufällige Form im Quiz
+     */
+    function newFormQuiz() {
+      // Zufällige Form aus dem ALLE_FORMEN-Array wählen
+      const idx = Math.floor(Math.random() * ALLE_FORMEN.length);
+      aktuelleQuizForm = ALLE_FORMEN[idx];  // Form merken für spätere Prüfung
+
+      // Status zurücksetzen
+      quizBeantwortet = false;
+
+      // Feedback-Text leeren
+      const feedback = document.getElementById('quiz-feedback');
+      feedback.textContent = '';
+      feedback.className = 'text-center text-base font-semibold min-h-[1.5em] mb-5 transition-all';
+
+      // Alle Buttons wieder aktivieren und Farb-Klassen entfernen
+      ALLE_FORMEN.forEach(function(form) {
+        const btn = document.getElementById('qbtn-' + form);
+        btn.disabled = false;
+        btn.classList.remove('btn-correct', 'btn-wrong');
+      });
+
+      // Große Form-SVG erzeugen und anzeigen
+      // Größe 120px damit es gut sichtbar ist
+      // '#34d399' → emerald-400, dezente Transparenz
+      const display = document.getElementById('quiz-shape-display');
+      display.innerHTML = shapeSVG(aktuelleQuizForm, 120, '#34d399', 0.9);
+
+      // Einblend-Animation
+      display.classList.remove('anim-fadein');
+      requestAnimationFrame(function() {
+        display.classList.add('anim-fadein');
+      });
+    }
+
+    /**
+     * checkFormQuiz() – prüft ob der Nutzer den richtigen Namen geklickt hat
+     *
+     * @param {string} gewaehlt – Name des angeklickten Buttons
+     */
+    function checkFormQuiz(gewaehlt) {
+      // Doppelklick verhindern
+      if (quizBeantwortet) return;
+      quizBeantwortet = true;
+
+      // Versuche hochzählen
+      quizVersuche++;
+
+      // Prüfung: stimmt geklickter Name mit der angezeigten Form überein?
+      const istRichtig = (gewaehlt === aktuelleQuizForm);
+
+      // Feedback-Element
+      const feedback = document.getElementById('quiz-feedback');
+
+      if (istRichtig) {
+        // Erfolg: Punkte erhöhen, grünes Feedback, Button grün färben
+        quizRichtig++;
+        feedback.textContent = '✓ Richtig! Das ist ein ' +
+          aktuelleQuizForm.charAt(0).toUpperCase() + aktuelleQuizForm.slice(1) + '!';
+        feedback.className =
+          'text-center text-base font-semibold min-h-[1.5em] mb-5 text-emerald-400';
+        document.getElementById('qbtn-' + gewaehlt).classList.add('btn-correct');
+      } else {
+        // Fehler: rotes Feedback, falschen Button rot + richtigen grün färben
+        feedback.textContent = '✗ Das war ein ' +
+          aktuelleQuizForm.charAt(0).toUpperCase() + aktuelleQuizForm.slice(1) + '!';
+        feedback.className =
+          'text-center text-base font-semibold min-h-[1.5em] mb-5 text-red-400';
+        document.getElementById('qbtn-' + gewaehlt).classList.add('btn-wrong');
+        document.getElementById('qbtn-' + aktuelleQuizForm).classList.add('btn-correct');
+        // Form-Anzeige kurz schütteln als haptisches Feedback
+        const display = document.getElementById('quiz-shape-display');
+        display.classList.add('anim-shake');
+        setTimeout(function() { display.classList.remove('anim-shake'); }, 400);
+      }
+
+      // Alle Buttons deaktivieren bis nächste Form kommt
+      ALLE_FORMEN.forEach(function(form) {
+        document.getElementById('qbtn-' + form).disabled = true;
+      });
+
+      // Punkte-Anzeige aktualisieren
+      document.getElementById('quiz-score').textContent = quizRichtig + ' / ' + quizVersuche;
+
+      // Nach 1200ms automatisch zur nächsten Form wechseln
+      // 1200ms = 1,2 Sekunden – lang genug für Feedback, kurz genug um Spannung zu halten
+      setTimeout(function() {
+        newFormQuiz();  // neue zufällige Form anzeigen
+      }, 1200);
+    }
+
+    /* ────────────────────────────────────────────────────────────
+       INITIALISIERUNG beim Laden der Seite
+    ──────────────────────────────────────────────────────────── */
+
+    // DOMContentLoaded: wird ausgeführt sobald das HTML vollständig geladen ist
+    document.addEventListener('DOMContentLoaded', function() {
+
+      // Fußzeile: aktuelles Jahr dynamisch einsetzen
+      // new Date().getFullYear() → gibt z.B. 2025 zurück
+      document.getElementById('y').textContent = new Date().getFullYear();
+
+      // Erstes Muster laden – Abschnitt 2 startet sofort
+      newMuster();
+
+      // Erstes Quiz-Element laden – Abschnitt 3 startet sofort
+      newFormQuiz();
+    });
+
+  </script><!-- Ende Seiten-Logik -->
+
+</body>
+</html>

@@ -1,0 +1,1442 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <!-- Zeichensatz und Viewport für mobile Geräte -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Größen &amp; Einheiten – Klasse 4 | MathAcademy</title>
+
+  <!-- Tailwind CSS über CDN – kein Build-Schritt nötig -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Eigene Stylesheet-Datei für Theme-Variablen und globale Stile -->
+  <link rel="stylesheet" href="../../style.css?v=1.0" />
+
+  <style>
+    /* ── Animationen ──────────────────────────────────────────── */
+
+    /* Sanftes Erscheinen einer Karte von unten – für neue Quiz-Runden und Tab-Wechsel */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Kurzes Wackeln bei falscher Antwort – visuelles Feedback für den Schüler */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%       { transform: translateX(-8px); }
+      40%       { transform: translateX(8px); }
+      60%       { transform: translateX(-6px); }
+      80%       { transform: translateX(6px); }
+    }
+
+    /* Klasse für Einblend-Animation – wird per JS hinzugefügt und entfernt */
+    .anim-fadein {
+      animation: fadeInUp 0.35s ease both;
+    }
+
+    /* Klasse für Schüttel-Animation – wird kurz bei einer falschen Antwort gesetzt */
+    .anim-shake {
+      animation: shake 0.4s ease;
+    }
+
+    /* Antwort-Buttons: leicht aufhellen wenn die Maus drüber fährt */
+    .btn-answer:hover:not(:disabled) {
+      filter: brightness(1.15);
+    }
+
+    /* Deaktivierter Button nach einer Antwort – kein weiterer Klick möglich */
+    .btn-answer:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    /* Richtiger Antwort-Button wird grün gefärbt */
+    .btn-correct {
+      background-color: #059669 !important; /* emerald-600 */
+      border-color: #34d399 !important;
+      color: #fff !important;
+    }
+
+    /* Falscher Antwort-Button wird rot gefärbt */
+    .btn-wrong {
+      background-color: #dc2626 !important; /* red-600 */
+      border-color: #f87171 !important;
+      color: #fff !important;
+    }
+
+    /* Aktiver Tab-Button – grüner Unterstrich und hellere Schrift */
+    .tab-active {
+      color: #34d399 !important;           /* emerald-400 */
+      border-bottom-color: #34d399 !important;
+    }
+
+    /* Umrechner-Eingabefeld: weiche grüne Umrandung beim Fokus */
+    #converter-input:focus {
+      outline: none;
+      border-color: #34d399;              /* emerald-400 */
+      box-shadow: 0 0 0 3px rgba(52,211,153,0.2);
+    }
+
+    /* Ergebnis-Zeile im Umrechner – dezente Trennlinie oben */
+    .result-row {
+      border-top: 1px solid rgba(51, 65, 85, 0.5); /* slate-700 mit Transparenz */
+    }
+
+    /* Das Fragezeichen-Eingabefeld in der Quiz-Aufgabe */
+    .quiz-input:focus {
+      outline: none;
+      border-color: #34d399;
+      box-shadow: 0 0 0 3px rgba(52,211,153,0.2);
+    }
+
+    /* Sachaufgaben-Eingabefeld */
+    .sach-input:focus {
+      outline: none;
+      border-color: #34d399;
+      box-shadow: 0 0 0 3px rgba(52,211,153,0.2);
+    }
+
+    /* Animations-Klasse für die Aufgaben-Karte (Sachaufgaben) */
+    #sach-karte {
+      transition: opacity 0.25s ease;
+    }
+
+    /* Fortschritts-Punkte bei den Sachaufgaben */
+    .sach-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+      background-color: #334155;          /* slate-700 – inaktiv */
+      transition: background-color 0.2s ease;
+    }
+
+    /* Aktiver Fortschritts-Punkt */
+    .sach-dot.done {
+      background-color: #34d399;          /* emerald-400 – erledigt */
+    }
+
+    /* Aktueller Fortschritts-Punkt */
+    .sach-dot.current {
+      background-color: #6ee7b7;          /* emerald-300 – aktuell */
+      box-shadow: 0 0 0 3px rgba(52,211,153,0.2);
+    }
+  </style>
+</head>
+
+<body class="bg-slate-950 text-slate-100 min-h-screen">
+
+  <!-- Topbar-Container – wird per JavaScript mit dem Inhalt von ../../topbar.html befüllt -->
+  <div id="topbar-container"></div>
+
+  <!-- ══════════════════════════════════════════════════
+       HAUPT-INHALT
+  ══════════════════════════════════════════════════ -->
+  <main class="max-w-4xl mx-auto px-4 pb-16 pt-6">
+
+    <!-- ── Zurück-Link zur Akademie-Übersicht ── -->
+    <a href="../../academy.html"
+       class="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-emerald-300 transition-colors mb-6">
+      <!-- Pfeil zurück zur Übersichtsseite -->
+      ← Zurück zur Akademie
+    </a>
+
+    <!-- ── Seiten-Titel ── -->
+    <div class="mb-10">
+      <!-- Fach-Badge: zeigt Klasse und Themengebiet -->
+      <span class="text-xs font-semibold uppercase tracking-widest text-emerald-400 mb-2 block">
+        Klasse 4 · Grundlagen
+      </span>
+      <!-- Haupt-Überschrift der Lektion -->
+      <h1 class="text-3xl sm:text-4xl font-bold text-slate-100 mb-3">
+        Größen &amp; Einheiten
+      </h1>
+      <!-- Kurze Beschreibung was Schüler in dieser Lektion lernen -->
+      <p class="text-slate-400 text-base max-w-xl">
+        Lerne Längen, Gewichte und Zeit umzurechnen – übe mit dem interaktiven
+        Umrechner, dem Quiz und spannenden Sachaufgaben aus dem Alltag.
+      </p>
+    </div>
+
+    <!-- ════════════════════════════════════════════════
+         ABSCHNITT 1: INTERAKTIVER UMRECHNER
+    ════════════════════════════════════════════════ -->
+    <section class="mb-14" aria-labelledby="umrechner-title">
+
+      <!-- Abschnitts-Überschrift mit rundem Schritt-Badge -->
+      <div class="flex items-center gap-3 mb-6">
+        <!-- Runde Zahl "1" als Badge -->
+        <span class="w-8 h-8 rounded-full bg-emerald-400 text-slate-950 text-sm font-bold
+                     flex items-center justify-center flex-shrink-0">
+          1
+        </span>
+        <h2 id="umrechner-title" class="text-xl font-semibold text-slate-100">
+          Interaktiver Umrechner
+        </h2>
+      </div>
+
+      <!-- Anleitung für den Schüler -->
+      <p class="text-slate-400 text-sm mb-5">
+        Wähle eine Kategorie, gib einen Wert ein – alle Umrechnungen erscheinen sofort!
+      </p>
+
+      <!-- ── Umrechner-Karte ── -->
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+
+        <!-- Tab-Leiste: Längen / Gewichte / Zeit -->
+        <!-- role="tablist" → für Barrierefreiheit: zeigt an, dass es sich um Tabs handelt -->
+        <div class="flex gap-1 mb-6 border-b border-slate-800" role="tablist">
+
+          <!-- Tab "Längen" – standardmäßig aktiv -->
+          <button
+            id="tab-laengen"
+            class="tab-active tab-btn px-5 py-2.5 text-sm font-semibold border-b-2
+                   border-transparent text-slate-400 transition-colors focus:outline-none"
+            role="tab"
+            aria-selected="true"
+            aria-controls="panel-umrechner"
+            onclick="switchTab('laengen')"
+          >
+            Längen
+          </button>
+
+          <!-- Tab "Gewichte" -->
+          <button
+            id="tab-gewichte"
+            class="tab-btn px-5 py-2.5 text-sm font-semibold border-b-2
+                   border-transparent text-slate-400 transition-colors focus:outline-none"
+            role="tab"
+            aria-selected="false"
+            aria-controls="panel-umrechner"
+            onclick="switchTab('gewichte')"
+          >
+            Gewichte
+          </button>
+
+          <!-- Tab "Zeit" -->
+          <button
+            id="tab-zeit"
+            class="tab-btn px-5 py-2.5 text-sm font-semibold border-b-2
+                   border-transparent text-slate-400 transition-colors focus:outline-none"
+            role="tab"
+            aria-selected="false"
+            aria-controls="panel-umrechner"
+            onclick="switchTab('zeit')"
+          >
+            Zeit
+          </button>
+
+        </div><!-- Ende Tab-Leiste -->
+
+        <!-- Eingabe-Zeile: Zahlenfeld + Einheiten-Auswahl -->
+        <div class="flex flex-wrap gap-3 mb-6 items-center" id="panel-umrechner">
+
+          <!-- Zahlen-Eingabefeld -->
+          <input
+            id="converter-input"
+            type="number"
+            min="0"
+            value="1"
+            step="any"
+            class="w-36 rounded-2xl border border-slate-700 bg-slate-800 px-4 py-3
+                   text-slate-100 text-lg font-semibold transition-colors"
+            aria-label="Zahl eingeben"
+            oninput="updateDisplay()"
+          />
+
+          <!-- Dropdown zur Einheitenauswahl – Optionen werden per JS gesetzt -->
+          <select
+            id="converter-unit"
+            class="rounded-2xl border border-slate-700 bg-slate-800 px-4 py-3
+                   text-slate-100 text-base font-semibold cursor-pointer
+                   focus:outline-none focus:border-emerald-400 transition-colors"
+            aria-label="Einheit auswählen"
+            onchange="updateDisplay()"
+          >
+            <!-- Optionen werden durch switchTab() per JS befüllt -->
+          </select>
+
+          <!-- Hilfe-Text rechts der Eingabe -->
+          <span class="text-slate-500 text-sm">eingeben und sofort umrechnen</span>
+
+        </div><!-- Ende Eingabe-Zeile -->
+
+        <!-- Ergebnis-Panel: zeigt alle Umrechnungen an -->
+        <!-- aria-live="polite" → Screenreader liest Änderungen vor wenn sich die Werte ändern -->
+        <div
+          id="converter-results"
+          class="rounded-2xl border border-slate-700/50 bg-slate-800/40 p-4 space-y-3"
+          aria-live="polite"
+          aria-label="Umrechnungsergebnisse"
+        >
+          <!-- Inhalt wird durch updateDisplay() dynamisch befüllt -->
+        </div>
+
+      </div><!-- Ende Umrechner-Karte -->
+    </section><!-- Ende Abschnitt 1 -->
+
+    <!-- ════════════════════════════════════════════════
+         ABSCHNITT 2: UMRECHNUNGS-QUIZ
+    ════════════════════════════════════════════════ -->
+    <section class="mb-14" aria-labelledby="quiz-title">
+
+      <!-- Abschnitts-Überschrift -->
+      <div class="flex items-center gap-3 mb-6">
+        <span class="w-8 h-8 rounded-full bg-emerald-400 text-slate-950 text-sm font-bold
+                     flex items-center justify-center flex-shrink-0">
+          2
+        </span>
+        <h2 id="quiz-title" class="text-xl font-semibold text-slate-100">
+          Umrechnungs-Quiz
+        </h2>
+      </div>
+
+      <!-- Quiz-Karte -->
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+
+        <!-- Kopfzeile mit Kategorie-Tabs und Punkte-Anzeige -->
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+
+          <!-- Kleine Kategorie-Buttons für das Quiz -->
+          <div class="flex gap-2">
+            <!-- Klick wechselt die Quiz-Kategorie und erzeugt eine neue Aufgabe -->
+            <button
+              id="qmode-laengen"
+              class="quiz-mode-btn rounded-full px-4 py-1.5 text-xs font-semibold
+                     bg-emerald-400 text-slate-950 transition-colors"
+              onclick="setQuizMode('laengen')"
+            >
+              Längen
+            </button>
+            <button
+              id="qmode-gewichte"
+              class="quiz-mode-btn rounded-full px-4 py-1.5 text-xs font-semibold
+                     bg-slate-700 text-slate-300 hover:bg-slate-600 transition-colors"
+              onclick="setQuizMode('gewichte')"
+            >
+              Gewichte
+            </button>
+            <button
+              id="qmode-zeit"
+              class="quiz-mode-btn rounded-full px-4 py-1.5 text-xs font-semibold
+                     bg-slate-700 text-slate-300 hover:bg-slate-600 transition-colors"
+              onclick="setQuizMode('zeit')"
+            >
+              Zeit
+            </button>
+          </div>
+
+          <!-- Punkte-Zähler: richtige Antworten / Gesamtversuche -->
+          <div class="flex items-center gap-2 text-sm font-semibold">
+            <span class="text-slate-500">Punkte:</span>
+            <!-- id="quiz-score" → wird durch checkUmrechnung() und newUmrechnungsAufgabe() aktualisiert -->
+            <span id="quiz-score" class="text-emerald-300">0 / 0</span>
+          </div>
+
+        </div><!-- Ende Kopfzeile -->
+
+        <!-- Quiz-Aufgaben-Anzeige -->
+        <!-- anim-fadein: wird neu gestartet wenn eine neue Aufgabe erscheint -->
+        <div id="quiz-aufgabe-container" class="mb-5 anim-fadein">
+
+          <!-- Aufgaben-Text: z.B. "3 km = ___ m?" -->
+          <!-- text-2xl → große Schrift damit es gut lesbar ist -->
+          <p id="quiz-aufgabe-text"
+             class="text-2xl font-bold text-slate-100 mb-4 text-center leading-relaxed">
+            <!-- wird durch newUmrechnungsAufgabe() gesetzt -->
+          </p>
+
+          <!-- Eingabe-Zeile für die Antwort -->
+          <div class="flex items-center justify-center gap-3 flex-wrap">
+            <input
+              id="quiz-answer-input"
+              type="text"
+              inputmode="decimal"
+              placeholder="?"
+              class="quiz-input w-32 rounded-2xl border border-slate-700 bg-slate-800
+                     px-4 py-3 text-slate-100 text-xl font-bold text-center
+                     transition-colors"
+              aria-label="Antwort eingeben"
+              onkeydown="if(event.key==='Enter') checkUmrechnung()"
+            />
+            <!-- Einheiten-Beschriftung rechts vom Eingabefeld -->
+            <span id="quiz-answer-unit"
+                  class="text-lg font-semibold text-emerald-300 min-w-[3rem]">
+              <!-- wird durch newUmrechnungsAufgabe() gesetzt -->
+            </span>
+          </div>
+
+        </div><!-- Ende Aufgaben-Anzeige -->
+
+        <!-- Feedback-Text nach dem Prüfen -->
+        <p id="quiz-feedback"
+           class="text-center text-base font-semibold min-h-[1.5em] mb-4 transition-all"
+           aria-live="polite">
+        </p>
+
+        <!-- Button-Zeile: Prüfen + Neue Aufgabe -->
+        <div class="flex gap-3 justify-center">
+
+          <!-- "Prüfen"-Button – prüft die eingegebene Antwort -->
+          <button
+            id="quiz-check-btn"
+            class="rounded-full bg-emerald-400 text-slate-950 font-semibold
+                   px-6 py-2.5 text-sm hover:bg-emerald-300 transition-colors"
+            onclick="checkUmrechnung()"
+          >
+            Prüfen
+          </button>
+
+          <!-- "Neue Aufgabe"-Button – erzeugt sofort eine neue Aufgabe -->
+          <button
+            class="rounded-full border border-slate-700 text-slate-300 font-semibold
+                   px-6 py-2.5 text-sm hover:border-emerald-400/50 hover:text-slate-100
+                   transition-colors"
+            onclick="newUmrechnungsAufgabe()"
+          >
+            Neue Aufgabe
+          </button>
+
+        </div><!-- Ende Button-Zeile -->
+
+      </div><!-- Ende Quiz-Karte -->
+    </section><!-- Ende Abschnitt 2 -->
+
+    <!-- ════════════════════════════════════════════════
+         ABSCHNITT 3: SACHAUFGABEN
+    ════════════════════════════════════════════════ -->
+    <section class="mb-14" aria-labelledby="sach-title">
+
+      <!-- Abschnitts-Überschrift -->
+      <div class="flex items-center gap-3 mb-6">
+        <span class="w-8 h-8 rounded-full bg-emerald-400 text-slate-950 text-sm font-bold
+                     flex items-center justify-center flex-shrink-0">
+          3
+        </span>
+        <h2 id="sach-title" class="text-xl font-semibold text-slate-100">
+          Sachaufgaben
+        </h2>
+      </div>
+
+      <!-- Sachaufgaben-Karte -->
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+
+        <!-- Kopfzeile: Fortschritts-Punkte und Punkte-Zähler -->
+        <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
+
+          <!-- Fortschritts-Punkte: ein Punkt pro Sachaufgabe -->
+          <div class="flex gap-2 items-center" id="sach-dots" aria-label="Aufgaben-Fortschritt">
+            <!-- 5 Punkte werden durch renderSachDots() erzeugt -->
+          </div>
+
+          <!-- Punkte-Anzeige für Sachaufgaben -->
+          <div class="flex items-center gap-2 text-sm font-semibold">
+            <span class="text-slate-500">Punkte:</span>
+            <span id="sach-score" class="text-emerald-300">0 / 0</span>
+          </div>
+
+        </div><!-- Ende Kopfzeile -->
+
+        <!-- Sachaufgaben-Karte: zeigt eine Aufgabe nach der anderen -->
+        <div id="sach-karte" class="mb-5 anim-fadein">
+
+          <!-- Kontext-Text: kleines Szenario für den Alltagsbezug -->
+          <p id="sach-kontext"
+             class="text-xs font-semibold uppercase tracking-widest text-emerald-400/70 mb-2">
+            <!-- wird durch showSachAufgabe() gesetzt -->
+          </p>
+
+          <!-- Aufgaben-Text: die eigentliche Frage -->
+          <p id="sach-frage"
+             class="text-lg font-semibold text-slate-200 mb-5 leading-relaxed">
+            <!-- wird durch showSachAufgabe() gesetzt -->
+          </p>
+
+          <!-- Eingabe-Zeile für die Antwort -->
+          <div class="flex items-center gap-3 flex-wrap">
+            <input
+              id="sach-input"
+              type="text"
+              inputmode="decimal"
+              placeholder="Deine Antwort"
+              class="sach-input w-44 rounded-2xl border border-slate-700 bg-slate-800
+                     px-4 py-3 text-slate-100 text-lg font-bold
+                     transition-colors"
+              aria-label="Antwort zur Sachaufgabe eingeben"
+              onkeydown="if(event.key==='Enter') checkSach()"
+            />
+            <!-- Einheiten-Label rechts vom Eingabefeld -->
+            <span id="sach-einheit"
+                  class="text-base font-semibold text-emerald-300 min-w-[3rem]">
+              <!-- wird durch showSachAufgabe() gesetzt -->
+            </span>
+          </div>
+
+        </div><!-- Ende Sachaufgaben-Karte -->
+
+        <!-- Feedback-Text nach dem Prüfen -->
+        <p id="sach-feedback"
+           class="text-center text-base font-semibold min-h-[1.5em] mb-4 transition-all"
+           aria-live="polite">
+        </p>
+
+        <!-- Button-Zeile: Prüfen + Weiter -->
+        <div class="flex gap-3 justify-center flex-wrap">
+
+          <!-- Prüfen-Button -->
+          <button
+            id="sach-check-btn"
+            class="rounded-full bg-emerald-400 text-slate-950 font-semibold
+                   px-6 py-2.5 text-sm hover:bg-emerald-300 transition-colors"
+            onclick="checkSach()"
+          >
+            Prüfen
+          </button>
+
+          <!-- Weiter-Button: geht zur nächsten Sachaufgabe – anfangs versteckt -->
+          <button
+            id="sach-next-btn"
+            class="hidden rounded-full border border-slate-700 text-slate-300 font-semibold
+                   px-6 py-2.5 text-sm hover:border-emerald-400/50 hover:text-slate-100
+                   transition-colors"
+            onclick="nextSachAufgabe()"
+          >
+            Nächste Aufgabe →
+          </button>
+
+        </div><!-- Ende Button-Zeile -->
+
+      </div><!-- Ende Sachaufgaben-Karte -->
+    </section><!-- Ende Abschnitt 3 -->
+
+    <!-- ════════════════════════════════════════════════
+         THEORIE-KASTEN: Umrechnungsregeln im Überblick
+    ════════════════════════════════════════════════ -->
+    <section aria-labelledby="theorie-title" class="mb-10">
+
+      <!-- Überschrift des Theorie-Abschnitts -->
+      <h2 id="theorie-title"
+          class="text-sm font-semibold text-slate-300 mb-4 uppercase tracking-wide">
+        Merkhilfe – Umrechnungsregeln
+      </h2>
+
+      <!-- Drei Theorie-Karten nebeneinander (auf kleinen Bildschirmen gestapelt) -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+
+        <!-- ── Theorie-Karte 1: Längen ── -->
+        <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+          <!-- Kategorie-Überschrift -->
+          <h3 class="font-semibold text-emerald-300 mb-3 text-sm flex items-center gap-2">
+            <!-- Lineals-Symbol als dekoratives Icon -->
+            <span aria-hidden="true">📏</span> Längen
+          </h3>
+          <!-- Umrechnungsregeln als Liste -->
+          <!-- space-y-1.5 → kleiner vertikaler Abstand zwischen den Zeilen -->
+          <ul class="text-slate-400 text-sm space-y-1.5 leading-relaxed">
+            <!-- ÷ = geteilt durch / × = mal -->
+            <li><span class="text-slate-200 font-medium">mm → cm</span> : ÷ 10</li>
+            <li><span class="text-slate-200 font-medium">cm → dm</span> : ÷ 10</li>
+            <li><span class="text-slate-200 font-medium">dm → m</span>&nbsp; : ÷ 10</li>
+            <li><span class="text-slate-200 font-medium">m → km</span>&nbsp; : ÷ 1.000</li>
+            <li class="pt-1 border-t border-slate-700/50 text-xs text-slate-500">
+              Umgekehrt: × 10 oder × 1.000
+            </li>
+          </ul>
+        </div>
+
+        <!-- ── Theorie-Karte 2: Gewichte ── -->
+        <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+          <h3 class="font-semibold text-emerald-300 mb-3 text-sm flex items-center gap-2">
+            <span aria-hidden="true">⚖️</span> Gewichte
+          </h3>
+          <ul class="text-slate-400 text-sm space-y-1.5 leading-relaxed">
+            <li><span class="text-slate-200 font-medium">g → kg</span> : ÷ 1.000</li>
+            <li><span class="text-slate-200 font-medium">kg → g</span> : × 1.000</li>
+            <li class="pt-1 border-t border-slate-700/50 text-xs text-slate-500">
+              1 kg = 1.000 g
+            </li>
+          </ul>
+        </div>
+
+        <!-- ── Theorie-Karte 3: Zeit ── -->
+        <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+          <h3 class="font-semibold text-emerald-300 mb-3 text-sm flex items-center gap-2">
+            <span aria-hidden="true">⏱️</span> Zeit
+          </h3>
+          <ul class="text-slate-400 text-sm space-y-1.5 leading-relaxed">
+            <li><span class="text-slate-200 font-medium">s → min</span> : ÷ 60</li>
+            <li><span class="text-slate-200 font-medium">min → h</span>&nbsp; : ÷ 60</li>
+            <li><span class="text-slate-200 font-medium">min → s</span>&nbsp; : × 60</li>
+            <li><span class="text-slate-200 font-medium">h → min</span>&nbsp; : × 60</li>
+            <li class="pt-1 border-t border-slate-700/50 text-xs text-slate-500">
+              1 h = 60 min = 3.600 s
+            </li>
+          </ul>
+        </div>
+
+      </div><!-- Ende Theorie-Spalten -->
+    </section><!-- Ende Theorie-Kasten -->
+
+  </main><!-- Ende main -->
+
+  <!-- ── Fußzeile ── -->
+  <footer class="py-6 text-center text-xs text-slate-500">
+    <!-- Dynamisches Jahr: wird durch JavaScript gesetzt -->
+    © <span id="y"></span> Brandon Hank · Düsseldorf
+  </footer>
+
+  <!-- ══════════════════════════════════════════════════
+       TOPBAR LADEN: ../../topbar.html + ../../script.js
+  ══════════════════════════════════════════════════ -->
+  <script>
+    // i18n-Basis-Pfad damit script.js die Sprachdateien richtig findet
+    // "../../" bedeutet: zwei Ordner-Ebenen nach oben aus klasse-4/ heraus
+    window.__i18nBase = '../../';
+
+    // Topbar dynamisch aus topbar.html laden und in den Container einfügen
+    fetch('../../topbar.html')
+      .then(function(r) { return r.text(); })   // Antwort als Text-String lesen
+      .then(function(html) {
+        // HTML der Topbar in den Container einsetzen
+        document.getElementById('topbar-container').innerHTML = html;
+
+        // Haupt-Skript nachträglich laden – erst NACH dem Einfügen der Topbar
+        // damit script.js die darin enthaltenen DOM-Elemente findet
+        var s = document.createElement('script');  // neues <script>-Element erzeugen
+        s.src = '../../script.js';                  // Pfad zur globalen Skript-Datei
+        document.body.appendChild(s);              // ans Ende des <body> hängen
+      });
+  </script>
+
+  <!-- ══════════════════════════════════════════════════
+       SEITEN-LOGIK: Größen & Einheiten
+  ══════════════════════════════════════════════════ -->
+  <script>
+    /* ════════════════════════════════════════════════════════════════
+       ABSCHNITT 1: INTERAKTIVER UMRECHNER
+    ════════════════════════════════════════════════════════════════ */
+
+    /* ── Aktuell aktiver Tab – entweder 'laengen', 'gewichte' oder 'zeit' ── */
+    /* Beim Laden der Seite beginnen wir mit dem Längen-Tab */
+    var activeTab = 'laengen';
+
+    /* ────────────────────────────────────────────────────────────────
+       EINHEITEN-DEFINITIONEN für alle drei Kategorien
+
+       Jede Einheit hat:
+         key    – interner Name (für den Dropdown und die Umrechnung)
+         label  – Anzeige-Name im Dropdown (z.B. "Meter (m)")
+         symbol – kurzes Symbol für die Ergebnis-Zeilen (z.B. "m")
+
+       Umrechnungsregel: ALLE Einheiten werden auf eine Basis-Einheit
+       zurückgeführt und dann in die gewünschte Einheit umgerechnet.
+       Basis-Einheit Länge:   mm  (Millimeter)
+       Basis-Einheit Gewicht: g   (Gramm)
+       Basis-Einheit Zeit:    s   (Sekunden)
+    ──────────────────────────────────────────────────────────────── */
+
+    /* Längen-Einheiten mit ihrem Faktor in Millimetern
+       Beispiel: 1 cm = 10 mm → Faktor 10 */
+    var LAENGEN_EINHEITEN = [
+      { key: 'mm', label: 'Millimeter (mm)', symbol: 'mm',  faktor: 1       },
+      { key: 'cm', label: 'Zentimeter (cm)', symbol: 'cm',  faktor: 10      },
+      { key: 'dm', label: 'Dezimeter (dm)',  symbol: 'dm',  faktor: 100     },
+      { key: 'm',  label: 'Meter (m)',        symbol: 'm',   faktor: 1000    },
+      { key: 'km', label: 'Kilometer (km)',   symbol: 'km',  faktor: 1000000 }
+    ];
+
+    /* Gewichts-Einheiten mit ihrem Faktor in Gramm
+       Beispiel: 1 kg = 1000 g → Faktor 1000 */
+    var GEWICHTE_EINHEITEN = [
+      { key: 'g',  label: 'Gramm (g)',     symbol: 'g',  faktor: 1    },
+      { key: 'kg', label: 'Kilogramm (kg)', symbol: 'kg', faktor: 1000 }
+    ];
+
+    /* Zeit-Einheiten mit ihrem Faktor in Sekunden
+       Beispiel: 1 Minute = 60 Sekunden → Faktor 60 */
+    var ZEIT_EINHEITEN = [
+      { key: 's',   label: 'Sekunden (s)',  symbol: 's',   faktor: 1    },
+      { key: 'min', label: 'Minuten (min)', symbol: 'min', faktor: 60   },
+      { key: 'h',   label: 'Stunden (h)',   symbol: 'h',   faktor: 3600 }
+    ];
+
+    /**
+     * getEinheiten() – gibt die Einheiten-Liste für den aktiven Tab zurück
+     *
+     * Diese Hilfsfunktion wird immer dann aufgerufen wenn wir die
+     * aktuelle Liste der Einheiten brauchen – z.B. für den Dropdown
+     * oder für die Umrechnungslogik.
+     *
+     * @returns {Array} – Array von Einheiten-Objekten
+     */
+    function getEinheiten() {
+      /* activeTab enthält den Namen des aktuellen Tabs als String */
+      if (activeTab === 'laengen')  return LAENGEN_EINHEITEN;
+      if (activeTab === 'gewichte') return GEWICHTE_EINHEITEN;
+      if (activeTab === 'zeit')     return ZEIT_EINHEITEN;
+      /* Fallback: Längen zurückgeben falls activeTab unbekannt */
+      return LAENGEN_EINHEITEN;
+    }
+
+    /**
+     * switchTab() – wird aufgerufen wenn der Nutzer auf einen Tab-Button klickt
+     *
+     * Aufgaben:
+     *   1. activeTab auf den neuen Tab setzen
+     *   2. Tab-Buttons optisch aktualisieren (aktiver Tab grün)
+     *   3. Dropdown mit den richtigen Einheiten befüllen
+     *   4. Umrechnungs-Anzeige aktualisieren
+     *
+     * @param {string} name – Name des angeklickten Tabs ('laengen'|'gewichte'|'zeit')
+     */
+    function switchTab(name) {
+      /* Neuen aktiven Tab merken */
+      activeTab = name;
+
+      /* Alle Tab-Buttons auf inaktiv setzen */
+      var alleTabs = ['tab-laengen', 'tab-gewichte', 'tab-zeit'];
+      alleTabs.forEach(function(id) {
+        var btn = document.getElementById(id);
+        /* tab-active entfernen → kein grüner Unterstrich mehr */
+        btn.classList.remove('tab-active');
+        /* Schrift wieder grau färben */
+        btn.classList.add('text-slate-400');
+        /* aria-selected auf false setzen (Barrierefreiheit) */
+        btn.setAttribute('aria-selected', 'false');
+      });
+
+      /* Angeklickten Tab aktiv schalten */
+      var aktiverTab = document.getElementById('tab-' + name);
+      aktiverTab.classList.add('tab-active');           /* grüner Unterstrich */
+      aktiverTab.classList.remove('text-slate-400');    /* graue Farbe entfernen */
+      aktiverTab.setAttribute('aria-selected', 'true'); /* Barrierefreiheit */
+
+      /* Dropdown mit den Einheiten des neuen Tabs befüllen */
+      befuelleDropdown();
+
+      /* Umrechnungs-Ergebnisse aktualisieren */
+      updateDisplay();
+    }
+
+    /**
+     * befuelleDropdown() – füllt den Einheiten-Dropdown mit den richtigen Optionen
+     *
+     * Löscht zunächst alle bestehenden Optionen und fügt dann für jede Einheit
+     * des aktiven Tabs eine neue Option hinzu.
+     */
+    function befuelleDropdown() {
+      var select = document.getElementById('converter-unit');
+      /* Alle alten Optionen löschen */
+      select.innerHTML = '';
+
+      /* Für jede Einheit im aktuellen Tab eine Option hinzufügen */
+      getEinheiten().forEach(function(einheit) {
+        var option = document.createElement('option');
+        option.value       = einheit.key;    /* intern verwendet für die Umrechnung */
+        option.textContent = einheit.label;  /* Text der im Dropdown angezeigt wird */
+        select.appendChild(option);
+      });
+    }
+
+    /**
+     * convert() – rechnet einen Wert von einer Einheit in alle anderen um
+     *
+     * Umrechnungsformel:
+     *   1. Wert in die Basis-Einheit umrechnen: wertInBasis = value × vonEinheit.faktor
+     *   2. Von der Basis-Einheit in die Ziel-Einheit: ergebnis = wertInBasis / zielEinheit.faktor
+     *
+     * Beispiel: 2 km → mm
+     *   wertInBasis = 2 × 1.000.000 = 2.000.000 mm
+     *   ergebnis in mm = 2.000.000 / 1 = 2.000.000 mm ✓
+     *
+     * @param {number} value    – eingegebener Zahlenwert
+     * @param {string} fromUnit – Einheiten-Key der Eingabe (z.B. 'km')
+     * @returns {Object} – Objekt mit allen Ergebnissen: { mm: 2000000, cm: 200000, ... }
+     */
+    function convert(value, fromUnit) {
+      var einheiten = getEinheiten();
+      var ergebnisse = {};
+
+      /* Faktor der Ausgangseinheit suchen */
+      var vonFaktor = 1;
+      einheiten.forEach(function(e) {
+        if (e.key === fromUnit) vonFaktor = e.faktor;
+      });
+
+      /* Wert in Basis-Einheit umrechnen (Schritt 1) */
+      var wertInBasis = value * vonFaktor;
+
+      /* Für jede Einheit: von der Basis-Einheit in die Ziel-Einheit umrechnen (Schritt 2) */
+      einheiten.forEach(function(e) {
+        /* Division durch den Faktor der Ziel-Einheit */
+        ergebnisse[e.key] = wertInBasis / e.faktor;
+      });
+
+      return ergebnisse; /* Objekt mit allen berechneten Werten zurückgeben */
+    }
+
+    /**
+     * formatZahl() – formatiert eine Zahl für die Anzeige
+     *
+     * Wählt automatisch die richtige Anzahl Nachkommastellen:
+     *   - Ganze Zahlen: ohne Komma (z.B. "1000")
+     *   - Kleine Dezimalzahlen: bis zu 6 Stellen (z.B. "0,001")
+     *   - Andere Dezimalzahlen: bis zu 4 Stellen (z.B. "1,2345")
+     *
+     * Im Deutschen ist das Dezimaltrennzeichen ein Komma (,) kein Punkt.
+     * Daher ersetzen wir am Ende den Punkt durch ein Komma.
+     *
+     * @param {number} n – zu formatierende Zahl
+     * @returns {string} – formatierter String mit deutschem Komma
+     */
+    function formatZahl(n) {
+      var str;
+
+      if (Number.isInteger(n)) {
+        /* Ganze Zahl: keine Nachkommastellen nötig */
+        str = n.toString();
+      } else if (Math.abs(n) < 0.01) {
+        /* Sehr kleine Zahl: bis zu 6 Nachkommastellen anzeigen */
+        str = n.toPrecision(4);
+      } else {
+        /* Andere Zahlen: maximal 4 Nachkommastellen, aber unnötige Nullen entfernen */
+        /* parseFloat entfernt z.B. "1.2000" → "1.2" */
+        str = parseFloat(n.toPrecision(6)).toString();
+      }
+
+      /* Dezimalpunkt durch deutsches Komma ersetzen */
+      return str.replace('.', ',');
+    }
+
+    /**
+     * updateDisplay() – liest das Eingabefeld aus und zeigt alle Umrechnungen an
+     *
+     * Wird aufgerufen wenn:
+     *   - Der Nutzer eine Zahl ins Eingabefeld tippt (oninput-Event)
+     *   - Der Nutzer eine andere Einheit aus dem Dropdown wählt (onchange-Event)
+     *   - Der Tab gewechselt wird (durch switchTab())
+     */
+    function updateDisplay() {
+      /* Eingabewert als Zahl lesen */
+      var wert = parseFloat(document.getElementById('converter-input').value);
+      /* Ausgewählte Einheit aus dem Dropdown holen */
+      var einheit = document.getElementById('converter-unit').value;
+
+      /* Ergebnis-Container leeren und neu befüllen */
+      var container = document.getElementById('converter-results');
+      container.innerHTML = '';
+
+      /* Falls keine gültige Zahl eingegeben wurde, Hinweis anzeigen */
+      if (isNaN(wert)) {
+        container.innerHTML =
+          '<p class="text-slate-500 text-sm text-center py-2">Bitte eine Zahl eingeben.</p>';
+        return;
+      }
+
+      /* Alle Umrechnungen berechnen */
+      var ergebnisse = convert(wert, einheit);
+      var einheiten  = getEinheiten();
+
+      /* Für jede Einheit eine Ergebnis-Zeile erzeugen */
+      einheiten.forEach(function(e, index) {
+        /* Ergebnis-Wert für diese Einheit */
+        var wertDieserEinheit = ergebnisse[e.key];
+
+        /* Container-Div für eine Zeile */
+        var zeile = document.createElement('div');
+        /* result-row → obere Trennlinie (CSS oben definiert) */
+        /* Erste Zeile hat keine Trennlinie (pt-0 statt pt-3) */
+        zeile.className = 'result-row flex items-center justify-between py-2.5 px-1' +
+                          (index === 0 ? ' border-t-0 pt-0' : '');
+
+        /* Linke Seite: Einheiten-Name ausgeschrieben */
+        var links = document.createElement('span');
+        links.className = 'text-slate-400 text-sm';
+        links.textContent = e.label;
+
+        /* Rechte Seite: berechneter Wert + Symbol */
+        var rechts = document.createElement('span');
+        rechts.className = 'font-bold ' +
+          /* Eingabe-Einheit wird grün und größer hervorgehoben */
+          (e.key === einheit ? 'text-emerald-300 text-lg' : 'text-slate-100 text-base');
+
+        /* Formatierten Wert + Symbol anzeigen */
+        rechts.textContent = formatZahl(wertDieserEinheit) + ' ' + e.symbol;
+
+        /* Zeile zusammensetzen und zum Container hinzufügen */
+        zeile.appendChild(links);
+        zeile.appendChild(rechts);
+        container.appendChild(zeile);
+      });
+
+      /* Einblend-Animation für den Ergebnis-Container neu starten */
+      container.classList.remove('anim-fadein');
+      requestAnimationFrame(function() {
+        container.classList.add('anim-fadein');
+      });
+    }
+
+    /* ════════════════════════════════════════════════════════════════
+       ABSCHNITT 2: UMRECHNUNGS-QUIZ
+    ════════════════════════════════════════════════════════════════ */
+
+    /* Aktueller Modus des Quiz: 'laengen', 'gewichte' oder 'zeit' */
+    var quizModus = 'laengen';
+
+    /* Punkte-Zähler */
+    var quizRichtig  = 0;  /* Anzahl der richtigen Antworten */
+    var quizVersuche = 0;  /* Gesamtanzahl der Versuche */
+
+    /* Aktuelle Aufgabe – Objekt mit Wert, Einheit, Ziel-Einheit und richtiger Antwort */
+    var aktuelleAufgabe = null;
+
+    /* Verhindert dass der Schüler denselben Button mehrfach klickt */
+    var quizGeprueft = false;
+
+    /**
+     * QUIZ-AUFGABEN-VORLAGEN für alle drei Kategorien
+     *
+     * Jede Vorlage hat:
+     *   von   – Ausgangs-Einheit (Key)
+     *   nach  – Ziel-Einheit (Key)
+     *   werte – Array möglicher Eingangswerte (werden zufällig gewählt)
+     */
+    var QUIZ_VORLAGEN = {
+      /* Längen-Aufgaben: verschiedene Einheitenpaare */
+      laengen: [
+        { von: 'm',  nach: 'cm', werte: [1, 2, 3, 4, 5, 10]          },
+        { von: 'km', nach: 'm',  werte: [1, 2, 3, 4, 5, 10]          },
+        { von: 'cm', nach: 'mm', werte: [1, 2, 5, 10, 20, 50]        },
+        { von: 'dm', nach: 'cm', werte: [1, 2, 3, 5, 10]             },
+        { von: 'm',  nach: 'dm', werte: [1, 2, 3, 5, 10]             },
+        { von: 'cm', nach: 'm',  werte: [100, 200, 300, 500, 1000]   },
+        { von: 'm',  nach: 'km', werte: [1000, 2000, 5000, 10000]    },
+        { von: 'mm', nach: 'cm', werte: [10, 20, 50, 100, 200]       },
+        { von: 'dm', nach: 'm',  werte: [10, 20, 30, 50, 100]        },
+        { von: 'km', nach: 'cm', werte: [1, 2]                       }
+      ],
+      /* Gewichts-Aufgaben: nur g ↔ kg */
+      gewichte: [
+        { von: 'kg', nach: 'g',  werte: [1, 2, 3, 5, 10, 0.5, 1.5, 2.5] },
+        { von: 'g',  nach: 'kg', werte: [1000, 2000, 500, 1500, 2500]    },
+        { von: 'kg', nach: 'g',  werte: [0.25, 0.75, 0.1, 0.2]           }
+      ],
+      /* Zeit-Aufgaben: s ↔ min ↔ h */
+      zeit: [
+        { von: 'h',   nach: 'min', werte: [1, 2, 3, 0.5, 1.5, 2.5]    },
+        { von: 'min', nach: 's',   werte: [1, 2, 5, 10, 30, 60]        },
+        { von: 'h',   nach: 's',   werte: [1, 2]                       },
+        { von: 'min', nach: 'h',   werte: [60, 120, 180, 30, 90]       },
+        { von: 's',   nach: 'min', werte: [60, 120, 300, 600]          }
+      ]
+    };
+
+    /** Hilfsfunktion: Gibt das Symbol (z.B. "m", "kg") für einen Einheiten-Key zurück */
+    function getSymbol(key, einheitenArray) {
+      var symbol = key; /* Fallback: Key selbst als Symbol */
+      einheitenArray.forEach(function(e) {
+        if (e.key === key) symbol = e.symbol;
+      });
+      return symbol;
+    }
+
+    /**
+     * newUmrechnungsAufgabe() – erzeugt eine neue zufällige Quiz-Aufgabe
+     *
+     * Wählt zufällig eine Vorlage aus den QUIZ_VORLAGEN und einen zufälligen
+     * Eingangswert – berechnet dann die richtige Antwort.
+     */
+    function newUmrechnungsAufgabe() {
+      /* Status zurücksetzen */
+      quizGeprueft = false;
+
+      /* Feedback leeren */
+      var feedback = document.getElementById('quiz-feedback');
+      feedback.textContent = '';
+      feedback.className = 'text-center text-base font-semibold min-h-[1.5em] mb-4 transition-all';
+
+      /* Prüfen-Button wieder aktivieren */
+      document.getElementById('quiz-check-btn').disabled = false;
+
+      /* Eingabefeld leeren und fokussieren */
+      var input = document.getElementById('quiz-answer-input');
+      input.value = '';
+      input.className = 'quiz-input w-32 rounded-2xl border border-slate-700 bg-slate-800 ' +
+                        'px-4 py-3 text-slate-100 text-xl font-bold text-center transition-colors';
+
+      /* Zufällige Vorlage aus dem aktuellen Modus wählen */
+      var vorlagen = QUIZ_VORLAGEN[quizModus];
+      var vorlage  = vorlagen[Math.floor(Math.random() * vorlagen.length)];
+
+      /* Zufälligen Eingangswert wählen */
+      var wert = vorlage.werte[Math.floor(Math.random() * vorlage.werte.length)];
+
+      /* Einheiten-Array für diesen Modus bestimmen */
+      var einheitenArray;
+      if (quizModus === 'laengen')  einheitenArray = LAENGEN_EINHEITEN;
+      if (quizModus === 'gewichte') einheitenArray = GEWICHTE_EINHEITEN;
+      if (quizModus === 'zeit')     einheitenArray = ZEIT_EINHEITEN;
+
+      /* Faktor der Ausgangseinheit und der Ziel-Einheit finden */
+      var vonFaktor  = 1;
+      var nachFaktor = 1;
+      einheitenArray.forEach(function(e) {
+        if (e.key === vorlage.von)  vonFaktor  = e.faktor;
+        if (e.key === vorlage.nach) nachFaktor = e.faktor;
+      });
+
+      /* Richtige Antwort berechnen:
+         1. Wert in Basiseinheit: wert × vonFaktor
+         2. Von Basis in Ziel:    / nachFaktor */
+      var richtigeAntwort = (wert * vonFaktor) / nachFaktor;
+
+      /* Aufgabe für spätere Prüfung merken */
+      aktuelleAufgabe = {
+        wert:           wert,
+        von:            vorlage.von,
+        nach:           vorlage.nach,
+        richtig:        richtigeAntwort,
+        einheitenArray: einheitenArray
+      };
+
+      /* Symbol-Kürzel für die Einheiten */
+      var vonSymbol  = getSymbol(vorlage.von,  einheitenArray);
+      var nachSymbol = getSymbol(vorlage.nach, einheitenArray);
+
+      /* Aufgaben-Text setzen: z.B. "3 km = ___" */
+      /* formatZahl() stellt sicher, dass z.B. 0.5 als "0,5" angezeigt wird */
+      document.getElementById('quiz-aufgabe-text').textContent =
+        formatZahl(wert) + ' ' + vonSymbol + ' = ___';
+
+      /* Einheiten-Label rechts vom Eingabefeld setzen */
+      document.getElementById('quiz-answer-unit').textContent = nachSymbol;
+
+      /* Einblend-Animation für die Aufgabe */
+      var container = document.getElementById('quiz-aufgabe-container');
+      container.classList.remove('anim-fadein');
+      requestAnimationFrame(function() {
+        container.classList.add('anim-fadein');
+      });
+
+      /* Eingabefeld fokussieren damit der Schüler sofort tippen kann */
+      setTimeout(function() { input.focus(); }, 50);
+    }
+
+    /**
+     * checkUmrechnung() – prüft die eingegebene Antwort auf Richtigkeit
+     *
+     * Akzeptiert sowohl Punkt als auch Komma als Dezimaltrennzeichen,
+     * damit Schüler flexibel eingeben können (z.B. "2.5" oder "2,5").
+     */
+    function checkUmrechnung() {
+      /* Doppelklick verhindern */
+      if (quizGeprueft) return;
+      if (!aktuelleAufgabe) return;
+
+      /* Eingabe lesen und bereinigen */
+      var rohEingabe = document.getElementById('quiz-answer-input').value.trim();
+
+      /* Falls nichts eingegeben: Hinweis anzeigen ohne Versuch zu zählen */
+      if (rohEingabe === '') {
+        var feedback = document.getElementById('quiz-feedback');
+        feedback.textContent = 'Bitte zuerst eine Antwort eingeben!';
+        feedback.className = 'text-center text-base font-semibold min-h-[1.5em] mb-4 text-yellow-400';
+        return;
+      }
+
+      /* Komma durch Punkt ersetzen damit parseFloat() es versteht
+         Beispiel: "2,5" → "2.5" → 2.5 als Zahl */
+      var eingabeStr  = rohEingabe.replace(',', '.');
+      var eingabeZahl = parseFloat(eingabeStr);
+
+      /* Fehler falls die Eingabe keine gültige Zahl ist */
+      if (isNaN(eingabeZahl)) {
+        var feedback = document.getElementById('quiz-feedback');
+        feedback.textContent = 'Bitte eine Zahl eingeben!';
+        feedback.className = 'text-center text-base font-semibold min-h-[1.5em] mb-4 text-yellow-400';
+        return;
+      }
+
+      /* Ab hier: gültige Eingabe – Versuch zählen */
+      quizGeprueft = true;
+      quizVersuche++;
+
+      /* Vergleich: Rundungstoleranz 0.0001 damit Gleitkomma-Fehler keine Rolle spielen
+         Beispiel: 0.1 + 0.2 = 0.30000000000000004 in JavaScript → Math.abs() hilft */
+      var istRichtig = Math.abs(eingabeZahl - aktuelleAufgabe.richtig) < 0.0001;
+
+      var feedback = document.getElementById('quiz-feedback');
+      var input    = document.getElementById('quiz-answer-input');
+
+      if (istRichtig) {
+        /* Richtige Antwort! */
+        quizRichtig++;
+        feedback.textContent = '✓ Super! Das ist richtig!';
+        feedback.className = 'text-center text-base font-semibold min-h-[1.5em] mb-4 text-emerald-400';
+        /* Eingabefeld grün einfärben */
+        input.className = 'quiz-input w-32 rounded-2xl border border-emerald-500 bg-emerald-900/20 ' +
+                          'px-4 py-3 text-emerald-300 text-xl font-bold text-center transition-colors';
+
+      } else {
+        /* Falsche Antwort */
+        feedback.textContent = '✗ Leider falsch. Richtig wäre: ' +
+          formatZahl(aktuelleAufgabe.richtig) + ' ' +
+          getSymbol(aktuelleAufgabe.nach, aktuelleAufgabe.einheitenArray);
+        feedback.className = 'text-center text-base font-semibold min-h-[1.5em] mb-4 text-red-400';
+        /* Eingabefeld rot einfärben */
+        input.className = 'quiz-input w-32 rounded-2xl border border-red-500 bg-red-900/20 ' +
+                          'px-4 py-3 text-red-300 text-xl font-bold text-center transition-colors';
+        /* Schüttel-Animation als visuelles Fehlersignal */
+        var container = document.getElementById('quiz-aufgabe-container');
+        container.classList.add('anim-shake');
+        setTimeout(function() { container.classList.remove('anim-shake'); }, 400);
+      }
+
+      /* Prüfen-Button deaktivieren (nächste Aufgabe mit "Neue Aufgabe" starten) */
+      document.getElementById('quiz-check-btn').disabled = true;
+
+      /* Punkte-Anzeige aktualisieren */
+      document.getElementById('quiz-score').textContent = quizRichtig + ' / ' + quizVersuche;
+
+      /* Nach 1,8 Sekunden automatisch zur nächsten Aufgabe wechseln */
+      setTimeout(function() {
+        newUmrechnungsAufgabe();
+      }, 1800);
+    }
+
+    /**
+     * setQuizMode() – wechselt die Quiz-Kategorie
+     *
+     * Aktualisiert die Mode-Buttons (aktiver = grün, andere = grau)
+     * und erzeugt sofort eine neue Aufgabe im neuen Modus.
+     *
+     * @param {string} modus – 'laengen' | 'gewichte' | 'zeit'
+     */
+    function setQuizMode(modus) {
+      quizModus = modus;
+
+      /* Alle Mode-Buttons auf inaktiv setzen */
+      var alleModes = ['qmode-laengen', 'qmode-gewichte', 'qmode-zeit'];
+      alleModes.forEach(function(id) {
+        var btn = document.getElementById(id);
+        /* Grünen Hintergrund entfernen → grauer Hintergrund */
+        btn.className = 'quiz-mode-btn rounded-full px-4 py-1.5 text-xs font-semibold ' +
+                        'bg-slate-700 text-slate-300 hover:bg-slate-600 transition-colors';
+      });
+
+      /* Angeklickten Mode-Button aktiv schalten */
+      document.getElementById('qmode-' + modus).className =
+        'quiz-mode-btn rounded-full px-4 py-1.5 text-xs font-semibold ' +
+        'bg-emerald-400 text-slate-950 transition-colors';
+
+      /* Neue Aufgabe im neuen Modus erzeugen */
+      newUmrechnungsAufgabe();
+    }
+
+    /* ════════════════════════════════════════════════════════════════
+       ABSCHNITT 3: SACHAUFGABEN
+    ════════════════════════════════════════════════════════════════ */
+
+    /**
+     * SACH – Array mit allen 5 vordefinierten Sachaufgaben
+     *
+     * Jede Sachaufgabe hat:
+     *   kontext  – kleine Situationsbeschreibung (wird oben angezeigt)
+     *   frage    – die eigentliche Frage an den Schüler
+     *   einheit  – Einheit der erwarteten Antwort (z.B. "cm")
+     *   antwort  – richtige Antwort als Zahl
+     */
+    var SACH = [
+      {
+        /* Aufgabe 1: Längenumrechnung – Meter + Zentimeter → nur Zentimeter */
+        kontext: 'Längen im Alltag',
+        frage:   'Ein Tisch ist 1 m und 20 cm lang. Wie viele Zentimeter sind das insgesamt?',
+        einheit: 'cm',
+        antwort: 120
+      },
+      {
+        /* Aufgabe 2: Gewichtsumrechnung – kg → g */
+        kontext: 'Gewichte beim Einkaufen',
+        frage:   'Maria kauft 2,5 kg Äpfel. Wie viele Gramm sind das?',
+        einheit: 'g',
+        antwort: 2500
+      },
+      {
+        /* Aufgabe 3: Zeitumrechnung – Stunden + Minuten → nur Minuten */
+        kontext: 'Zeit im Kino',
+        frage:   'Der Film dauert 2 Stunden und 30 Minuten. Wie viele Minuten sind das insgesamt?',
+        einheit: 'min',
+        antwort: 150
+      },
+      {
+        /* Aufgabe 4: Längenumrechnung – km → m */
+        kontext: 'Entfernungen im Sport',
+        frage:   'Ein Wanderweg ist 3 km lang. Wie viele Meter muss man laufen?',
+        einheit: 'm',
+        antwort: 3000
+      },
+      {
+        /* Aufgabe 5: Mengenumrechnung – ml pro Flasche × Anzahl */
+        kontext: 'Mengen in der Küche',
+        frage:   'Eine Flasche fasst 750 ml. Wie viele Milliliter sind in 3 Flaschen?',
+        einheit: 'ml',
+        antwort: 2250
+      }
+    ];
+
+    /* Aktueller Sachaufgaben-Index – zeigt auf die aktuell angezeigte Aufgabe */
+    var sachIdx = 0;
+
+    /* Zufällige Reihenfolge der Sachaufgaben – wird beim Laden erzeugt */
+    /* So sehen Schüler die Aufgaben nicht immer in derselben Reihenfolge */
+    var sachReihenfolge = [];
+
+    /* Punkte-Zähler für Sachaufgaben */
+    var sachRichtig  = 0;  /* richtige Antworten */
+    var sachVersuche = 0;  /* Gesamtversuche (eine pro Aufgabe) */
+
+    /* Merkt ob die aktuelle Sachaufgabe bereits beantwortet wurde */
+    var sachGeprueft = false;
+
+    /**
+     * mischArray() – mischt ein Array zufällig (Fisher-Yates-Algorithmus)
+     *
+     * Dieser Algorithmus geht von hinten nach vorne durch das Array
+     * und tauscht jedes Element mit einem zufälligen Element davor.
+     * Ergebnis: eine faire, zufällige Anordnung.
+     *
+     * @param {Array} arr – das zu mischende Array
+     * @returns {Array} – das gemischte Array (dasselbe Objekt, verändert)
+     */
+    function mischArray(arr) {
+      for (var i = arr.length - 1; i > 0; i--) {
+        /* Zufälligen Index zwischen 0 und i wählen */
+        var j = Math.floor(Math.random() * (i + 1));
+        /* Element i und j tauschen */
+        var temp = arr[i];
+        arr[i]   = arr[j];
+        arr[j]   = temp;
+      }
+      return arr;
+    }
+
+    /**
+     * renderSachDots() – zeichnet die Fortschritts-Punkte unter der Aufgaben-Überschrift
+     *
+     * Pro Sachaufgabe gibt es einen Punkt:
+     *   - Grau   → noch nicht bearbeitet
+     *   - Grün   → bereits beantwortet (richtig oder falsch)
+     *   - Hell   → aktuell angezeigte Aufgabe
+     */
+    function renderSachDots() {
+      var container = document.getElementById('sach-dots');
+      container.innerHTML = ''; /* vorherige Punkte löschen */
+
+      for (var i = 0; i < SACH.length; i++) {
+        var dot = document.createElement('span');
+        /* Grundklasse für alle Punkte */
+        dot.className = 'sach-dot';
+
+        /* Aktueller Aufgaben-Punkt: hell grün */
+        if (i === sachIdx) {
+          dot.classList.add('current');
+        }
+        /* Bereits bearbeitete Punkte: dunkel grün */
+        else if (i < sachIdx) {
+          dot.classList.add('done');
+        }
+        /* Zukünftige Punkte: bleiben grau (Standard) */
+
+        container.appendChild(dot);
+      }
+    }
+
+    /**
+     * showSachAufgabe() – zeigt die aktuelle Sachaufgabe an
+     *
+     * Liest sachIdx und sachReihenfolge um die richtige Aufgabe zu bestimmen
+     * und befüllt alle HTML-Elemente mit den Aufgaben-Daten.
+     */
+    function showSachAufgabe() {
+      /* Aufgabe aus dem SACH-Array holen – in der gemischten Reihenfolge */
+      var aufgabeIndex = sachReihenfolge[sachIdx];
+      var aufgabe      = SACH[aufgabeIndex];
+
+      /* Status zurücksetzen */
+      sachGeprueft = false;
+
+      /* Feedback leeren */
+      var feedback = document.getElementById('sach-feedback');
+      feedback.textContent = '';
+      feedback.className = 'text-center text-base font-semibold min-h-[1.5em] mb-4 transition-all';
+
+      /* Eingabefeld leeren und Farbe zurücksetzen */
+      var input = document.getElementById('sach-input');
+      input.value = '';
+      input.className = 'sach-input w-44 rounded-2xl border border-slate-700 bg-slate-800 ' +
+                        'px-4 py-3 text-slate-100 text-lg font-bold transition-colors';
+
+      /* "Weiter"-Button verstecken */
+      document.getElementById('sach-next-btn').classList.add('hidden');
+
+      /* "Prüfen"-Button aktivieren */
+      document.getElementById('sach-check-btn').disabled = false;
+
+      /* Aufgaben-Inhalt setzen */
+      document.getElementById('sach-kontext').textContent = aufgabe.kontext;
+      document.getElementById('sach-frage').textContent   = aufgabe.frage;
+      document.getElementById('sach-einheit').textContent = aufgabe.einheit;
+
+      /* Fortschritts-Punkte aktualisieren */
+      renderSachDots();
+
+      /* Einblend-Animation */
+      var karte = document.getElementById('sach-karte');
+      karte.classList.remove('anim-fadein');
+      requestAnimationFrame(function() {
+        karte.classList.add('anim-fadein');
+      });
+
+      /* Eingabefeld fokussieren */
+      setTimeout(function() { input.focus(); }, 50);
+    }
+
+    /**
+     * checkSach() – prüft die Antwort zur aktuellen Sachaufgabe
+     *
+     * Wie beim Quiz: akzeptiert Punkt und Komma als Dezimaltrennzeichen.
+     */
+    function checkSach() {
+      /* Doppelklick verhindern */
+      if (sachGeprueft) return;
+
+      /* Aufgabe aus dem SACH-Array holen */
+      var aufgabeIndex = sachReihenfolge[sachIdx];
+      var aufgabe      = SACH[aufgabeIndex];
+
+      /* Eingabe lesen und bereinigen */
+      var rohEingabe = document.getElementById('sach-input').value.trim();
+
+      /* Leere Eingabe abfangen */
+      if (rohEingabe === '') {
+        var feedback = document.getElementById('sach-feedback');
+        feedback.textContent = 'Bitte zuerst eine Antwort eingeben!';
+        feedback.className = 'text-center text-base font-semibold min-h-[1.5em] mb-4 text-yellow-400';
+        return;
+      }
+
+      /* Komma in Punkt umwandeln und als Zahl parsen */
+      var eingabeZahl = parseFloat(rohEingabe.replace(',', '.'));
+
+      if (isNaN(eingabeZahl)) {
+        var feedback = document.getElementById('sach-feedback');
+        feedback.textContent = 'Bitte eine Zahl eingeben!';
+        feedback.className = 'text-center text-base font-semibold min-h-[1.5em] mb-4 text-yellow-400';
+        return;
+      }
+
+      /* Gültige Eingabe: Versuch zählen und prüfen */
+      sachGeprueft = true;
+      sachVersuche++;
+
+      /* Vergleich mit Toleranz für Gleitkommazahlen */
+      var istRichtig = Math.abs(eingabeZahl - aufgabe.antwort) < 0.0001;
+
+      var feedback = document.getElementById('sach-feedback');
+      var input    = document.getElementById('sach-input');
+
+      if (istRichtig) {
+        /* Richtig! */
+        sachRichtig++;
+        feedback.textContent = '✓ Sehr gut! Das ist die richtige Antwort!';
+        feedback.className = 'text-center text-base font-semibold min-h-[1.5em] mb-4 text-emerald-400';
+        input.className = 'sach-input w-44 rounded-2xl border border-emerald-500 bg-emerald-900/20 ' +
+                          'px-4 py-3 text-emerald-300 text-lg font-bold transition-colors';
+      } else {
+        /* Falsch */
+        feedback.textContent = '✗ Nicht ganz. Richtig wäre: ' + formatZahl(aufgabe.antwort) +
+                               ' ' + aufgabe.einheit;
+        feedback.className = 'text-center text-base font-semibold min-h-[1.5em] mb-4 text-red-400';
+        input.className = 'sach-input w-44 rounded-2xl border border-red-500 bg-red-900/20 ' +
+                          'px-4 py-3 text-red-300 text-lg font-bold transition-colors';
+        /* Schüttel-Animation */
+        var karte = document.getElementById('sach-karte');
+        karte.classList.add('anim-shake');
+        setTimeout(function() { karte.classList.remove('anim-shake'); }, 400);
+      }
+
+      /* Prüfen-Button deaktivieren */
+      document.getElementById('sach-check-btn').disabled = true;
+
+      /* Punkte-Anzeige aktualisieren */
+      document.getElementById('sach-score').textContent = sachRichtig + ' / ' + sachVersuche;
+
+      /* Falls noch mehr Aufgaben kommen: "Nächste Aufgabe"-Button zeigen */
+      if (sachIdx < SACH.length - 1) {
+        document.getElementById('sach-next-btn').classList.remove('hidden');
+      } else {
+        /* Alle Aufgaben erledigt: Abschluss-Feedback */
+        setTimeout(function() {
+          var feedback = document.getElementById('sach-feedback');
+          feedback.textContent += ' – Alle Aufgaben geschafft! Super!';
+        }, 500);
+      }
+    }
+
+    /**
+     * nextSachAufgabe() – zeigt die nächste Sachaufgabe
+     *
+     * Erhöht sachIdx und ruft showSachAufgabe() auf.
+     * Falls alle Aufgaben erledigt: neustart mit gemischter Reihenfolge.
+     */
+    function nextSachAufgabe() {
+      sachIdx++;
+
+      /* Falls alle 5 Aufgaben durch: von vorne beginnen (neu mischen) */
+      if (sachIdx >= SACH.length) {
+        sachIdx = 0;
+        /* Neue zufällige Reihenfolge */
+        sachReihenfolge = mischArray([0, 1, 2, 3, 4]);
+      }
+
+      showSachAufgabe();
+    }
+
+    /* ════════════════════════════════════════════════════════════════
+       INITIALISIERUNG beim Laden der Seite
+    ════════════════════════════════════════════════════════════════ */
+
+    /**
+     * DOMContentLoaded – wird ausgeführt sobald das HTML vollständig geladen ist
+     *
+     * Initialisiert alle drei interaktiven Abschnitte und setzt das Jahreszahl
+     * in der Fußzeile.
+     */
+    document.addEventListener('DOMContentLoaded', function() {
+
+      /* ── Fußzeile: aktuelles Jahr einsetzen ── */
+      /* new Date().getFullYear() gibt die aktuelle vierstellige Jahreszahl zurück */
+      document.getElementById('y').textContent = new Date().getFullYear();
+
+      /* ── Abschnitt 1: Umrechner initialisieren ── */
+      /* Dropdown mit den Längen-Einheiten befüllen (Standard-Tab ist 'laengen') */
+      befuelleDropdown();
+      /* Ergebnisanzeige für den Startwert "1 m" berechnen und anzeigen */
+      updateDisplay();
+
+      /* ── Abschnitt 2: Quiz starten ── */
+      /* Erste zufällige Quiz-Aufgabe erzeugen */
+      newUmrechnungsAufgabe();
+
+      /* ── Abschnitt 3: Sachaufgaben starten ── */
+      /* Zufällige Reihenfolge der Aufgaben erzeugen: [0,1,2,3,4] gemischt */
+      sachReihenfolge = mischArray([0, 1, 2, 3, 4]);
+      /* Erste Sachaufgabe anzeigen */
+      showSachAufgabe();
+    });
+
+  </script><!-- Ende Seiten-Logik -->
+
+</body>
+</html>

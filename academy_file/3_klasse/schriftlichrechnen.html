@@ -1,0 +1,1295 @@
+<!doctype html>
+<html lang="de">
+
+<head>
+  <!-- Zeichenkodierung und Viewport für mobile Geräte -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+  <!-- Seitentitel -->
+  <title>Schriftlich Rechnen | Klasse 3</title>
+
+  <!-- Favicon und App-Icons -->
+  <link rel="icon" href="../../favicon.ico">
+  <link rel="manifest" href="../../site.webmanifest">
+  <link rel="apple-touch-icon" href="../../apple-touch-icon.png">
+
+  <!-- Tailwind CSS über CDN – liefert alle Utility-Klassen -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Globale Theme-Variablen und Light/Dark-Mode-Stile -->
+  <link rel="stylesheet" href="../../style.css?v=1.0">
+
+  <style>
+    /* ── Zahlen-Spinner in Eingabefeldern ausblenden ───────────── */
+    /* Die kleinen Pfeile neben Zahlfeldern werden versteckt */
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type=number] {
+      -moz-appearance: textfield; /* Firefox: kein Spinner */
+    }
+
+    /* ── Übergangseffekt für interaktive Elemente ───────────────── */
+    /* Farbe ändert sich fließend beim Hover/Klick */
+    .tab-btn {
+      transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    }
+
+    /* ── Feedback-Einblend-Animation ─────────────────────────────── */
+    /* Richtig/Falsch-Meldung erscheint sanft von oben */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .feedback-anim {
+      animation: fadeIn 0.25s ease forwards;
+    }
+
+    /* ── Pop-Animation für korrekte Antworten ─────────────────────── */
+    /* Element "hüpft" kurz, wenn die Antwort richtig ist */
+    @keyframes popIn {
+      0%   { transform: scale(1); }
+      40%  { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    .pop-anim {
+      animation: popIn 0.3s ease;
+    }
+
+    /* ── Stil für die Rechenkasten-Trennlinie ─────────────────────── */
+    /* Horizontale Linie zwischen Aufgabe und Ergebnis */
+    .rechenlinie {
+      border-top: 2px solid #475569; /* slate-600: mittelgrauer Strich */
+      margin: 4px 0;
+    }
+
+    /* ── Eingabefelder im Rechenkasten ───────────────────────────── */
+    /* Quadratische Felder für jede Stelle (H, Z, E) */
+    .stellen-input {
+      width: 3rem;          /* feste Breite: 3 rem */
+      height: 3rem;         /* feste Höhe: 3 rem */
+      text-align: center;   /* Zahl zentriert im Feld */
+      font-size: 1.5rem;    /* große, gut lesbare Schrift */
+      font-weight: 700;     /* fett */
+      border-radius: 0.5rem;
+      border: 2px solid #334155; /* slate-700: dunkler Rahmen */
+      background: #0f172a;       /* slate-950: sehr dunkler Hintergrund */
+      color: #f1f5f9;            /* slate-100: helle Schrift */
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+
+    /* ── Hover-Stil für Eingabefelder ─────────────────────────────── */
+    .stellen-input:focus {
+      border-color: #10b981; /* emerald-500: grüner Fokusrahmen */
+    }
+
+    /* ── Ziffernzellen (nicht editierbar) ─────────────────────────── */
+    /* Zeigen die vorgegebenen Ziffern der Aufgabe */
+    .stellen-zelle {
+      width: 3rem;
+      height: 3rem;
+      display: flex;
+      align-items: center;    /* vertikal zentriert */
+      justify-content: center; /* horizontal zentriert */
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #e2e8f0; /* slate-200: helle Zifferfarbe */
+    }
+
+    /* ── Übertrag / Entleihen – kleine Hinweis-Zelle ─────────────── */
+    /* Kleine rote oder grüne Zahl über der Stelle */
+    .uebertrag-zelle {
+      width: 3rem;
+      height: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      border-radius: 0.25rem;
+    }
+
+    /* ── Übertrag bei Addition: Emerald-Farbe ─────────────────────── */
+    .uebertrag-add {
+      color: #10b981;        /* emerald-500 */
+      background: #064e3b33; /* emerald-950 mit Transparenz */
+    }
+
+    /* ── Entleihen bei Subtraktion: Rose-Farbe ───────────────────── */
+    .uebertrag-sub {
+      color: #fb7185;        /* rose-400 */
+      background: #4c000033; /* dunkel-rot mit Transparenz */
+    }
+
+    /* ── Vorzeichen-Zelle (+ oder −) ─────────────────────────────── */
+    .vorzeichen-zelle {
+      width: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #94a3b8; /* slate-400: gedämpfte Farbe */
+      padding-bottom: 0; /* bündig mit Zahlenreihe */
+    }
+
+    /* ── Spalten-Kopf (H, Z, E) ──────────────────────────────────── */
+    .stellen-kopf {
+      width: 3rem;
+      height: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #64748b; /* slate-500: gedämpfte Beschriftung */
+      letter-spacing: 0.05em;
+    }
+
+    /* ── Korrekt-Stil für Eingabefelder ──────────────────────────── */
+    .input-richtig {
+      border-color: #10b981 !important; /* emerald-500 */
+      color: #10b981 !important;
+    }
+
+    /* ── Falsch-Stil für Eingabefelder ──────────────────────────── */
+    .input-falsch {
+      border-color: #f43f5e !important; /* rose-500 */
+      color: #f43f5e !important;
+    }
+
+    /* ── Punktzahl-Badge Animation ───────────────────────────────── */
+    @keyframes scorePop {
+      0%   { transform: scale(1); }
+      50%  { transform: scale(1.3); }
+      100% { transform: scale(1); }
+    }
+    .score-pop {
+      animation: scorePop 0.4s ease;
+    }
+  </style>
+</head>
+
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col">
+  <!-- bg-slate-950: sehr dunkler Hintergrund | text-slate-100: helle Schrift -->
+  <!-- min-h-screen: Seite füllt mindestens den ganzen Viewport | flex flex-col: vertikales Flex-Layout -->
+
+  <!-- ── Topbar-Container: wird per JS befüllt ───────────────────── -->
+  <div id="topbar-container"></div>
+
+  <!-- ── Hauptinhalt ───────────────────────────────────────────────── -->
+  <main class="flex-1 max-w-4xl mx-auto w-full px-4 py-8">
+    <!-- flex-1: nimmt den verbleibenden Platz ein -->
+    <!-- max-w-4xl: begrenzt die maximale Breite | mx-auto: zentriert horizontal -->
+    <!-- px-4: horizontales Innenabstand | py-8: vertikaler Abstand oben/unten -->
+
+    <!-- ── Zurück-Link ─────────────────────────────────────────────── -->
+    <a href="../../academy.html"
+       class="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-emerald-400 transition-colors mb-6">
+      <!-- inline-flex: nebeneinander | items-center: vertikal ausgerichtet -->
+      <!-- gap-2: kleiner Abstand zwischen Pfeil und Text -->
+      <!-- text-slate-400: gedämpfte Farbe | hover:text-emerald-400: grün beim Hover -->
+      <!-- transition-colors: sanfte Farbänderung | mb-6: Abstand nach unten -->
+      ← Zurück zur Akademie
+    </a>
+
+    <!-- ── Seiten-Kopfzeile ───────────────────────────────────────── -->
+    <div class="mb-8">
+      <!-- mb-8: Abstand nach unten -->
+      <!-- Klassen-Badge -->
+      <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 mb-3">
+        <!-- inline-block: nimmt nur so viel Breite wie nötig -->
+        <!-- px-3 py-1: Innenabstand | rounded-full: vollständig abgerundet (Pille) -->
+        <!-- text-xs font-semibold: kleine, halbfette Schrift -->
+        <!-- bg-emerald-500/10: sehr schwach grüner Hintergrund | text-emerald-400: grüne Schrift -->
+        <!-- border border-emerald-500/20: leicht sichtbarer grüner Rahmen -->
+        Klasse 3 · Grundlagen
+      </span>
+      <!-- Seitentitel -->
+      <h1 class="text-3xl sm:text-4xl font-bold text-slate-100 mb-2">
+        <!-- text-3xl: große Schrift, auf kleinen Geräten 4xl -->
+        <!-- font-bold: fette Schrift | text-slate-100: fast weiß -->
+        Schriftlich Rechnen
+      </h1>
+      <!-- Untertitel -->
+      <p class="text-slate-400 text-base">
+        <!-- text-slate-400: gedämpfte graue Farbe | text-base: normale Schriftgröße -->
+        Addition und Subtraktion bis 1000 – mit Übertrag und Entleihen
+      </p>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         SECTION 1: SCHRIFTLICHE ADDITION
+    ════════════════════════════════════════════════════════════════ -->
+    <section class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6 mb-8">
+      <!-- rounded-3xl: stark abgerundete Ecken -->
+      <!-- border border-slate-800: dezenter dunkler Rahmen -->
+      <!-- bg-slate-900/30: leicht durchscheinender dunkler Hintergrund -->
+      <!-- p-6: Innenabstand 1.5 rem | mb-8: Abstand nach unten -->
+
+      <!-- Abschnitt-Überschrift -->
+      <div class="flex items-center gap-3 mb-6">
+        <!-- flex: nebeneinander | items-center: vertikal mittig | gap-3: Abstand zwischen Elementen -->
+        <!-- Ikonen-Kreis -->
+        <div class="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 text-lg font-bold flex-shrink-0">
+          <!-- w-10 h-10: 2.5 rem Breite und Höhe | rounded-full: Kreis -->
+          <!-- bg-emerald-500/20: schwach grüner Hintergrund | flex items-center justify-center: zentriert -->
+          <!-- text-emerald-400: grüne Schrift | text-lg font-bold: groß und fett -->
+          <!-- flex-shrink-0: Kreis schrumpft nicht, wenn Platz knapp ist -->
+          +
+        </div>
+        <div>
+          <!-- Titel und Beschreibung des Abschnitts -->
+          <h2 class="text-xl font-semibold text-slate-100">Schriftliche Addition</h2>
+          <!-- text-xl: größere Schrift | font-semibold: halbfett | text-slate-100: hell -->
+          <p class="text-sm text-slate-400">Mit Übertrag bis 1000 – Stelle für Stelle</p>
+          <!-- text-sm: kleine Schrift | text-slate-400: gedämpft -->
+        </div>
+
+        <!-- Punktzahl-Anzeige für Addition -->
+        <div class="ml-auto text-right">
+          <!-- ml-auto: schiebt Element ganz nach rechts -->
+          <div class="text-2xl font-bold text-emerald-400" id="add-score-display">0</div>
+          <!-- text-2xl font-bold: große, fette Zahl | text-emerald-400: grün -->
+          <div class="text-xs text-slate-500">Punkte</div>
+          <!-- text-xs: sehr kleine Schrift | text-slate-500: schwach sichtbar -->
+        </div>
+      </div>
+
+      <!-- ── Rechenkasten für Addition ────────────────────────────── -->
+      <div class="flex justify-center mb-6">
+        <!-- flex justify-center: horizontale Zentrierung des Rechenkastens -->
+        <div class="inline-block">
+          <!-- inline-block: Breite richtet sich nach Inhalt -->
+
+          <!-- Spaltenköpfe: H, Z, E -->
+          <div class="flex items-end" id="add-kopf-reihe">
+            <!-- flex items-end: nebeneinander, unten ausgerichtet -->
+            <!-- Leere Zelle für das Vorzeichen-Feld -->
+            <div class="w-8 flex-shrink-0"></div>
+            <!-- w-8: 2 rem Breite als Platzhalter für das "+" -->
+            <!-- Kopf-Zellen H, Z, E werden per JS eingefügt -->
+          </div>
+
+          <!-- Übertrag-Reihe (erscheint nach dem Prüfen) -->
+          <div class="flex items-end mb-1" id="add-uebertrag-reihe">
+            <!-- mb-1: kleiner Abstand nach unten -->
+            <!-- Inhalte werden per JS gesetzt -->
+          </div>
+
+          <!-- Erste Zahl (Summand A) -->
+          <div class="flex items-center gap-1 mb-1" id="add-zahl-a-reihe">
+            <!-- flex items-center: vertikal ausgerichtet | gap-1: kleiner Abstand | mb-1: Abstand unten -->
+            <!-- Inhalte werden per JS gesetzt -->
+          </div>
+
+          <!-- Zweite Zahl (Summand B) mit Vorzeichen -->
+          <div class="flex items-center gap-1 mb-1" id="add-zahl-b-reihe">
+            <!-- Inhalte werden per JS gesetzt -->
+          </div>
+
+          <!-- Trennlinie -->
+          <div class="rechenlinie mx-8"></div>
+          <!-- rechenlinie: eigene CSS-Klasse für die horizontale Linie | mx-8: Seitenabstand -->
+
+          <!-- Ergebnis-Eingabe-Reihe -->
+          <div class="flex items-center gap-1 mt-1" id="add-ergebnis-reihe">
+            <!-- mt-1: kleiner Abstand nach oben -->
+            <!-- Inhalte werden per JS gesetzt -->
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Schaltflächen für Addition ───────────────────────────── -->
+      <div class="flex flex-wrap gap-3 justify-center mb-4">
+        <!-- flex flex-wrap: nebeneinander, umbrechend bei wenig Platz | gap-3: Abstände -->
+        <!-- justify-center: horizontal zentriert | mb-4: Abstand nach unten -->
+        <button onclick="checkAddition()"
+          class="px-6 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold transition-colors text-sm">
+          <!-- px-6 py-2: Innenabstand | rounded-xl: abgerundete Ecken -->
+          <!-- bg-emerald-600: grüner Hintergrund | hover:bg-emerald-500: heller beim Hover -->
+          <!-- text-white font-semibold: weiß und halbfett | transition-colors: sanfter Übergang -->
+          Prüfen ✓
+        </button>
+        <button onclick="newAddition()"
+          class="px-6 py-2 rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-200 font-semibold transition-colors text-sm">
+          <!-- bg-slate-700: dunkler Hintergrund | hover:bg-slate-600: etwas heller beim Hover -->
+          Neue Aufgabe →
+        </button>
+      </div>
+
+      <!-- Feedback-Bereich für Addition -->
+      <div id="add-feedback" class="text-center text-sm font-semibold min-h-6"></div>
+      <!-- text-center: zentriert | text-sm font-semibold: mittelgroß und halbfett | min-h-6: Mindesthöhe -->
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         SECTION 2: SCHRIFTLICHE SUBTRAKTION
+    ════════════════════════════════════════════════════════════════ -->
+    <section class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6 mb-8">
+
+      <!-- Abschnitt-Überschrift -->
+      <div class="flex items-center gap-3 mb-6">
+        <!-- Ikonen-Kreis in Rose für Subtraktion -->
+        <div class="w-10 h-10 rounded-full bg-rose-500/20 flex items-center justify-center text-rose-400 text-lg font-bold flex-shrink-0">
+          <!-- bg-rose-500/20: schwach rötlicher Hintergrund | text-rose-400: rötliche Schrift -->
+          −
+        </div>
+        <div>
+          <h2 class="text-xl font-semibold text-slate-100">Schriftliche Subtraktion</h2>
+          <p class="text-sm text-slate-400">Mit Entleihen – Stelle für Stelle</p>
+        </div>
+
+        <!-- Punktzahl-Anzeige für Subtraktion -->
+        <div class="ml-auto text-right">
+          <div class="text-2xl font-bold text-rose-400" id="sub-score-display">0</div>
+          <!-- text-rose-400: rötliche Punktefarbe für Subtraktion -->
+          <div class="text-xs text-slate-500">Punkte</div>
+        </div>
+      </div>
+
+      <!-- ── Rechenkasten für Subtraktion ─────────────────────────── -->
+      <div class="flex justify-center mb-6">
+        <div class="inline-block">
+
+          <!-- Spaltenköpfe: H, Z, E -->
+          <div class="flex items-end" id="sub-kopf-reihe">
+            <!-- Vorzeichen-Platzhalter -->
+            <div class="w-8 flex-shrink-0"></div>
+          </div>
+
+          <!-- Entleihen-Reihe (erscheint nach dem Prüfen) -->
+          <div class="flex items-end mb-1" id="sub-uebertrag-reihe">
+            <!-- Inhalte werden per JS gesetzt -->
+          </div>
+
+          <!-- Erste Zahl (Minuend) -->
+          <div class="flex items-center gap-1 mb-1" id="sub-zahl-a-reihe">
+          </div>
+
+          <!-- Zweite Zahl (Subtrahend) mit Vorzeichen -->
+          <div class="flex items-center gap-1 mb-1" id="sub-zahl-b-reihe">
+          </div>
+
+          <!-- Trennlinie -->
+          <div class="rechenlinie mx-8"></div>
+
+          <!-- Ergebnis-Eingabe-Reihe -->
+          <div class="flex items-center gap-1 mt-1" id="sub-ergebnis-reihe">
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Schaltflächen für Subtraktion ────────────────────────── -->
+      <div class="flex flex-wrap gap-3 justify-center mb-4">
+        <button onclick="checkSubtraktion()"
+          class="px-6 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-semibold transition-colors text-sm">
+          <!-- bg-rose-600: roter Hintergrund passend zur Subtraktion -->
+          Prüfen ✓
+        </button>
+        <button onclick="newSubtraktion()"
+          class="px-6 py-2 rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-200 font-semibold transition-colors text-sm">
+          Neue Aufgabe →
+        </button>
+      </div>
+
+      <!-- Feedback-Bereich für Subtraktion -->
+      <div id="sub-feedback" class="text-center text-sm font-semibold min-h-6"></div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         SECTION 3: GEMISCHTES QUIZ
+    ════════════════════════════════════════════════════════════════ -->
+    <section class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6 mb-8">
+
+      <!-- Abschnitt-Überschrift -->
+      <div class="flex items-center gap-3 mb-6">
+        <!-- Ikonen-Kreis in Blau für das gemischte Quiz -->
+        <div class="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 text-xl font-bold flex-shrink-0">
+          <!-- bg-blue-500/20: schwach bläulicher Hintergrund | text-blue-400: blaue Schrift -->
+          ±
+        </div>
+        <div>
+          <h2 class="text-xl font-semibold text-slate-100">Gemischtes Quiz</h2>
+          <p class="text-sm text-slate-400">Addition und Subtraktion gemischt – gib das Ergebnis ein</p>
+        </div>
+
+        <!-- Fortschrittsanzeige: x von 10 -->
+        <div class="ml-auto text-right">
+          <div class="text-2xl font-bold text-blue-400" id="gemischt-score-display">0/10</div>
+          <!-- text-blue-400: blaue Schrift passend zum Quiz-Abschnitt -->
+          <div class="text-xs text-slate-500">Richtig</div>
+        </div>
+      </div>
+
+      <!-- ── Aufgaben-Anzeige ──────────────────────────────────────── -->
+      <div class="text-center mb-6">
+        <!-- Große Aufgaben-Zeile: z.B. "378 + 456 = ?" -->
+        <div class="text-4xl sm:text-5xl font-bold text-slate-100 mb-4 tracking-wide" id="gemischt-aufgabe">
+          <!-- text-4xl: sehr große Schrift, auf kleinen Bildschirmen 5xl -->
+          <!-- font-bold: fett | tracking-wide: leicht gesperrte Buchstaben -->
+        </div>
+
+        <!-- Eingabefeld für die gesamte Antwort -->
+        <input
+          type="number"
+          id="gemischt-input"
+          placeholder="Deine Antwort"
+          class="w-48 px-4 py-3 rounded-2xl bg-slate-800 border-2 border-slate-600 text-slate-100 text-xl font-bold text-center focus:outline-none focus:border-blue-400 transition-colors"
+          onkeydown="if(event.key==='Enter') checkGemischt()"
+        />
+        <!-- w-48: 12 rem Breite | px-4 py-3: Innenabstand -->
+        <!-- rounded-2xl: stark abgerundete Ecken | bg-slate-800: dunkler Hintergrund -->
+        <!-- border-2 border-slate-600: sichtbarer Rahmen | text-xl font-bold text-center: groß, fett, zentriert -->
+        <!-- focus:outline-none: kein Standard-Fokusrahmen | focus:border-blue-400: blau beim Fokus -->
+        <!-- onkeydown: Enter-Taste löst Prüfung aus -->
+      </div>
+
+      <!-- ── Schaltflächen für das Quiz ───────────────────────────── -->
+      <div class="flex flex-wrap gap-3 justify-center mb-4">
+        <button onclick="checkGemischt()"
+          class="px-6 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold transition-colors text-sm">
+          <!-- bg-blue-600: blauer Hintergrund für das Quiz -->
+          Prüfen ✓
+        </button>
+        <button onclick="newGemischt()"
+          class="px-6 py-2 rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-200 font-semibold transition-colors text-sm">
+          Überspringen →
+        </button>
+      </div>
+
+      <!-- Feedback-Bereich für das Quiz -->
+      <div id="gemischt-feedback" class="text-center text-sm font-semibold min-h-6 mb-4"></div>
+
+      <!-- Fortschrittsbalken: zeigt wie viele der 10 Fragen beantwortet wurden -->
+      <div class="w-full bg-slate-800 rounded-full h-2 mb-2">
+        <!-- w-full: volle Breite | bg-slate-800: dunkler Hintergrund | rounded-full: abgerundet | h-2: schmal -->
+        <div id="gemischt-fortschritt"
+             class="bg-blue-500 h-2 rounded-full transition-all duration-500"
+             style="width: 0%">
+          <!-- bg-blue-500: blauer Balken | transition-all duration-500: sanfte Animation über 0.5s -->
+        </div>
+      </div>
+      <p class="text-center text-xs text-slate-500" id="gemischt-fortschritt-text">Frage 1 von 10</p>
+      <!-- text-xs: sehr klein | text-slate-500: schwach sichtbar -->
+
+      <!-- ── Zusammenfassung nach 10 Fragen (zunächst versteckt) ─── -->
+      <div id="gemischt-zusammenfassung" class="hidden text-center py-4">
+        <!-- hidden: display:none – erst sichtbar nach 10 Fragen -->
+        <div class="text-5xl mb-3" id="gemischt-emoji">🎉</div>
+        <!-- text-5xl: sehr großes Emoji -->
+        <p class="text-xl font-bold text-slate-100 mb-2" id="gemischt-ergebnis-text"></p>
+        <!-- text-xl font-bold: groß und fett -->
+        <p class="text-slate-400 text-sm mb-4" id="gemischt-ergebnis-details"></p>
+        <button onclick="resetGemischt()"
+          class="px-8 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold transition-colors">
+          <!-- px-8 py-3: etwas größerer Knopf für die Zusammenfassung -->
+          Nochmal spielen 🔄
+        </button>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         THEORIE-BEREICH: 3 Spalten
+    ════════════════════════════════════════════════════════════════ -->
+    <section class="mb-8">
+      <h2 class="text-xl font-semibold text-slate-100 mb-4">So geht schriftliches Rechnen</h2>
+      <!-- text-xl font-semibold: mittelgroße, halbfette Überschrift -->
+
+      <!-- Dreispaltiges Grid für die Theorie-Karten -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <!-- grid: CSS Grid | grid-cols-1: 1 Spalte auf mobil | sm:grid-cols-3: 3 Spalten ab kleinem Bildschirm -->
+        <!-- gap-4: Abstand zwischen den Karten -->
+
+        <!-- Theorie-Karte 1: Von rechts nach links -->
+        <div class="rounded-2xl border border-slate-800 bg-slate-900/40 p-5">
+          <!-- rounded-2xl: abgerundete Ecken | border border-slate-800: dezenter Rahmen -->
+          <!-- bg-slate-900/40: leicht durchscheinender Hintergrund | p-5: Innenabstand -->
+          <div class="text-2xl mb-2">👉</div>
+          <h3 class="font-semibold text-slate-200 text-sm mb-1">Von rechts nach links rechnen</h3>
+          <!-- font-semibold: halbfett | text-slate-200: fast weiß | text-sm: kleine Schrift | mb-1: kleiner Abstand -->
+          <p class="text-slate-400 text-xs leading-relaxed">
+            <!-- text-slate-400: gedämpft | text-xs: sehr kleine Schrift | leading-relaxed: entspannter Zeilenabstand -->
+            Immer bei den <strong class="text-slate-200">Einern</strong> beginnen,
+            dann <strong class="text-slate-200">Zehner</strong>,
+            dann <strong class="text-slate-200">Hunderter</strong>.
+            <!-- strong text-slate-200: wichtige Begriffe heller hervorgehoben -->
+          </p>
+        </div>
+
+        <!-- Theorie-Karte 2: Übertrag bei Addition -->
+        <div class="rounded-2xl border border-emerald-900/40 bg-emerald-950/20 p-5">
+          <!-- border-emerald-900/40: schwach grüner Rahmen | bg-emerald-950/20: sehr schwach grüner Hintergrund -->
+          <div class="text-2xl mb-2">➕</div>
+          <h3 class="font-semibold text-emerald-300 text-sm mb-1">Übertrag bei Addition</h3>
+          <!-- text-emerald-300: hellgrüne Überschrift -->
+          <p class="text-slate-400 text-xs leading-relaxed">
+            Ist das Ergebnis einer Stelle <strong class="text-emerald-300">≥ 10</strong>,
+            schreibt man die Einerstelle hin und
+            trägt die <strong class="text-emerald-300">1</strong> in die nächste Stelle.
+          </p>
+          <!-- Beispiel -->
+          <div class="mt-3 font-mono text-xs text-emerald-400 bg-emerald-950/30 rounded-lg p-2">
+            <!-- font-mono: Monospace-Schrift für Zahlenbeispiel | text-xs: sehr klein -->
+            <!-- text-emerald-400: grüne Farbe | bg-emerald-950/30: sehr schwacher Hintergrund | rounded-lg p-2: Rahmen -->
+            <div class="text-slate-500 text-[10px] mb-1">Beispiel: 7 + 8 = 15</div>
+            <!-- text-[10px]: maßgeschneiderte sehr kleine Schriftgröße -->
+            <div>&nbsp;&nbsp;<span class="text-yellow-400">1</span>&nbsp;&nbsp;&nbsp;← Übertrag</div>
+            <!-- &nbsp;: nicht umbrechendes Leerzeichen | text-yellow-400: gelbe Übertrags-1 -->
+            <div>&nbsp;5&nbsp;7</div>
+            <div>+&nbsp;2&nbsp;8</div>
+            <div class="border-t border-emerald-900/50 mt-1 pt-1">&nbsp;8&nbsp;5</div>
+            <!-- border-t border-emerald-900/50: obere Trennlinie | mt-1 pt-1: Abstand -->
+          </div>
+        </div>
+
+        <!-- Theorie-Karte 3: Entleihen bei Subtraktion -->
+        <div class="rounded-2xl border border-rose-900/40 bg-rose-950/20 p-5">
+          <!-- border-rose-900/40: schwach rötlicher Rahmen | bg-rose-950/20: sehr schwach rötlicher Hintergrund -->
+          <div class="text-2xl mb-2">➖</div>
+          <h3 class="font-semibold text-rose-300 text-sm mb-1">Entleihen bei Subtraktion</h3>
+          <!-- text-rose-300: hellrötliche Überschrift -->
+          <p class="text-slate-400 text-xs leading-relaxed">
+            Ist die obere Stelle <strong class="text-rose-300">kleiner</strong> als die untere,
+            leiht man sich <strong class="text-rose-300">10</strong> von der nächsten Stelle.
+            Die nächste Stelle wird um 1 kleiner.
+          </p>
+          <!-- Beispiel -->
+          <div class="mt-3 font-mono text-xs text-rose-400 bg-rose-950/30 rounded-lg p-2">
+            <div class="text-slate-500 text-[10px] mb-1">Beispiel: 32 − 17 = 15</div>
+            <div>&nbsp;<span class="text-yellow-400 line-through">3</span><span class="text-yellow-400">2</span>&nbsp;<span class="text-yellow-400">12</span>&nbsp;← Leihen</div>
+            <!-- line-through: durchgestrichen (die geliehene Stelle) -->
+            <div>&nbsp;3&nbsp;&nbsp;2</div>
+            <div>−&nbsp;1&nbsp;&nbsp;7</div>
+            <div class="border-t border-rose-900/50 mt-1 pt-1">&nbsp;1&nbsp;&nbsp;5</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ── Footer ──────────────────────────────────────────────────── -->
+  <footer class="py-6 text-center text-xs text-slate-500">
+    <!-- py-6: vertikaler Innenabstand | text-center: zentriert | text-xs: sehr klein | text-slate-500: schwach -->
+    © <span id="y"></span> Brandon Hank · Düsseldorf
+    <!-- Das Jahr wird per JS eingefügt -->
+  </footer>
+
+  <!-- ════════════════════════════════════════════════════════════════
+       JAVASCRIPT: Alle interaktiven Funktionen
+  ══════════════════════════════════════════════════════════════════ -->
+  <script>
+    // ── Topbar laden: HTML-Datei abrufen und einfügen ──────────────
+    // window.__i18nBase: Basispfad für Internationalisierungs-Ressourcen
+    window.__i18nBase = '../../';
+
+    // fetch(): lädt die topbar.html asynchron (ohne Seitenneuladen)
+    fetch('../../topbar.html')
+      .then(r => r.text())   // .then(): wartet auf Antwort und liest Text
+      .then(html => {
+        // innerHTML: setzt den HTML-Inhalt des Containers
+        document.getElementById('topbar-container').innerHTML = html;
+
+        // Skript-Tag dynamisch erzeugen und ans Dokument hängen
+        const s = document.createElement('script'); // createElement(): erzeugt neues Element
+        s.src = '../../script.js';                   // src: Pfad zum Skript
+        document.body.appendChild(s);               // appendChild(): fügt Element am Ende des body ein
+      });
+
+    // ── Jahreszahl im Footer setzen ────────────────────────────────
+    // new Date().getFullYear(): gibt die aktuelle 4-stellige Jahreszahl zurück
+    document.getElementById('y').textContent = new Date().getFullYear();
+
+
+    // ══════════════════════════════════════════════════════════════
+    // ABSCHNITT 1: SCHRIFTLICHE ADDITION
+    // ══════════════════════════════════════════════════════════════
+
+    // Globale Zustandsvariablen für den Additions-Abschnitt
+    let addA = 0;       // addA: erster Summand (wird per Zufallszahl gesetzt)
+    let addB = 0;       // addB: zweiter Summand
+    let addScore = 0;   // addScore: Anzahl der richtig gelösten Additions-Aufgaben
+    let addGesperrt = false; // addGesperrt: verhindert Doppelklicks während der Wartezeit
+
+    /**
+     * stellenZerlegen(n) – Zerlegt eine dreistellige Zahl in ihre Stellen.
+     * Gibt ein Objekt { h, z, e } zurück:
+     *   h = Hunderterstelle, z = Zehnerstelle, e = Einerstelle
+     */
+    function stellenZerlegen(n) {
+      // Math.floor(): rundet eine Zahl ab zur nächsten ganzen Zahl
+      const h = Math.floor(n / 100);         // Ganzzahldivision: gibt die Hunderterstelle zurück
+      const z = Math.floor((n % 100) / 10);  // n % 100: Rest nach Division durch 100 (Zehner + Einer)
+                                              // dann / 10: isoliert die Zehnerstelle
+      const e = n % 10;                      // n % 10: Rest nach Division durch 10 → Einerstelle
+      return { h, z, e };                    // Objekt mit allen drei Stellen zurückgeben
+    }
+
+    /**
+     * rechenreiheAufbauen(containerId, vorzeichen, h, z, e, istEingabe)
+     * Baut eine Zahlenreihe im Rechenkasten auf.
+     * Bei istEingabe=true werden <input>-Felder statt fester Zellen erstellt.
+     */
+    function rechenreiheAufbauen(containerId, vorzeichen, h, z, e, istEingabe) {
+      // getElementById(): findet das Element mit der angegebenen ID
+      const container = document.getElementById(containerId);
+      container.innerHTML = ''; // innerHTML = '': leert den Container vollständig
+
+      // Vorzeichen-Zelle ('+', '−' oder leer)
+      const vzZelle = document.createElement('div');
+      // classList.add(): fügt eine oder mehrere CSS-Klassen zum Element hinzu
+      vzZelle.classList.add('vorzeichen-zelle', 'w-8', 'flex-shrink-0');
+      vzZelle.textContent = vorzeichen; // textContent: setzt den sichtbaren Text
+      container.appendChild(vzZelle);  // appendChild(): hängt die Vorzeichen-Zelle an den Container
+
+      // Hilfsfunktion: erstellt eine Ziffern-Zelle oder ein Eingabefeld
+      // Die drei Stellen H, Z, E werden jeweils einzeln erzeugt
+      [h, z, e].forEach((ziffer, index) => {
+        // forEach(): führt die Funktion für jedes Element des Arrays aus
+        // index: 0 = Hundert, 1 = Zehner, 2 = Einer
+        if (istEingabe) {
+          // Eingabefeld für die Ergebnis-Reihe
+          const input = document.createElement('input');
+          input.type = 'number';       // type='number': erlaubt nur Zahlen
+          input.min = '0';             // min: Minimalwert
+          input.max = '9';             // max: Maximalwert (eine Stelle)
+          input.classList.add('stellen-input'); // stellen-input: eigene CSS-Klasse
+
+          // ID für späteres Auslesen: z.B. 'add-h', 'add-z', 'add-e' oder 'sub-h' etc.
+          const prefix = containerId.startsWith('add') ? 'add' : 'sub';
+          const stellenNamen = ['h', 'z', 'e']; // Buchstaben für die drei Stellen
+          input.id = prefix + '-input-' + stellenNamen[index]; // z.B. 'add-input-h'
+          container.appendChild(input); // Eingabefeld an Container hängen
+        } else {
+          // Feste Ziffern-Zelle (nicht editierbar)
+          const zelle = document.createElement('div');
+          zelle.classList.add('stellen-zelle');
+          zelle.textContent = ziffer; // zeigt die Ziffer an
+          container.appendChild(zelle);
+        }
+      });
+    }
+
+    /**
+     * kopfReiheAufbauen(containerId) – Erstellt die H-Z-E-Beschriftung.
+     */
+    function kopfReiheAufbauen(containerId) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = ''; // Container leeren
+
+      // Leere Zelle für das Vorzeichen-Feld (Platzhalter)
+      const platz = document.createElement('div');
+      platz.classList.add('w-8', 'flex-shrink-0'); // w-8: 2 rem breit
+      container.appendChild(platz);
+
+      // Beschriftungen für die drei Stellen
+      ['H', 'Z', 'E'].forEach(buchstabe => {
+        const kopf = document.createElement('div');
+        kopf.classList.add('stellen-kopf'); // stellen-kopf: eigene CSS-Klasse
+        kopf.textContent = buchstabe;       // H, Z oder E anzeigen
+        container.appendChild(kopf);
+      });
+    }
+
+    /**
+     * newAddition() – Generiert eine neue Additions-Aufgabe.
+     * Wählt zwei Zufallszahlen und zeigt den Rechenkasten an.
+     */
+    function newAddition() {
+      addGesperrt = false; // Sperre aufheben: neue Eingaben erlaubt
+
+      // Math.random(): gibt eine Zufallszahl zwischen 0 (inkl.) und 1 (exkl.) zurück
+      // Math.floor(Math.random() * n): ganzzahlige Zufallszahl von 0 bis n-1
+      addA = Math.floor(Math.random() * 400) + 100; // addA: Zufallszahl zwischen 100 und 499
+
+      // addB so wählen, dass die Summe ≤ 999 bleibt (dreistellig)
+      // maximales addB = 999 - addA, mindestens 100
+      const maxB = Math.min(499, 999 - addA); // Math.min(): kleinerer der beiden Werte
+      addB = Math.floor(Math.random() * (maxB - 100 + 1)) + 100; // addB: 100 bis maxB
+
+      // Stellen der beiden Zahlen berechnen
+      const stellenA = stellenZerlegen(addA); // Hundert, Zehner, Einer von addA
+      const stellenB = stellenZerlegen(addB); // Hundert, Zehner, Einer von addB
+
+      // Kopfzeile aufbauen (H, Z, E)
+      kopfReiheAufbauen('add-kopf-reihe');
+
+      // Übertragreihe leeren (wird nach Prüfung befüllt)
+      document.getElementById('add-uebertrag-reihe').innerHTML = '';
+
+      // Zahl A aufbauen (ohne Vorzeichen, keine Eingabefelder)
+      rechenreiheAufbauen('add-zahl-a-reihe', '', stellenA.h, stellenA.z, stellenA.e, false);
+
+      // Zahl B aufbauen (mit '+'-Vorzeichen, keine Eingabefelder)
+      rechenreiheAufbauen('add-zahl-b-reihe', '+', stellenB.h, stellenB.z, stellenB.e, false);
+
+      // Ergebnis-Reihe: leere Eingabefelder (Platzhalter 0, wird ignoriert)
+      rechenreiheAufbauen('add-ergebnis-reihe', '', 0, 0, 0, true);
+
+      // Feedback-Bereich leeren
+      const feedback = document.getElementById('add-feedback');
+      feedback.textContent = ''; // textContent = '': löscht den Feedback-Text
+      feedback.className = 'text-center text-sm font-semibold min-h-6'; // Klassen zurücksetzen
+
+      // Erstes Eingabefeld fokussieren (Cursor springt automatisch hinein)
+      // setTimeout(fn, 0): führt fn nach dem aktuellen Render-Zyklus aus
+      setTimeout(() => {
+        const erstesInput = document.getElementById('add-input-h');
+        if (erstesInput) erstesInput.focus(); // focus(): Cursor ins Feld setzen
+      }, 0);
+    }
+
+    /**
+     * checkAddition() – Prüft die eingegebenen Ergebnis-Stellen.
+     * Zeigt Richtig/Falsch-Feedback und den Übertrag an.
+     */
+    function checkAddition() {
+      if (addGesperrt) return; // Wenn gesperrt: Funktion sofort verlassen
+
+      // Korrekte Summe berechnen
+      const summe = addA + addB; // einfache Addition
+      const korrekt = stellenZerlegen(summe); // Stellen der Summe ermitteln
+
+      // Eingaben auslesen: parseInt() wandelt den String in eine ganze Zahl um
+      const eingabeH = parseInt(document.getElementById('add-input-h').value) || 0;
+      // || 0: falls leer oder NaN (keine gültige Zahl), wird 0 verwendet
+      const eingabeZ = parseInt(document.getElementById('add-input-z').value) || 0;
+      const eingabeE = parseInt(document.getElementById('add-input-e').value) || 0;
+
+      // Jede Stelle einzeln prüfen
+      const hRichtig = eingabeH === korrekt.h; // Vergleich: eingegeben vs. korrekt
+      const zRichtig = eingabeZ === korrekt.z;
+      const eRichtig = eingabeE === korrekt.e;
+
+      // Eingabefelder einfärben je nach Richtigkeit
+      farbeSetzen('add-input-h', hRichtig); // grün oder rot
+      farbeSetzen('add-input-z', zRichtig);
+      farbeSetzen('add-input-e', eRichtig);
+
+      // Übertrag-Indikatoren berechnen und anzeigen
+      const stellenA = stellenZerlegen(addA);
+      const stellenB = stellenZerlegen(addB);
+
+      // Übertrag von Einern zu Zehnern: Einerstellen-Summe ≥ 10
+      const uebertragEZ = (stellenA.e + stellenB.e) >= 10 ? 1 : 0;
+      // ternärer Operator: Bedingung ? wahr : falsch
+
+      // Übertrag von Zehnern zu Hundertern (inkl. Übertrag aus Einern)
+      const uebertragZH = (stellenA.z + stellenB.z + uebertragEZ) >= 10 ? 1 : 0;
+
+      // Übertrag-Reihe aufbauen und anzeigen
+      uebertragReiheAddition('add-uebertrag-reihe', uebertragZH, uebertragEZ);
+
+      // Feedback-Element holen
+      const feedback = document.getElementById('add-feedback');
+
+      if (hRichtig && zRichtig && eRichtig) {
+        // Alle Stellen richtig: Punktzahl erhöhen und Erfolg anzeigen
+        addScore++;                                // addScore hochzählen
+        scoreAnzeigen('add-score-display', addScore, 'pop-anim'); // Punktzahl animieren
+
+        feedback.textContent = '✓ Richtig! Super gemacht!';
+        // Klassen für grünes Feedback hinzufügen
+        feedback.className = 'text-center text-sm font-semibold min-h-6 text-emerald-400 feedback-anim';
+        // feedback-anim: Einblend-Animation
+
+        addGesperrt = true; // Sperre: verhindert weiteres Prüfen während der Wartezeit
+
+        // setTimeout(fn, 1500): ruft fn nach 1,5 Sekunden automatisch auf
+        setTimeout(() => newAddition(), 1500);
+      } else {
+        // Mindestens eine Stelle falsch: Fehler anzeigen
+        feedback.textContent = `✗ Falsch. Die richtige Antwort ist ${korrekt.h}${korrekt.z}${korrekt.e} (${summe})`;
+        // Template-Literal (Backtick): fügt Variablen direkt in den String ein
+        feedback.className = 'text-center text-sm font-semibold min-h-6 text-rose-400 feedback-anim';
+
+        addGesperrt = true; // Sperre für kurze Zeit
+
+        // Nach 2 Sekunden automatisch neue Aufgabe laden
+        // setTimeout(fn, 2000): ruft fn nach 2 Sekunden automatisch auf
+        setTimeout(() => newAddition(), 2000);
+      }
+    }
+
+    /**
+     * uebertragReiheAddition(containerId, uebertragZH, uebertragEZ)
+     * Zeigt Übertrags-Indikatoren über den Zehnern und Hundertern.
+     */
+    function uebertragReiheAddition(containerId, uebertragZH, uebertragEZ) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = ''; // Container leeren
+
+      // Vorzeichen-Platzhalter (leer, gleiche Breite wie Vorzeichen-Zelle)
+      const platz = document.createElement('div');
+      platz.classList.add('w-8', 'flex-shrink-0'); // gleiche Breite wie Vorzeichen-Zelle
+      container.appendChild(platz);
+
+      // Übertrag über Hunderter-Spalte (falls Übertrag von Zehnern zu Hundertern)
+      const uHundert = document.createElement('div');
+      uHundert.classList.add('uebertrag-zelle'); // eigene CSS-Klasse für Übertrag-Zellen
+      if (uebertragZH > 0) {
+        uHundert.classList.add('uebertrag-add');  // uebertrag-add: grüne Farbe für Addition
+        uHundert.textContent = '¹';               // hochgestellte 1 als Übertrag-Symbol
+        uHundert.title = 'Übertrag von Zehnern';  // title: Tooltip beim Hover
+      }
+      container.appendChild(uHundert);
+
+      // Übertrag über Zehner-Spalte (falls Übertrag von Einern zu Zehnern)
+      const uZehner = document.createElement('div');
+      uZehner.classList.add('uebertrag-zelle');
+      if (uebertragEZ > 0) {
+        uZehner.classList.add('uebertrag-add');
+        uZehner.textContent = '¹';
+        uZehner.title = 'Übertrag von Einern';
+      }
+      container.appendChild(uZehner);
+
+      // Einer-Spalte: kein Übertrag möglich (Einer ist die erste Stelle)
+      const uEiner = document.createElement('div');
+      uEiner.classList.add('uebertrag-zelle'); // leere Zelle als Platzhalter
+      container.appendChild(uEiner);
+    }
+
+
+    // ══════════════════════════════════════════════════════════════
+    // ABSCHNITT 2: SCHRIFTLICHE SUBTRAKTION
+    // ══════════════════════════════════════════════════════════════
+
+    // Globale Zustandsvariablen für den Subtraktions-Abschnitt
+    let subA = 0;       // subA: Minuend (die größere Zahl, von der abgezogen wird)
+    let subB = 0;       // subB: Subtrahend (die Zahl, die abgezogen wird)
+    let subScore = 0;   // subScore: Anzahl der richtig gelösten Subtraktions-Aufgaben
+    let subGesperrt = false; // subGesperrt: verhindert Doppelklicks
+
+    /**
+     * newSubtraktion() – Generiert eine neue Subtraktions-Aufgabe.
+     * Stellt sicher, dass das Ergebnis mindestens 100 beträgt (dreistellig).
+     */
+    function newSubtraktion() {
+      subGesperrt = false; // Sperre aufheben
+
+      // subA: Zufallszahl zwischen 300 und 999
+      // Math.floor(Math.random() * 700) + 300: gleichmäßig verteilt in [300, 999]
+      subA = Math.floor(Math.random() * 700) + 300;
+
+      // subB: Zufallszahl, so dass subA - subB >= 100
+      // Maximum für subB: subA - 100 (damit Differenz ≥ 100)
+      const maxSubB = subA - 100; // größtmögliches subB
+      // subB zwischen 100 und maxSubB
+      subB = Math.floor(Math.random() * (maxSubB - 100 + 1)) + 100;
+
+      // Stellen beider Zahlen zerlegen
+      const stellenA = stellenZerlegen(subA); // Stellen des Minuenden
+      const stellenB = stellenZerlegen(subB); // Stellen des Subtrahenden
+
+      // Kopfzeile (H, Z, E) aufbauen
+      kopfReiheAufbauen('sub-kopf-reihe');
+
+      // Entleihen-Reihe leeren (wird nach Prüfung befüllt)
+      document.getElementById('sub-uebertrag-reihe').innerHTML = '';
+
+      // Minuend anzeigen (ohne Vorzeichen, keine Eingabe)
+      rechenreiheAufbauen('sub-zahl-a-reihe', '', stellenA.h, stellenA.z, stellenA.e, false);
+
+      // Subtrahend anzeigen (mit '−'-Vorzeichen, keine Eingabe)
+      rechenreiheAufbauen('sub-zahl-b-reihe', '−', stellenB.h, stellenB.z, stellenB.e, false);
+
+      // Ergebnis-Reihe mit Eingabefeldern
+      rechenreiheAufbauen('sub-ergebnis-reihe', '', 0, 0, 0, true);
+
+      // Feedback leeren
+      const feedback = document.getElementById('sub-feedback');
+      feedback.textContent = '';
+      feedback.className = 'text-center text-sm font-semibold min-h-6';
+
+      // Erstes Eingabefeld fokussieren
+      setTimeout(() => {
+        const erstesInput = document.getElementById('sub-input-h');
+        if (erstesInput) erstesInput.focus();
+      }, 0);
+    }
+
+    /**
+     * checkSubtraktion() – Prüft die eingegebenen Ergebnis-Stellen für die Subtraktion.
+     * Zeigt Entleihen-Indikatoren an.
+     */
+    function checkSubtraktion() {
+      if (subGesperrt) return; // Sperre prüfen: falls aktiv, sofort verlassen
+
+      // Korrekte Differenz berechnen
+      const differenz = subA - subB; // einfache Subtraktion
+      const korrekt = stellenZerlegen(differenz); // Stellen der Differenz
+
+      // Eingaben auslesen und in Zahlen umwandeln
+      const eingabeH = parseInt(document.getElementById('sub-input-h').value) || 0;
+      const eingabeZ = parseInt(document.getElementById('sub-input-z').value) || 0;
+      const eingabeE = parseInt(document.getElementById('sub-input-e').value) || 0;
+
+      // Stellen vergleichen
+      const hRichtig = eingabeH === korrekt.h;
+      const zRichtig = eingabeZ === korrekt.z;
+      const eRichtig = eingabeE === korrekt.e;
+
+      // Eingabefelder einfärben
+      farbeSetzen('sub-input-h', hRichtig);
+      farbeSetzen('sub-input-z', zRichtig);
+      farbeSetzen('sub-input-e', eRichtig);
+
+      // Entleihen berechnen: wann muss geliehen werden?
+      const stellenA = stellenZerlegen(subA); // Stellen des Minuenden
+      const stellenB = stellenZerlegen(subB); // Stellen des Subtrahenden
+
+      // Muss bei den Einern geliehen werden? (wenn obere Einerstelle < untere)
+      const leihEZ = stellenA.e < stellenB.e ? 1 : 0;
+      // ternärer Operator: 1 wenn geliehen, 0 wenn nicht
+
+      // Muss bei den Zehnern geliehen werden?
+      // Effektive Zehnerstelle des Minuenden nach eventuellem Leihen für Einer
+      const effektivZA = stellenA.z - leihEZ; // Zehnerstelle vermindert sich um 1 wenn geliehen
+      const leihZH = effektivZA < stellenB.z ? 1 : 0;
+
+      // Entleihen-Indikatoren anzeigen
+      entleihenReiheAnzeigen('sub-uebertrag-reihe', leihZH, leihEZ);
+
+      // Feedback anzeigen
+      const feedback = document.getElementById('sub-feedback');
+
+      if (hRichtig && zRichtig && eRichtig) {
+        // Alle Stellen korrekt
+        subScore++;
+        scoreAnzeigen('sub-score-display', subScore, 'pop-anim');
+
+        feedback.textContent = '✓ Richtig! Sehr gut!';
+        feedback.className = 'text-center text-sm font-semibold min-h-6 text-emerald-400 feedback-anim';
+
+        subGesperrt = true; // Eingaben sperren
+
+        // setTimeout(fn, 1500): nach 1,5 Sekunden neue Aufgabe laden
+        setTimeout(() => newSubtraktion(), 1500);
+      } else {
+        feedback.textContent = `✗ Falsch. Die richtige Antwort ist ${korrekt.h}${korrekt.z}${korrekt.e} (${differenz})`;
+        feedback.className = 'text-center text-sm font-semibold min-h-6 text-rose-400 feedback-anim';
+
+        subGesperrt = true;
+
+        // setTimeout(fn, 2000): nach 2 Sekunden neue Aufgabe laden
+        setTimeout(() => newSubtraktion(), 2000);
+      }
+    }
+
+    /**
+     * entleihenReiheAnzeigen(containerId, leihZH, leihEZ)
+     * Zeigt Entleihen-Indikatoren über den Stellen des Minuenden.
+     */
+    function entleihenReiheAnzeigen(containerId, leihZH, leihEZ) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = ''; // Container leeren
+
+      // Vorzeichen-Platzhalter
+      const platz = document.createElement('div');
+      platz.classList.add('w-8', 'flex-shrink-0');
+      container.appendChild(platz);
+
+      // Hunderter-Spalte: Entleihen-Indikator (falls Zehnerstelle leiht)
+      const lHundert = document.createElement('div');
+      lHundert.classList.add('uebertrag-zelle');
+      if (leihZH > 0) {
+        lHundert.classList.add('uebertrag-sub'); // uebertrag-sub: rose/rote Farbe
+        lHundert.textContent = '−1';             // Hunderter wird um 1 vermindert
+        lHundert.title = 'Hunderter wird geliehen';
+      }
+      container.appendChild(lHundert);
+
+      // Zehner-Spalte: Entleihen-Indikator (falls Einerstelle leiht)
+      const lZehner = document.createElement('div');
+      lZehner.classList.add('uebertrag-zelle');
+      if (leihEZ > 0) {
+        lZehner.classList.add('uebertrag-sub');
+        lZehner.textContent = '−1';
+        lZehner.title = 'Zehner wird geliehen';
+      }
+      container.appendChild(lZehner);
+
+      // Einer-Spalte: kein Leihen nötig (Einer leiht von Zehnern, nicht umgekehrt)
+      const lEiner = document.createElement('div');
+      lEiner.classList.add('uebertrag-zelle'); // leerer Platzhalter
+      container.appendChild(lEiner);
+    }
+
+
+    // ══════════════════════════════════════════════════════════════
+    // ABSCHNITT 3: GEMISCHTES QUIZ
+    // ══════════════════════════════════════════════════════════════
+
+    // Globale Zustandsvariablen für das gemischte Quiz
+    let gemischtA = 0;           // gemischtA: erste Zahl der aktuellen Aufgabe
+    let gemischtB = 0;           // gemischtB: zweite Zahl der aktuellen Aufgabe
+    let gemischtMode = 'add';    // gemischtMode: 'add' für Addition, 'sub' für Subtraktion
+    let gemischtScore = 0;       // gemischtScore: Anzahl richtiger Antworten
+    let gemischtFrage = 1;       // gemischtFrage: aktuelle Frage (1 bis 10)
+    let gemischtGesperrt = false; // gemischtGesperrt: verhindert Doppelklicks
+
+    /**
+     * newGemischt() – Generiert eine neue gemischte Aufgabe.
+     * Wählt zufällig Addition oder Subtraktion.
+     */
+    function newGemischt() {
+      gemischtGesperrt = false; // Sperre aufheben
+
+      // Math.random() < 0.5: mit 50% Wahrscheinlichkeit Addition oder Subtraktion
+      gemischtMode = Math.random() < 0.5 ? 'add' : 'sub';
+
+      if (gemischtMode === 'add') {
+        // Additions-Aufgabe generieren
+        gemischtA = Math.floor(Math.random() * 400) + 100; // 100 bis 499
+        const maxB = Math.min(499, 999 - gemischtA);       // Summe ≤ 999
+        gemischtB = Math.floor(Math.random() * (maxB - 100 + 1)) + 100; // 100 bis maxB
+      } else {
+        // Subtraktions-Aufgabe generieren
+        gemischtA = Math.floor(Math.random() * 700) + 300; // 300 bis 999
+        const maxSubB = gemischtA - 100;                   // Differenz ≥ 100
+        gemischtB = Math.floor(Math.random() * (maxSubB - 100 + 1)) + 100;
+      }
+
+      // Aufgabe als Text darstellen
+      const aufgabeEl = document.getElementById('gemischt-aufgabe');
+      // Template-Literal: fügt Variablen in den String ein
+      const vorzeichen = gemischtMode === 'add' ? '+' : '−'; // Unicode-Minus für bessere Optik
+      aufgabeEl.textContent = `${gemischtA} ${vorzeichen} ${gemischtB} = ?`;
+
+      // Eingabefeld leeren und fokussieren
+      const input = document.getElementById('gemischt-input');
+      input.value = '';                 // value = '': leert das Eingabefeld
+      input.className = input.className // Klassen unverändert lassen
+        .replace(' border-emerald-400', '') // grünen Rahmen entfernen
+        .replace(' border-rose-400', '');   // roten Rahmen entfernen
+      // .replace(): ersetzt den ersten Treffer im String durch einen anderen String
+
+      // Rahmen zurücksetzen auf Standard
+      input.style.borderColor = ''; // inline-Stil entfernen
+
+      // Klassen für Rahmenfarbe zurücksetzen
+      input.classList.remove('border-emerald-400', 'border-rose-400');
+      // classList.remove(): entfernt CSS-Klassen vom Element
+
+      // Standard-Rahmenfarbe wiederherstellen
+      input.classList.add('border-slate-600');
+
+      // Feedback leeren
+      const feedback = document.getElementById('gemischt-feedback');
+      feedback.textContent = '';
+      feedback.className = 'text-center text-sm font-semibold min-h-6 mb-4';
+
+      // Fortschrittsanzeige aktualisieren
+      fortschrittAktualisieren();
+
+      // Eingabefeld fokussieren
+      setTimeout(() => input.focus(), 50); // 50ms: kurze Verzögerung für sauberes Rendering
+    }
+
+    /**
+     * checkGemischt() – Prüft die eingegebene Antwort im gemischten Quiz.
+     */
+    function checkGemischt() {
+      if (gemischtGesperrt) return; // Sperre: verhindert mehrfaches Prüfen
+
+      // Korrekte Antwort berechnen
+      const korrektesErgebnis = gemischtMode === 'add'
+        ? gemischtA + gemischtB  // Addition
+        : gemischtA - gemischtB; // Subtraktion
+
+      // Eingabe auslesen: parseInt wandelt den String in eine ganze Zahl um
+      const eingabe = parseInt(document.getElementById('gemischt-input').value);
+
+      // Feedback-Element
+      const feedback = document.getElementById('gemischt-feedback');
+      const input = document.getElementById('gemischt-input');
+
+      if (eingabe === korrektesErgebnis) {
+        // Antwort korrekt: grüner Rahmen und Erfolgs-Feedback
+        input.classList.remove('border-slate-600');      // Standardrahmen entfernen
+        input.classList.add('border-emerald-400');       // grüner Rahmen hinzufügen
+        feedback.textContent = '✓ Richtig!';
+        feedback.className = 'text-center text-sm font-semibold min-h-6 mb-4 text-emerald-400 feedback-anim';
+
+        gemischtScore++; // Punktzahl erhöhen
+
+        // Punktzahl-Anzeige aktualisieren (z.B. "3/10")
+        document.getElementById('gemischt-score-display').textContent = `${gemischtScore}/10`;
+      } else {
+        // Antwort falsch: roter Rahmen und Fehler-Feedback
+        input.classList.remove('border-slate-600');
+        input.classList.add('border-rose-400');          // roter Rahmen hinzufügen
+        feedback.textContent = `✗ Falsch. Richtig wäre: ${korrektesErgebnis}`;
+        feedback.className = 'text-center text-sm font-semibold min-h-6 mb-4 text-rose-400 feedback-anim';
+      }
+
+      gemischtGesperrt = true; // Eingaben sperren bis zur nächsten Aufgabe
+
+      // Nach 10 Fragen: Zusammenfassung anzeigen; sonst: nächste Frage laden
+      if (gemischtFrage >= 10) {
+        // setTimeout(fn, 1200): nach 1,2 Sekunden Zusammenfassung einblenden
+        setTimeout(() => zusammenfassungZeigen(), 1200);
+      } else {
+        gemischtFrage++; // Fragen-Zähler erhöhen
+        // setTimeout(fn, 1200): nach 1,2 Sekunden nächste Aufgabe laden
+        setTimeout(() => newGemischt(), 1200);
+      }
+    }
+
+    /**
+     * fortschrittAktualisieren() – Aktualisiert Fortschrittsbalken und -text.
+     */
+    function fortschrittAktualisieren() {
+      // Prozentwert berechnen: (aktuelle Frage - 1) von 10 Fragen
+      const prozent = ((gemischtFrage - 1) / 10) * 100;
+      // Fortschrittsbalken-Breite setzen
+      document.getElementById('gemischt-fortschritt').style.width = prozent + '%';
+      // style.width: inline-CSS-Eigenschaft für die Breite
+      // + '%': Prozentzeichen anhängen
+
+      // Fortschrittstext aktualisieren
+      document.getElementById('gemischt-fortschritt-text').textContent
+        = `Frage ${gemischtFrage} von 10`;
+      // textContent: setzt den sichtbaren Text ohne HTML
+    }
+
+    /**
+     * zusammenfassungZeigen() – Blendet die Ergebnis-Zusammenfassung ein.
+     * Erscheint nach Beantwortung aller 10 Fragen.
+     */
+    function zusammenfassungZeigen() {
+      // Quiz-Hauptbereich ausblenden
+      document.getElementById('gemischt-aufgabe').classList.add('hidden');
+      // classList.add('hidden'): fügt 'display:none' hinzu → Element unsichtbar
+
+      document.getElementById('gemischt-input').classList.add('hidden');
+      document.getElementById('gemischt-feedback').classList.add('hidden');
+      document.getElementById('gemischt-fortschritt-text').classList.add('hidden');
+
+      // Fortschrittsbalken auf 100% setzen
+      document.getElementById('gemischt-fortschritt').style.width = '100%';
+
+      // Zusammenfassungs-Bereich einblenden
+      const zusammenfassung = document.getElementById('gemischt-zusammenfassung');
+      zusammenfassung.classList.remove('hidden'); // hidden entfernen → Element sichtbar
+      zusammenfassung.classList.add('feedback-anim'); // Einblend-Animation
+
+      // Ergebnis-Text anpassen je nach Punktzahl
+      const ergebnisText = document.getElementById('gemischt-ergebnis-text');
+      const ergebnisDetails = document.getElementById('gemischt-ergebnis-details');
+      const emoji = document.getElementById('gemischt-emoji');
+
+      if (gemischtScore >= 9) {
+        // Sehr gut: 9 oder 10 Punkte
+        emoji.textContent = '🏆';
+        ergebnisText.textContent = `Ausgezeichnet! ${gemischtScore} von 10 richtig!`;
+        ergebnisText.className = 'text-xl font-bold text-emerald-400 mb-2'; // grüne Farbe
+        ergebnisDetails.textContent = 'Du beherrschst das schriftliche Rechnen perfekt!';
+      } else if (gemischtScore >= 7) {
+        // Gut: 7 oder 8 Punkte
+        emoji.textContent = '⭐';
+        ergebnisText.textContent = `Gut gemacht! ${gemischtScore} von 10 richtig!`;
+        ergebnisText.className = 'text-xl font-bold text-yellow-400 mb-2'; // gelbe Farbe
+        ergebnisDetails.textContent = 'Noch ein bisschen Übung und du schaffst es perfekt!';
+      } else if (gemischtScore >= 5) {
+        // Befriedigend: 5 oder 6 Punkte
+        emoji.textContent = '👍';
+        ergebnisText.textContent = `${gemischtScore} von 10 richtig – weiter so!`;
+        ergebnisText.className = 'text-xl font-bold text-blue-400 mb-2'; // blaue Farbe
+        ergebnisDetails.textContent = 'Übe noch die Aufgaben mit Übertrag und Entleihen.';
+      } else {
+        // Noch Übungsbedarf: unter 5 Punkte
+        emoji.textContent = '📚';
+        ergebnisText.textContent = `${gemischtScore} von 10 richtig – übe weiter!`;
+        ergebnisText.className = 'text-xl font-bold text-rose-400 mb-2'; // rötliche Farbe
+        ergebnisDetails.textContent = 'Schau dir die Theorie-Box unten an und probiere es nochmal!';
+      }
+    }
+
+    /**
+     * resetGemischt() – Setzt das gemischte Quiz zurück und startet neu.
+     */
+    function resetGemischt() {
+      // Alle Quiz-Variablen auf Ausgangswert setzen
+      gemischtScore = 0;  // Punktzahl zurücksetzen
+      gemischtFrage = 1;  // Fragen-Zähler zurücksetzen
+      gemischtGesperrt = false; // Sperre aufheben
+
+      // Punktzahl-Anzeige zurücksetzen
+      document.getElementById('gemischt-score-display').textContent = '0/10';
+
+      // Zusammenfassung verstecken
+      const zusammenfassung = document.getElementById('gemischt-zusammenfassung');
+      zusammenfassung.classList.add('hidden');
+      zusammenfassung.classList.remove('feedback-anim'); // Animation entfernen
+
+      // Quiz-Elemente wieder einblenden
+      document.getElementById('gemischt-aufgabe').classList.remove('hidden');
+      document.getElementById('gemischt-input').classList.remove('hidden');
+      document.getElementById('gemischt-feedback').classList.remove('hidden');
+      document.getElementById('gemischt-fortschritt-text').classList.remove('hidden');
+
+      // Fortschrittsbalken zurücksetzen
+      document.getElementById('gemischt-fortschritt').style.width = '0%';
+
+      // Erste Aufgabe des neuen Durchgangs laden
+      newGemischt();
+    }
+
+
+    // ══════════════════════════════════════════════════════════════
+    // HILFSFUNKTIONEN (werden von mehreren Abschnitten genutzt)
+    // ══════════════════════════════════════════════════════════════
+
+    /**
+     * farbeSetzen(inputId, richtig) – Färbt ein Eingabefeld grün oder rot.
+     * richtig=true → Emerald (grün); richtig=false → Rose (rot)
+     */
+    function farbeSetzen(inputId, richtig) {
+      const el = document.getElementById(inputId); // Element anhand der ID finden
+      if (!el) return; // Sicherheitscheck: falls Element nicht existiert, abbrechen
+
+      // Erst alle Farb-Klassen entfernen, dann neue hinzufügen
+      el.classList.remove('input-richtig', 'input-falsch');
+      // classList.remove(): entfernt mehrere Klassen auf einmal
+
+      if (richtig) {
+        el.classList.add('input-richtig'); // input-richtig: grüner Rahmen und Schrift
+      } else {
+        el.classList.add('input-falsch');  // input-falsch: roter Rahmen und Schrift
+      }
+    }
+
+    /**
+     * scoreAnzeigen(elementId, wert, animKlasse)
+     * Aktualisiert die Punktzahl-Anzeige und spielt eine kurze Animation ab.
+     */
+    function scoreAnzeigen(elementId, wert, animKlasse) {
+      const el = document.getElementById(elementId);
+      el.textContent = wert; // textContent: neue Punktzahl eintragen
+
+      // Animation: Klasse hinzufügen, nach 400ms wieder entfernen
+      el.classList.add(animKlasse);           // Animations-Klasse hinzufügen
+      // setTimeout(fn, 400): entfernt die Klasse nach 0,4 Sekunden
+      setTimeout(() => el.classList.remove(animKlasse), 400);
+    }
+
+
+    // ══════════════════════════════════════════════════════════════
+    // INITIALISIERUNG: Beim Laden der Seite alle Aufgaben starten
+    // ══════════════════════════════════════════════════════════════
+
+    // Alle drei Abschnitte mit einer ersten Aufgabe befüllen
+    // Die Funktionen werden sofort beim Laden der Seite aufgerufen
+    newAddition();    // Erste Additions-Aufgabe generieren und anzeigen
+    newSubtraktion(); // Erste Subtraktions-Aufgabe generieren und anzeigen
+    newGemischt();    // Erste gemischte Aufgabe generieren und anzeigen
+
+  </script>
+</body>
+</html>

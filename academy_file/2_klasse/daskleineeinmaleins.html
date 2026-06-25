@@ -1,0 +1,1494 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <!-- Zeichenkodierung: UTF-8 damit Umlaute (ä, ö, ü) korrekt angezeigt werden -->
+  <meta charset="UTF-8" />
+  <!-- Viewport: Seite passt sich an Handys und Tablets an -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Seitentitel im Browser-Tab -->
+  <title>Das kleine Einmaleins – Mathe-Akademie</title>
+
+  <!-- Favicon: kleines Symbol im Browser-Tab -->
+  <link rel="icon" href="../../favicon.ico" />
+  <!-- Apple Touch Icon: Symbol für iPhone-Homescreen -->
+  <link rel="apple-touch-icon" href="../../apple-touch-icon.png" />
+  <!-- Web-App-Manifest: Metadaten für „Auf Startseite hinzufügen" -->
+  <link rel="manifest" href="../../site.webmanifest" />
+
+  <!-- Tailwind CSS via CDN: Ermöglicht alle Utility-Klassen direkt im HTML -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Eigenes Stylesheet (zwei Ebenen höher), mit Version um Browser-Cache zu umgehen -->
+  <link rel="stylesheet" href="../../style.css?v=1.0" />
+
+  <style>
+    /*
+     * Eigene CSS-Regeln, die Tailwind nicht abdeckt
+     * ─────────────────────────────────────────────
+     */
+
+    /* ── Einmaleins-Tabelle ─────────────────────────────────────────── */
+
+    /* Alle Zellen in der Einmaleins-Tabelle: Grundstil */
+    .em-cell {
+      /* Übergänge: Hintergrundfarbe und Textfarbe wechseln weich */
+      transition: background-color 0.18s, color 0.18s;
+      cursor: default;          /* Normaler Mauszeiger (kein Hand-Symbol) */
+      text-align: center;       /* Zahl immer mittig in der Zelle */
+      font-variant-numeric: tabular-nums; /* Alle Ziffern gleich breit → kein Layout-Sprung */
+    }
+
+    /* Kopfzeilen-Zellen (Zeile 1 und Spalte 1): klickbar hervorheben */
+    .em-header {
+      cursor: pointer;          /* Hand-Symbol → zeigt an: klickbar */
+      font-weight: 700;         /* fett */
+      transition: background-color 0.15s, color 0.15s;
+    }
+
+    /* Kopfzeilen-Zelle beim Drüberfahren */
+    .em-header:hover {
+      background-color: rgba(52, 211, 153, 0.15); /* emerald, sehr dezent */
+      color: #6ee7b7;           /* emerald-300: helles Grün */
+    }
+
+    /* Aktiver Reihen-Header (die geklickte Reihe) */
+    .em-header.aktiv-header {
+      background-color: rgba(52, 211, 153, 0.25); /* emerald, etwas kräftiger */
+      color: #34d399;           /* emerald-400 */
+    }
+
+    /* Zellen in der aktiven Reihe: schwaches grünes Highlight */
+    .em-cell.reihe-aktiv {
+      background-color: rgba(52, 211, 153, 0.12); /* emerald-400 / 12% */
+      color: #6ee7b7;           /* emerald-300 */
+    }
+
+    /* Die Ergebnis-Zelle der aktiven Reihe × aktiver Spalte: kräftiges Highlight */
+    .em-cell.ergebnis-aktiv {
+      background-color: #34d399; /* emerald-400: volles Grün */
+      color: #0f172a;            /* slate-950: sehr dunkler Text → gut lesbar auf Grün */
+      font-weight: 700;
+      border-radius: 6px;        /* leicht abgerundete Ecken für die Hervorhebung */
+    }
+
+    /* ── Reihen-üben (Section 2) ────────────────────────────────────── */
+
+    /* Eingabefeld: Fokus-Ring ersetzen durch eigene emerald-Umrandung */
+    .ueben-input:focus {
+      outline: none;
+      border-color: #34d399;    /* emerald-400 */
+      box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.25); /* grüner Leuchtring */
+    }
+
+    /* Reihen-Auswahl-Button: Standard */
+    .reihen-btn {
+      transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+    }
+
+    /* Reihen-Auswahl-Button: aktiv ausgewählt */
+    .reihen-btn.aktiv {
+      background-color: #059669; /* emerald-600 */
+      color: #ffffff;
+      border-color: #34d399;     /* emerald-400 */
+    }
+
+    /* ── Feedback-Animation ─────────────────────────────────────────── */
+
+    /* Feedback-Box: einblenden mit leichtem Hochgleiten */
+    .feedback-box {
+      animation: fadeIn 0.22s ease;
+    }
+
+    /* Keyframe: von unsichtbar+unten nach sichtbar+normal */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Blitzrechnen (Section 3) ───────────────────────────────────── */
+
+    /* Fortschrittsbalken-Füllung: Breite wird per JS gesteuert */
+    #blitz-progress-bar {
+      transition: width 0.4s ease; /* weicher Übergang wenn Breite sich ändert */
+    }
+
+    /* Puls-Animation: zieht Aufmerksamkeit auf den „Nochmal"-Button */
+    @keyframes pulsGreen {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.45); }
+      50%       { box-shadow: 0 0 0 9px rgba(52, 211, 153, 0); }
+    }
+    .puls-gruen {
+      animation: pulsGreen 1.5s ease-in-out infinite;
+    }
+
+    /* ── Ergebnis-Karte im Blitzrechnen ────────────────────────────── */
+    /* Große zentrierte Anzeige der Endpunktzahl */
+    #blitz-ergebnis-anzeige {
+      font-size: 4rem;           /* sehr große Zahl */
+      line-height: 1;
+      font-weight: 800;
+    }
+  </style>
+</head>
+
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col">
+  <!--
+    bg-slate-950 → sehr dunkler Hintergrund (fast schwarz)
+    text-slate-100 → sehr heller Text (fast weiß)
+    min-h-screen → mindestens so hoch wie der Bildschirm
+    flex flex-col → Inhalte übereinander anordnen (Flexbox, senkrecht)
+  -->
+
+  <!-- Topbar-Container: wird per JavaScript mit dem Inhalt von ../../topbar.html befüllt -->
+  <div id="topbar-container"></div>
+
+  <!-- Haupt-Wrapper: Inhalte horizontal zentrieren, Abstand oben/unten -->
+  <main class="flex-1 max-w-4xl mx-auto w-full px-4 py-10">
+    <!--
+      flex-1 → nimmt den verfügbaren Platz zwischen Topbar und Footer ein
+      max-w-4xl → maximale Breite ~896px, damit Zeilen nicht zu lang werden
+      mx-auto → zentriert den Block horizontal (left + right margin: auto)
+      w-full → nutzt die volle verfügbare Breite bis max-w-4xl
+      px-4 → waagerechter Innenabstand (16px links & rechts) für schmale Bildschirme
+      py-10 → senkrechter Innenabstand (40px oben & unten)
+    -->
+
+    <!-- Zurück-Link zur Akademie-Übersicht -->
+    <a
+      href="../../academy.html"
+      class="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-emerald-300 mb-8 transition-colors"
+    >
+      <!--
+        inline-flex → Link verhält sich wie ein Inline-Block, Inhalt als Flex
+        items-center → Pfeil und Text vertikal zentriert
+        gap-2 → 8px Abstand zwischen Pfeil und Text
+        text-sm → kleine Schrift (14px)
+        text-slate-400 → mittleres Grau
+        hover:text-emerald-300 → bei Hover: helles Grün
+        mb-8 → 32px Abstand nach unten
+        transition-colors → weicher Farbübergang beim Hover
+      -->
+      ← Zurück zur Akademie
+    </a>
+
+    <!-- ═══════════════════════════════════════════
+         SEITENÜBERSCHRIFT
+         ═══════════════════════════════════════════ -->
+    <header class="mb-10">
+      <!-- mb-10 → 40px Abstand nach unten -->
+
+      <!-- Kategorie-Badge -->
+      <span class="inline-block text-xs font-semibold tracking-widest uppercase text-emerald-400 mb-3">
+        <!--
+          inline-block → kein Zeilenumbruch, aber Box-Eigenschaften
+          text-xs → sehr kleine Schrift (12px)
+          font-semibold → halbfett
+          tracking-widest → sehr großer Buchstabenabstand
+          uppercase → Großbuchstaben
+          text-emerald-400 → sattes Grün
+          mb-3 → 12px Abstand nach unten
+        -->
+        Klasse 2 · Grundlagen
+      </span>
+
+      <!-- Haupt-Seitenüberschrift -->
+      <h1 class="text-4xl font-bold text-white mb-3">
+        <!-- text-4xl → große Schrift (36px), font-bold → fett, mb-3 → kleiner Abstand nach unten -->
+        Das kleine Einmaleins
+      </h1>
+
+      <!-- Kurze Beschreibung des Lerninhalts -->
+      <p class="text-slate-400 text-lg max-w-xl">
+        <!--
+          text-slate-400 → mittleres Grau
+          text-lg → etwas größere Schrift (18px)
+          max-w-xl → max. Breite ~512px damit Text nicht zu breit wird
+        -->
+        Lerne die Einmaleins-Reihen 1 bis 10 – erkunde die Tabelle, übe einzelne Reihen und teste dich beim Blitzrechnen!
+      </p>
+    </header>
+
+    <!-- ═══════════════════════════════════════════
+         SECTION 1: EINMALEINS-TABELLE (10×10)
+         ═══════════════════════════════════════════ -->
+    <section
+      class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6 mb-8"
+      aria-labelledby="tabelle-heading"
+    >
+      <!--
+        rounded-3xl → sehr abgerundete Ecken (24px)
+        border border-slate-800 → dünner dunkler Rahmen
+        bg-slate-900/30 → leicht transparentes Dunkelblau als Karten-Hintergrund
+        p-6 → Innenabstand 24px auf allen Seiten
+        mb-8 → 32px Abstand nach unten
+        aria-labelledby → Barrierefreiheit: verknüpft Sektion mit ihrer Überschrift
+      -->
+
+      <!-- Abschnitts-Header: Icon + Titel + Beschreibung -->
+      <div class="flex items-start gap-4 mb-6">
+        <!--
+          flex → nebeneinander anordnen
+          items-start → oben ausrichten
+          gap-4 → 16px Abstand zwischen Icon und Text
+          mb-6 → 24px Abstand nach unten
+        -->
+
+        <!-- Emoji als visueller Anker -->
+        <div class="text-3xl select-none" aria-hidden="true">🔢</div>
+
+        <div>
+          <h2 id="tabelle-heading" class="text-xl font-bold text-emerald-300 mb-1">
+            <!-- text-xl → 20px, font-bold → fett, text-emerald-300 → helles Grün -->
+            Einmaleins-Tabelle
+          </h2>
+          <p class="text-slate-400 text-sm">
+            <!-- text-sm → 14px, text-slate-400 → mittleres Grau -->
+            Klicke auf eine Reihen-Zahl links, um die gesamte Reihe hervorzuheben.
+          </p>
+        </div>
+      </div>
+
+      <!-- Horizontales Scrollen für schmale Bildschirme -->
+      <div class="overflow-x-auto">
+        <!--
+          overflow-x-auto → horizontale Scrollleiste erscheint wenn Tabelle
+          breiter ist als der Container (z. B. auf Mobilgeräten)
+        -->
+
+        <!-- Die eigentliche 10×10-Multiplikationstabelle -->
+        <!-- id="em-tabelle" → per JavaScript ansprechbar -->
+        <table
+          id="em-tabelle"
+          class="border-collapse text-sm mx-auto"
+          aria-label="Einmaleins-Tabelle 1 bis 10"
+        >
+          <!--
+            border-collapse → verhindert doppelte Rahmen zwischen benachbarten Zellen
+            text-sm → 14px Schrift (kompakter für die Tabelle)
+            mx-auto → Tabelle horizontal zentrieren
+          -->
+
+          <!-- Kopfzeile: leere Ecke + Spaltennummern 1–10 -->
+          <thead>
+            <tr id="em-kopfzeile">
+              <!--
+                Die erste Zelle (oben links) ist leer (leere Ecke der Tabelle)
+                daneben: die Spalten-Überschriften 1 bis 10
+              -->
+              <!-- Leere Ecke oben links -->
+              <th class="w-10 h-10 text-slate-600 text-xs" aria-hidden="true">×</th>
+
+              <!-- Spalten-Überschriften 1 bis 10 – werden per JS eingefügt -->
+              <!-- (Platzhalter; JS füllt die Tabelle komplett) -->
+            </tr>
+          </thead>
+
+          <!-- Tabellenrumpf: Zeilen 1–10 – wird per JS befüllt -->
+          <tbody id="em-body">
+            <!-- Wird von buildEinmaleinsTabelle() gefüllt -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Info-Zeile: zeigt die aktuelle Reihe an -->
+      <div
+        id="tabelle-info"
+        class="mt-4 min-h-[2rem] text-center text-slate-400 text-sm"
+        aria-live="polite"
+      >
+        <!--
+          mt-4 → 16px Abstand oben
+          min-h-[2rem] → Mindesthöhe damit Layout nicht springt
+          text-center → zentriert
+          text-slate-400 → mittleres Grau
+          text-sm → 14px
+          aria-live="polite" → Screenreader liest Änderungen vor
+        -->
+        <!-- Tipp-Text beim Laden -->
+        Klicke auf eine Zahl in der linken Spalte, um eine Reihe auszuwählen.
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════
+         SECTION 2: REIHEN ÜBEN
+         ═══════════════════════════════════════════ -->
+    <section
+      class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6 mb-8"
+      aria-labelledby="ueben-heading"
+    >
+      <!-- Abschnitts-Header -->
+      <div class="flex items-start gap-4 mb-6">
+        <div class="text-3xl select-none" aria-hidden="true">✏️</div>
+        <div>
+          <h2 id="ueben-heading" class="text-xl font-bold text-emerald-300 mb-1">
+            Reihen üben
+          </h2>
+          <p class="text-slate-400 text-sm">
+            Wähle eine Einmaleins-Reihe und beantworte die Aufgaben.
+          </p>
+        </div>
+      </div>
+
+      <!-- Reihen-Auswahl: Buttons 2× bis 10× -->
+      <div
+        class="flex flex-wrap gap-2 mb-6"
+        role="group"
+        aria-label="Einmaleins-Reihe auswählen"
+      >
+        <!--
+          flex flex-wrap → Buttons nebeneinander, umbrechen wenn kein Platz
+          gap-2 → 8px Abstand zwischen den Buttons
+          mb-6 → 24px Abstand nach unten
+          role="group" → Barrierefreiheit: Gruppe zusammengehöriger Buttons
+        -->
+
+        <!-- Button für jede Reihe 2–10 (wird per JS erzeugt und eingefügt) -->
+        <!-- Platzhalter: JavaScript füllt diesen Container -->
+        <div id="reihen-buttons">
+          <!-- Wird von buildReihenButtons() befüllt -->
+        </div>
+      </div>
+
+      <!-- Aufgaben-Karte -->
+      <div class="rounded-2xl border border-slate-700 bg-slate-800/50 p-6 flex flex-col items-center gap-5">
+        <!--
+          rounded-2xl → abgerundete Ecken (16px)
+          border border-slate-700 → dezenter Rahmen
+          bg-slate-800/50 → halbtransparentes Dunkelblau
+          p-6 → 24px Innenabstand
+          flex flex-col items-center → Inhalt untereinander und zentriert
+          gap-5 → 20px Abstand zwischen den Elementen
+        -->
+
+        <!-- Aufgaben-Text: z. B. "2 × ? = 14" oder "3 × 7 = ?" -->
+        <div
+          id="ueben-aufgabe"
+          class="text-3xl sm:text-4xl font-bold text-white tracking-wide text-center"
+          aria-live="polite"
+        >
+          <!--
+            text-3xl sm:text-4xl → auf Mobil 30px, ab 640px 36px
+            font-bold → fett
+            text-white → weißer Text
+            tracking-wide → etwas mehr Buchstabenabstand
+            text-center → zentriert
+            aria-live → Screenreader liest neue Aufgaben vor
+          -->
+          <!-- Wird von newEinmaleinsAufgabe() befüllt -->
+        </div>
+
+        <!-- Eingabefeld für die Antwort -->
+        <input
+          id="ueben-input"
+          type="number"
+          min="1"
+          max="100"
+          placeholder="?"
+          class="ueben-input w-28 text-center text-3xl font-bold rounded-2xl border-2 border-slate-600 bg-slate-900 text-white py-3 transition-all"
+          aria-label="Antwort eingeben"
+        />
+        <!--
+          ueben-input → eigene CSS-Klasse für Fokus-Stil (oben im <style>-Block)
+          w-28 → Breite 112px
+          text-center → Eingabe zentriert
+          text-3xl font-bold → große, fette Eingabe
+          rounded-2xl → stark abgerundete Ecken
+          border-2 border-slate-600 → sichtbarer Rahmen
+          bg-slate-900 → dunkler Hintergrund
+          text-white → weiße Eingabeschrift
+          py-3 → vertikaler Innenabstand 12px
+          transition-all → weiche Übergänge (auch für den Fokus-Ring)
+        -->
+
+        <!-- Prüfen-Button -->
+        <button
+          onclick="checkEinmaleins()"
+          class="px-8 py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-base transition-colors"
+        >
+          <!--
+            px-8 → horizontaler Innenabstand 32px
+            py-3 → vertikaler Innenabstand 12px
+            rounded-2xl → stark abgerundete Ecken
+            bg-emerald-500 → sattes Grün
+            hover:bg-emerald-400 → heller bei Hover
+            text-slate-950 → sehr dunkler Text (gut lesbar auf Grün)
+            font-bold → fett
+            transition-colors → weicher Übergang
+          -->
+          Prüfen ✓
+        </button>
+
+        <!-- Feedback-Text: richtig oder falsch -->
+        <div
+          id="ueben-feedback"
+          class="text-base font-semibold min-h-[1.5rem] text-center"
+          aria-live="assertive"
+        >
+          <!--
+            font-semibold → halbfett
+            min-h-[1.5rem] → Mindesthöhe verhindert Layout-Sprung
+            aria-live="assertive" → Screenreader liest sofort vor
+          -->
+        </div>
+
+        <!-- Score-Anzeige für Reihen-üben -->
+        <div class="flex items-center gap-3 text-sm text-slate-400">
+          <!-- gap-3 → 12px Abstand zwischen Label und Wert -->
+          <span>Richtig:</span>
+          <span id="ueben-score" class="text-emerald-400 font-bold text-base">0</span>
+          <!-- text-emerald-400 → grün, font-bold text-base → fett 16px -->
+          <span class="text-slate-600">|</span>
+          <!-- Trennstrich -->
+          <span>Falsch:</span>
+          <span id="ueben-score-falsch" class="text-red-400 font-bold text-base">0</span>
+          <!-- text-red-400 → rot für Fehler -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════
+         SECTION 3: BLITZRECHNEN (Speed-Quiz)
+         ═══════════════════════════════════════════ -->
+    <section
+      class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6 mb-8"
+      aria-labelledby="blitz-heading"
+    >
+      <!-- Abschnitts-Header -->
+      <div class="flex items-start gap-4 mb-6">
+        <div class="text-3xl select-none" aria-hidden="true">⚡</div>
+        <div>
+          <h2 id="blitz-heading" class="text-xl font-bold text-emerald-300 mb-1">
+            Blitzrechnen
+          </h2>
+          <p class="text-slate-400 text-sm">
+            10 gemischte Aufgaben – wie viele schaffst du?
+          </p>
+        </div>
+      </div>
+
+      <!-- Fortschrittsanzeige: Frage X von 10 + Balken -->
+      <div class="mb-5">
+        <!-- Beschriftung: "Frage 3 / 10" und Score rechts -->
+        <div class="flex justify-between items-center text-sm text-slate-400 mb-2">
+          <!--
+            flex → nebeneinander
+            justify-between → links und rechts bündig
+            items-center → vertikal zentriert
+            text-sm → 14px
+            mb-2 → 8px Abstand zum Balken
+          -->
+          <span>Frage <span id="blitz-frage-nr">1</span> / 10</span>
+          <!-- Laufender Score: 0/10 → steigt mit richtigen Antworten -->
+          <span>Score: <span id="blitz-score" class="text-emerald-400 font-bold">0/10</span></span>
+        </div>
+
+        <!-- Fortschrittsbalken-Hintergrund -->
+        <div class="w-full h-2 rounded-full bg-slate-800">
+          <!--
+            w-full → volle Breite
+            h-2 → 8px hoch
+            rounded-full → komplett rund (Pille-Form)
+            bg-slate-800 → dunkler Hintergrund
+          -->
+          <!-- Füllung: Breite wird per JS auf 0%–100% gesetzt -->
+          <div
+            id="blitz-progress-bar"
+            class="h-2 rounded-full bg-emerald-500"
+            style="width: 0%"
+          >
+            <!--
+              h-2 rounded-full → gleiche Form wie Hintergrund
+              bg-emerald-500 → grüne Füllung
+              style="width: 0%" → startet leer (wird per JS angepasst)
+            -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Quiz-Bereich (Aufgabe + Eingabe) – wird ausgeblendet wenn Ergebnis kommt -->
+      <div id="blitz-quiz-bereich" class="flex flex-col items-center gap-5">
+        <!-- flex-col → untereinander, items-center → zentriert, gap-5 → 20px Abstand -->
+
+        <!-- Aufgaben-Anzeige: z. B. "7 × 8 = ?" -->
+        <div
+          id="blitz-aufgabe"
+          class="text-4xl sm:text-5xl font-extrabold text-white tracking-wide text-center"
+          aria-live="polite"
+        >
+          <!--
+            text-4xl sm:text-5xl → 36px (Mobil) / 48px (ab 640px)
+            font-extrabold → sehr fett
+            tracking-wide → etwas mehr Buchstabenabstand
+            aria-live → Screenreader liest neue Aufgaben vor
+          -->
+          <!-- Wird von newBlitzaufgabe() befüllt -->
+        </div>
+
+        <!-- Eingabefeld für Blitz-Antwort -->
+        <input
+          id="blitz-input"
+          type="number"
+          min="1"
+          max="100"
+          placeholder="?"
+          class="ueben-input w-32 text-center text-3xl font-bold rounded-2xl border-2 border-slate-600 bg-slate-900 text-white py-3 transition-all"
+          aria-label="Antwort eingeben"
+        />
+        <!--
+          ueben-input → Fokus-Stil aus dem <style>-Block (gleicher Stil wie Reihen-üben)
+          w-32 → Breite 128px (etwas breiter für dreistellige Zahlen wie 100)
+        -->
+
+        <!-- "Prüfen"-Button -->
+        <button
+          onclick="checkBlitz()"
+          class="px-8 py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-base transition-colors"
+        >
+          Prüfen ✓
+        </button>
+
+        <!-- Feedback für die aktuelle Blitz-Aufgabe -->
+        <div
+          id="blitz-feedback"
+          class="text-base font-semibold min-h-[1.5rem] text-center"
+          aria-live="assertive"
+        >
+        </div>
+      </div>
+
+      <!-- Ergebnis-Karte: erscheint nach der 10. Frage (anfangs versteckt) -->
+      <div
+        id="blitz-ergebnis"
+        class="hidden flex-col items-center gap-6 py-4"
+      >
+        <!--
+          hidden → standardmäßig unsichtbar (Tailwind: display: none)
+          flex-col items-center → Inhalt untereinander und zentriert
+          gap-6 → 24px Abstand
+          py-4 → 16px vertikaler Innenabstand
+        -->
+
+        <!-- Emoji-Reaktion (wird per JS gesetzt) -->
+        <div id="blitz-emoji" class="text-5xl select-none" aria-hidden="true">🎉</div>
+
+        <!-- Große Punktzahl-Anzeige -->
+        <div id="blitz-ergebnis-anzeige" class="text-emerald-300">
+          <!-- Wird von showBlitzErgebnis() befüllt, z. B. "8/10" -->
+        </div>
+
+        <!-- Motivations-Text -->
+        <p id="blitz-ergebnis-text" class="text-slate-300 text-lg font-medium text-center">
+          <!-- Wird per JS gesetzt -->
+        </p>
+
+        <!-- „Nochmal spielen"-Button -->
+        <button
+          onclick="startBlitzrechnen()"
+          class="puls-gruen px-8 py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-lg transition-colors"
+        >
+          <!--
+            puls-gruen → Puls-Animation (aus dem <style>-Block)
+            bg-emerald-500 hover:bg-emerald-400 → sattes Grün, heller bei Hover
+            text-slate-950 → sehr dunkler Text
+            text-lg → 18px
+          -->
+          Nochmal spielen ↺
+        </button>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════
+         THEORIE-BOX: 3-SPALTIG
+         ═══════════════════════════════════════════ -->
+    <section aria-labelledby="theorie-heading" class="mb-10">
+
+      <!-- Überschrift der Theorie-Box -->
+      <h2
+        id="theorie-heading"
+        class="text-lg font-bold text-slate-300 mb-4 flex items-center gap-2"
+      >
+        <!-- text-lg → 18px, font-bold → fett, flex items-center gap-2 → Icon + Text auf einer Linie -->
+        <span aria-hidden="true">📚</span>
+        Wissens-Boxen
+      </h2>
+
+      <!-- Dreispaltiges Raster (auf kleinen Bildschirmen einspaltig) -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <!--
+          grid → CSS Grid Layout
+          grid-cols-1 → eine Spalte auf kleinen Bildschirmen
+          sm:grid-cols-3 → drei Spalten ab 640px
+          gap-4 → 16px Abstand zwischen den Karten
+        -->
+
+        <!-- ── Theorie-Karte 1: Trick für die 5er-Reihe ── -->
+        <div class="rounded-2xl border border-emerald-400/20 bg-slate-900/50 p-5">
+          <!--
+            rounded-2xl → abgerundete Ecken (16px)
+            border-emerald-400/20 → grüner Rahmen, 20% Deckkraft (sehr dezent)
+            bg-slate-900/50 → halbtransparentes Dunkelblau
+            p-5 → Innenabstand 20px
+          -->
+
+          <!-- Karten-Titel -->
+          <h3 class="text-emerald-300 font-semibold mb-3 flex items-center gap-2">
+            <span class="text-xl" aria-hidden="true">5️⃣</span>
+            Trick für die 5er-Reihe
+          </h3>
+
+          <!-- Karten-Inhalt -->
+          <ul class="text-slate-300 text-sm space-y-2">
+            <!--
+              text-sm → 14px
+              space-y-2 → 8px Abstand zwischen den Listenpunkten
+            -->
+            <li class="flex gap-2">
+              <span class="text-emerald-400 flex-shrink-0">▶</span>
+              <!--
+                text-emerald-400 → grüner Bullet
+                flex-shrink-0 → Bullet-Punkt wird nicht kleiner wenn Platz knapp ist
+              -->
+              <span>Das Ergebnis endet immer auf <strong class="text-white">0</strong> oder <strong class="text-white">5</strong>.</span>
+            </li>
+            <li class="flex gap-2">
+              <span class="text-emerald-400 flex-shrink-0">▶</span>
+              <span><strong class="text-white">5 × 4 = 20</strong> – endet auf 0</span>
+            </li>
+            <li class="flex gap-2">
+              <span class="text-emerald-400 flex-shrink-0">▶</span>
+              <span><strong class="text-white">5 × 7 = 35</strong> – endet auf 5</span>
+            </li>
+            <li class="flex gap-2">
+              <span class="text-emerald-400 flex-shrink-0">▶</span>
+              <span>Gerade Zahlen × 5 enden auf <strong class="text-white">0</strong>, ungerade auf <strong class="text-white">5</strong>.</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- ── Theorie-Karte 2: Trick für die 9er-Reihe ── -->
+        <div class="rounded-2xl border border-emerald-400/20 bg-slate-900/50 p-5">
+          <h3 class="text-emerald-300 font-semibold mb-3 flex items-center gap-2">
+            <span class="text-xl" aria-hidden="true">9️⃣</span>
+            Trick für die 9er-Reihe
+          </h3>
+
+          <ul class="text-slate-300 text-sm space-y-2">
+            <li class="flex gap-2">
+              <span class="text-emerald-400 flex-shrink-0">▶</span>
+              <span>Die <strong class="text-white">Quersumme</strong> (Ziffern addieren) ist immer <strong class="text-white">9</strong>.</span>
+            </li>
+            <li class="flex gap-2">
+              <span class="text-emerald-400 flex-shrink-0">▶</span>
+              <span><strong class="text-white">9 × 3 = 27</strong> → 2 + 7 = <strong class="text-white">9</strong> ✓</span>
+            </li>
+            <li class="flex gap-2">
+              <span class="text-emerald-400 flex-shrink-0">▶</span>
+              <span><strong class="text-white">9 × 7 = 63</strong> → 6 + 3 = <strong class="text-white">9</strong> ✓</span>
+            </li>
+            <li class="flex gap-2">
+              <span class="text-emerald-400 flex-shrink-0">▶</span>
+              <span>Finger-Trick: 9 × 4 → 4. Finger einfalten → links 3, rechts 6 → <strong class="text-white">36</strong></span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- ── Theorie-Karte 3: Kommutativgesetz ── -->
+        <div class="rounded-2xl border border-emerald-400/20 bg-slate-900/50 p-5">
+          <h3 class="text-emerald-300 font-semibold mb-3 flex items-center gap-2">
+            <span class="text-xl" aria-hidden="true">🔄</span>
+            Kommutativgesetz
+          </h3>
+
+          <ul class="text-slate-300 text-sm space-y-2">
+            <li class="flex gap-2">
+              <span class="text-emerald-400 flex-shrink-0">▶</span>
+              <span>Die <strong class="text-white">Reihenfolge</strong> der Zahlen ist egal!</span>
+            </li>
+            <li class="flex gap-2">
+              <span class="text-emerald-400 flex-shrink-0">▶</span>
+              <span><strong class="text-white">3 × 4 = 4 × 3 = 12</strong></span>
+            </li>
+            <li class="flex gap-2">
+              <span class="text-emerald-400 flex-shrink-0">▶</span>
+              <span><strong class="text-white">6 × 7 = 7 × 6 = 42</strong></span>
+            </li>
+            <li class="flex gap-2">
+              <span class="text-emerald-400 flex-shrink-0">▶</span>
+              <span>Du lernst nur <strong class="text-white">55 Aufgaben</strong> statt 100 – die Hälfte kennst du schon!</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ═══════════════════════════════════════════
+       FOOTER
+       ═══════════════════════════════════════════ -->
+  <footer class="py-6 text-center text-xs text-slate-500">
+    <!--
+      py-6 → 24px Innenabstand oben und unten
+      text-center → zentrierter Text
+      text-xs → sehr kleine Schrift (12px)
+      text-slate-500 → mittleres Grau (dezent)
+    -->
+    © <span id="y"></span> Brandon Hank · Düsseldorf
+  </footer>
+
+  <!-- ═══════════════════════════════════════════
+       JAVASCRIPT
+       ═══════════════════════════════════════════ -->
+  <script>
+    /*
+     * ════════════════════════════════════════════════════════════════
+     *  GLOBALE HILFSFUNKTIONEN
+     * ════════════════════════════════════════════════════════════════
+     */
+
+    /**
+     * zufallszahl(min, max)
+     * Gibt eine zufällige ganze Zahl zwischen min und max zurück (beide inklusiv).
+     *
+     * Beispiel: zufallszahl(1, 10) → könnte 3, 7 oder 10 sein
+     *
+     * Wie es funktioniert:
+     *   Math.random() → Kommazahl zwischen 0 (inkl.) und 1 (exkl.), z. B. 0.73
+     *   * (max - min + 1) → skaliert auf Bereich, z. B. * 10 = 7.3
+     *   Math.floor() → rundet NACH UNTEN: 7.3 → 7
+     *   + min → verschiebt auf den richtigen Startwert
+     */
+    function zufallszahl(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+
+    /*
+     * ════════════════════════════════════════════════════════════════
+     *  SECTION 1: EINMALEINS-TABELLE
+     * ════════════════════════════════════════════════════════════════
+     */
+
+    /**
+     * activeReihe – merkt sich, welche Reihe aktuell markiert ist.
+     * null = keine Reihe ausgewählt
+     * 1–10 = die jeweilige Reihe ist ausgewählt
+     */
+    let activeReihe = null;
+
+    /**
+     * buildEinmaleinsTabelle()
+     * Erzeugt die 10×10-Multiplikationstabelle als HTML-Tabelle im DOM.
+     *
+     * Aufbau:
+     *   - Kopfzeile (thead → <tr id="em-kopfzeile">):
+     *       Ecke (×) + Spalten-Überschriften 1–10
+     *   - Zeilen (tbody → #em-body):
+     *       Je eine Zeile pro Reihe (1–10)
+     *       Erste Zelle = Reihen-Überschrift (klickbar)
+     *       Dann 10 Produkt-Zellen
+     *
+     * Alle Zellen bekommen data-Attribute:
+     *   data-reihe → die Zeilen-Nummer (1–10)
+     *   data-spalte → die Spalten-Nummer (1–10)
+     * Das erlaubt highlightReihe() die richtigen Zellen zu finden.
+     */
+    function buildEinmaleinsTabelle() {
+      /* ── Kopfzeile: leere Ecke + Spaltennummern ──────────────────── */
+      const kopfzeile = document.getElementById('em-kopfzeile');
+
+      // Spalten-Überschriften 1 bis 10 erzeugen
+      for (let s = 1; s <= 10; s++) {
+        const th = document.createElement('th'); // <th> = Tabellen-Überschriften-Zelle
+        th.textContent = s;                       // Spaltennummer als Text
+        th.className =
+          // Tailwind-Klassen für die Kopfzellen:
+          // w-10 h-10 → Breite und Höhe je 40px (quadratische Zellen)
+          // text-emerald-400 → grüne Schrift für Kopfzeile
+          // font-bold → fett
+          // text-center → zentriert
+          // select-none → nicht markierbar
+          'em-cell w-10 h-10 text-emerald-400 font-bold text-center select-none';
+        kopfzeile.appendChild(th); // Zelle zur Kopfzeile hinzufügen
+      }
+
+      /* ── Tabellen-Rumpf: Zeilen 1–10 ─────────────────────────────── */
+      const tbody = document.getElementById('em-body');
+
+      for (let r = 1; r <= 10; r++) {
+        // Eine neue Tabellenzeile anlegen
+        const tr = document.createElement('tr');
+
+        /* ── Reihen-Überschrift (erste Zelle jeder Zeile) ─────────── */
+        const reihenHeader = document.createElement('td');
+        reihenHeader.textContent = r; // Reihennummer (1–10)
+        // CSS-Klassen für den klickbaren Reihen-Header
+        reihenHeader.className =
+          // em-header → eigene CSS-Klasse (Hand-Cursor, Hover-Effekt)
+          // w-10 h-10 → quadratisch
+          // text-emerald-400 → grüne Schrift
+          // font-bold → fett
+          // text-center → zentriert
+          // rounded-lg → leicht abgerundete Ecken
+          // select-none → nicht markierbar
+          'em-header em-cell w-10 h-10 text-emerald-400 font-bold text-center rounded-lg select-none';
+        // data-reihe → speichert die Reihennummer am Element
+        // → highlightReihe() kann damit die richtige Zeile identifizieren
+        reihenHeader.setAttribute('data-reihe', r);
+
+        // Klick-Event: Reihe auswählen oder abwählen (Toggle)
+        reihenHeader.addEventListener('click', function () {
+          // parseInt() → Zeichenkette "7" → Zahl 7
+          const geklickteReihe = parseInt(this.getAttribute('data-reihe'));
+          highlightReihe(geklickteReihe); // Reihe hervorheben
+        });
+
+        tr.appendChild(reihenHeader); // Header-Zelle zur Zeile hinzufügen
+
+        /* ── Produkt-Zellen (10 Stück pro Zeile) ─────────────────── */
+        for (let s = 1; s <= 10; s++) {
+          const td = document.createElement('td'); // <td> = normale Datenzelle
+          td.textContent = r * s;                  // Das Produkt (z. B. 3 × 4 = 12)
+
+          // Basis-Tailwind-Klassen für alle Produkt-Zellen:
+          // em-cell → eigene CSS-Klasse (Transition, tabular-nums)
+          // w-10 h-10 → quadratisch
+          // text-slate-300 → helles Grau (Standard-Farbe wenn nicht aktiv)
+          // text-center → zentriert
+          // rounded-lg → leicht abgerundete Ecken
+          // bg-slate-900/20 → sehr dezenter dunkler Hintergrund
+          td.className =
+            'em-cell w-10 h-10 text-slate-300 text-center rounded-lg bg-slate-900/20';
+
+          // data-reihe und data-spalte speichern Position im Raster
+          td.setAttribute('data-reihe',  r);
+          td.setAttribute('data-spalte', s);
+
+          tr.appendChild(td); // Zelle zur Zeile hinzufügen
+        }
+
+        tbody.appendChild(tr); // Zeile zum Tabellen-Rumpf hinzufügen
+      }
+    }
+
+    /**
+     * highlightReihe(r)
+     * Hebt die ausgewählte Reihe in der Tabelle hervor.
+     *
+     * Wenn r == activeReihe (dieselbe Reihe erneut geklickt):
+     *   → Auswahl aufheben (Toggle-Verhalten)
+     *
+     * Ansonsten:
+     *   → Alle Zellen auf Standardfarbe zurücksetzen
+     *   → Zellen der ausgewählten Reihe grün einfärben
+     *   → Die „Haupt-Ergebnis-Zelle" (r × r) extra kräftig hervorheben
+     *   → Info-Text aktualisieren
+     *
+     * @param {number} r - Die ausgewählte Reihe (1–10)
+     */
+    function highlightReihe(r) {
+      /* ── Toggle: Dieselbe Reihe erneut klicken → abwählen ──────── */
+      if (activeReihe === r) {
+        activeReihe = null;     // Keine Reihe mehr ausgewählt
+        resetTabellenFarben();  // Alle Farben zurücksetzen
+        document.getElementById('tabelle-info').textContent =
+          'Klicke auf eine Zahl in der linken Spalte, um eine Reihe auszuwählen.';
+        return; // Funktion hier beenden
+      }
+
+      /* ── Neue Reihe auswählen ───────────────────────────────────── */
+      activeReihe = r; // Aktive Reihe speichern
+
+      // Alle Zellen auf Standard-Aussehen zurücksetzen (altes Highlight löschen)
+      resetTabellenFarben();
+
+      /* ── Reihen-Header hervorheben ─────────────────────────────── */
+      // querySelector mit Attribut-Selektor: findet <td data-reihe="5"> ohne data-spalte
+      // (Reihen-Header haben NUR data-reihe, keine data-spalte)
+      const headerEl = document.querySelector(
+        `.em-header[data-reihe="${r}"]`
+      );
+      if (headerEl) {
+        headerEl.classList.add('aktiv-header'); // grüner Header-Stil
+      }
+
+      /* ── Alle Produkt-Zellen dieser Reihe einfärben ─────────────── */
+      // querySelectorAll → findet ALLE Elemente die zum Selektor passen
+      // Wir suchen Zellen mit data-reihe="r" UND data-spalte (= Produkt-Zellen, nicht Header)
+      const reihenZellen = document.querySelectorAll(
+        `.em-cell[data-reihe="${r}"][data-spalte]`
+      );
+
+      reihenZellen.forEach(function (zelle) {
+        // Hintergrund-Klassen entfernen, die vom Standard kommen
+        zelle.classList.remove('bg-slate-900/20');
+
+        // Reihe-aktiv-Stil setzen (schwaches grünes Highlight)
+        zelle.classList.add('reihe-aktiv');
+      });
+
+      /* ── Ergebnis-Hervorhebung: r × aktive Spalte ──────────────── */
+      // Wir heben ALLE Zellen der Reihe hervor (reihe-aktiv ist schon gesetzt)
+      // Zusätzlich: die Zelle mit data-spalte = r (also r × r) besonders kräftig
+      // Das macht Spaß: "Wo ist 6 × 6?" → 36 leuchtet auf
+      // (Hinweis: Spalten-Hervorhebung bei Klick auf Reihe → Diagonale)
+      const ergebnisZelle = document.querySelector(
+        `.em-cell[data-reihe="${r}"][data-spalte="${r}"]`
+      );
+      if (ergebnisZelle) {
+        ergebnisZelle.classList.remove('reihe-aktiv');
+        ergebnisZelle.classList.add('ergebnis-aktiv'); // kräftiges grünes Highlight
+      }
+
+      /* ── Info-Text aktualisieren ────────────────────────────────── */
+      const infoBox = document.getElementById('tabelle-info');
+      infoBox.textContent =
+        `${r}er-Reihe: ${r}×1=${r}, ${r}×2=${r*2}, ${r}×3=${r*3} … ${r}×10=${r*10}`;
+    }
+
+    /**
+     * resetTabellenFarben()
+     * Setzt alle Tabellen-Zellen auf ihre Standard-Farben zurück.
+     *
+     * Entfernt:
+     *   - reihe-aktiv (grünes Reihen-Highlight)
+     *   - ergebnis-aktiv (kräftiges grünes Ergebnis-Highlight)
+     *   - aktiv-header (grüner Reihen-Header)
+     *
+     * Fügt wieder hinzu:
+     *   - bg-slate-900/20 (Standard-Hintergrund für Produkt-Zellen)
+     */
+    function resetTabellenFarben() {
+      // Alle em-cell Elemente mit Spalten-Daten (= Produkt-Zellen, nicht Header)
+      document.querySelectorAll('.em-cell[data-spalte]').forEach(function (zelle) {
+        zelle.classList.remove('reihe-aktiv', 'ergebnis-aktiv'); // Highlights entfernen
+        zelle.classList.add('bg-slate-900/20');                  // Standard-Hintergrund zurück
+      });
+
+      // Reihen-Header zurücksetzen
+      document.querySelectorAll('.em-header').forEach(function (header) {
+        header.classList.remove('aktiv-header'); // Aktiv-Klasse entfernen
+      });
+    }
+
+
+    /*
+     * ════════════════════════════════════════════════════════════════
+     *  SECTION 2: REIHEN ÜBEN
+     * ════════════════════════════════════════════════════════════════
+     */
+
+    /**
+     * selectedReihe – die aktuell ausgewählte Reihe (2–10).
+     * Startwert ist 2 (2er-Reihe, einfachster Einstieg).
+     */
+    let selectedReihe = 2;
+
+    /**
+     * uebenAufgabeA – der erste Faktor der aktuellen Aufgabe (immer selectedReihe)
+     * uebenAufgabeB – der zweite Faktor (Zufallszahl 1–10)
+     * uebenModus – 'factor' (fehlendes Faktor suchen) oder 'product' (Produkt berechnen)
+     * uebenRichtig – Zähler für richtige Antworten
+     * uebenFalsch  – Zähler für falsche Antworten
+     */
+    let uebenAufgabeA   = 2;  // Erster Faktor (= selectedReihe)
+    let uebenAufgabeB   = 5;  // Zweiter Faktor (Zufallszahl)
+    let uebenModus      = 'product'; // Startmodus: Produkt berechnen
+    let uebenRichtig    = 0;  // Richtig-Zähler
+    let uebenFalsch     = 0;  // Falsch-Zähler
+
+    /**
+     * buildReihenButtons()
+     * Erzeugt die Auswahl-Buttons für die Reihen 2 bis 10.
+     *
+     * Jeder Button ruft bei Klick selectReihe(n) auf.
+     * Der aktuell aktive Button bekommt die CSS-Klasse "aktiv".
+     */
+    function buildReihenButtons() {
+      const container = document.getElementById('reihen-buttons');
+      container.innerHTML = ''; // Leeren (falls mehrfach aufgerufen)
+
+      // Flex-Layout für die Buttons
+      container.className = 'flex flex-wrap gap-2';
+
+      // Buttons für Reihen 2 bis 10 erzeugen
+      for (let n = 2; n <= 10; n++) {
+        const btn = document.createElement('button');
+        btn.textContent = n + '×';    // Beschriftung: "2×", "3×", …, "10×"
+        btn.setAttribute('data-reihe', n); // Reihennummer speichern
+
+        // CSS-Klassen für den Reihen-Button:
+        // reihen-btn → eigene Klasse für Transition-Effekte
+        // px-3 py-1.5 → waagerechter/senkrechter Innenabstand
+        // rounded-xl → stark abgerundete Ecken
+        // border → 1px Rahmen
+        // text-sm font-semibold → 14px, halbfett
+        btn.className =
+          'reihen-btn px-3 py-1.5 rounded-xl border border-slate-600 bg-slate-800 ' +
+          'text-slate-300 text-sm font-semibold hover:border-emerald-400 hover:text-emerald-300';
+
+        // Klick-Event: Diese Reihe auswählen
+        btn.addEventListener('click', function () {
+          selectReihe(parseInt(this.getAttribute('data-reihe')));
+        });
+
+        container.appendChild(btn); // Button in den Container einfügen
+      }
+
+      // Den Button für selectedReihe (= 2) als aktiv markieren
+      updateReihenButtonOptik();
+    }
+
+    /**
+     * selectReihe(n)
+     * Wechselt zur Reihe n, aktualisiert die Button-Optik und
+     * erzeugt eine neue Aufgabe für die ausgewählte Reihe.
+     *
+     * @param {number} n - Die neue ausgewählte Reihe (2–10)
+     */
+    function selectReihe(n) {
+      selectedReihe = n;                   // Reihe merken
+      updateReihenButtonOptik();           // Button hervorheben
+      newEinmaleinsAufgabe();              // Sofort neue Aufgabe generieren
+      document.getElementById('ueben-input').focus(); // Eingabefeld fokussieren
+    }
+
+    /**
+     * updateReihenButtonOptik()
+     * Aktualisiert das Aussehen der Reihen-Buttons:
+     * Der Button für selectedReihe bekommt die CSS-Klasse "aktiv" (grün),
+     * alle anderen Buttons verlieren "aktiv".
+     */
+    function updateReihenButtonOptik() {
+      // Alle Reihen-Buttons durchgehen
+      document.querySelectorAll('.reihen-btn').forEach(function (btn) {
+        const reihe = parseInt(btn.getAttribute('data-reihe'));
+
+        if (reihe === selectedReihe) {
+          // Aktiver Button: grüne Hervorhebung
+          btn.classList.add('aktiv');
+          btn.classList.remove('text-slate-300');
+        } else {
+          // Inaktive Buttons: Standard-Aussehen
+          btn.classList.remove('aktiv');
+          btn.classList.add('text-slate-300');
+        }
+      });
+    }
+
+    /**
+     * newEinmaleinsAufgabe()
+     * Generiert eine neue Übungsaufgabe für die aktuell ausgewählte Reihe.
+     *
+     * Aufgaben-Typen (zufällig gewählt):
+     *   'product' → "2 × 7 = ?"   (Nutzer berechnet das Produkt)
+     *   'factor'  → "2 × ? = 14"  (Nutzer findet den fehlenden Faktor)
+     *
+     * Die Aufgabe wird im Element #ueben-aufgabe angezeigt.
+     * Das Eingabefeld und Feedback werden zurückgesetzt.
+     */
+    function newEinmaleinsAufgabe() {
+      /* ── Zufälliger zweiter Faktor (1–10) ───────────────────────── */
+      uebenAufgabeA = selectedReihe;       // Erster Faktor = ausgewählte Reihe
+      uebenAufgabeB = zufallszahl(1, 10);  // Zweiter Faktor: zufällig 1–10
+
+      /* ── Modus zufällig wählen ──────────────────────────────────── */
+      // Math.random() < 0.5 → 50% Wahrscheinlichkeit
+      uebenModus = Math.random() < 0.5 ? 'factor' : 'product';
+
+      /* ── Aufgaben-Text erzeugen ─────────────────────────────────── */
+      const aufgabeEl = document.getElementById('ueben-aufgabe');
+      const produkt   = uebenAufgabeA * uebenAufgabeB; // Ergebnis vorausberechnen
+
+      if (uebenModus === 'product') {
+        // Modus "product": Nutzer berechnet das Ergebnis
+        // Beispiel: "3 × 7 = ?"
+        aufgabeEl.textContent = `${uebenAufgabeA} × ${uebenAufgabeB} = ?`;
+      } else {
+        // Modus "factor": Nutzer findet den fehlenden zweiten Faktor
+        // Beispiel: "3 × ? = 21"
+        aufgabeEl.textContent = `${uebenAufgabeA} × ? = ${produkt}`;
+      }
+
+      /* ── Eingabefeld und Feedback zurücksetzen ──────────────────── */
+      const eingabe = document.getElementById('ueben-input');
+      eingabe.value    = '';     // Eingabe löschen
+      eingabe.disabled = false;  // Falls vorher deaktiviert (nach falscher Antwort)
+
+      const feedback = document.getElementById('ueben-feedback');
+      feedback.textContent = '';         // Alten Feedback-Text löschen
+      feedback.style.color = '';         // Alte Farbe zurücksetzen
+      feedback.className   =            // Klassen zurücksetzen
+        'text-base font-semibold min-h-[1.5rem] text-center';
+    }
+
+    /**
+     * checkEinmaleins()
+     * Prüft die Eingabe des Nutzers gegen die richtige Antwort.
+     *
+     * Die "richtige Antwort" hängt vom Modus ab:
+     *   'product' → das Produkt (uebenAufgabeA × uebenAufgabeB)
+     *   'factor'  → der zweite Faktor (uebenAufgabeB)
+     *
+     * Bei richtiger Antwort → Score+1, grünes Feedback, neue Aufgabe nach 1s
+     * Bei falscher Antwort  → Fehler+1, rotes Feedback, neue Aufgabe nach 2s
+     */
+    function checkEinmaleins() {
+      const eingabe  = document.getElementById('ueben-input');
+      const feedback = document.getElementById('ueben-feedback');
+
+      // parseInt() → Text-Eingabe in Ganzzahl umwandeln
+      const antwort = parseInt(eingabe.value);
+
+      // isNaN() → "is Not a Number" → keine gültige Zahl eingegeben
+      if (isNaN(antwort)) {
+        feedback.textContent = 'Bitte gib eine Zahl ein!';
+        feedback.style.color = '#f59e0b'; // amber-400: Warnfarbe Orange
+        return; // Funktion beenden, keine Auswertung
+      }
+
+      /* ── Richtige Antwort bestimmen ─────────────────────────────── */
+      let richtigeAntwort;
+      if (uebenModus === 'product') {
+        // Produkt-Modus: Nutzer soll das Ergebnis berechnen
+        richtigeAntwort = uebenAufgabeA * uebenAufgabeB;
+      } else {
+        // Faktor-Modus: Nutzer soll den fehlenden zweiten Faktor finden
+        richtigeAntwort = uebenAufgabeB;
+      }
+
+      /* ── Eingabe mit richtiger Antwort vergleichen ──────────────── */
+      if (antwort === richtigeAntwort) {
+        /* ── Richtig! ─────────────────────────────────────────────── */
+        feedback.textContent = '✓ Super! Richtig!';
+        feedback.style.color = '#34d399'; // emerald-400: grün
+        feedback.classList.add('feedback-box'); // Einblend-Animation
+
+        // Score-Zähler erhöhen
+        uebenRichtig++;
+        document.getElementById('ueben-score').textContent = uebenRichtig;
+
+        // Eingabefeld sperren damit kein zweites Mal geantwortet wird
+        eingabe.disabled = true;
+
+        // Nach 1000ms (1 Sekunde) neue Aufgabe
+        setTimeout(function () {
+          eingabe.disabled = false;
+          newEinmaleinsAufgabe();
+          eingabe.focus(); // Fokus direkt ins Eingabefeld
+        }, 1000); // 1000 Millisekunden = 1 Sekunde
+
+      } else {
+        /* ── Falsch! ──────────────────────────────────────────────── */
+        // Vollständige Antwort für den Fehler-Hinweis aufbauen
+        let richtigText;
+        if (uebenModus === 'product') {
+          richtigText = `${uebenAufgabeA} × ${uebenAufgabeB} = ${richtigeAntwort}`;
+        } else {
+          richtigText = `${uebenAufgabeA} × ${richtigeAntwort} = ${uebenAufgabeA * uebenAufgabeB}`;
+        }
+
+        feedback.textContent = `✗ Falsch. Richtig: ${richtigText}`;
+        feedback.style.color = '#f87171'; // red-400: rot
+        feedback.classList.add('feedback-box');
+
+        // Fehler-Zähler erhöhen
+        uebenFalsch++;
+        document.getElementById('ueben-score-falsch').textContent = uebenFalsch;
+
+        // Eingabefeld sperren
+        eingabe.disabled = true;
+
+        // Nach 2000ms (2 Sekunden) neue Aufgabe (mehr Zeit zum Lesen)
+        setTimeout(function () {
+          eingabe.disabled = false;
+          newEinmaleinsAufgabe();
+          eingabe.focus();
+        }, 2000); // 2000 Millisekunden = 2 Sekunden
+      }
+    }
+
+    // Enter-Taste im Reihen-üben-Eingabefeld → checkEinmaleins() aufrufen
+    document.getElementById('ueben-input').addEventListener('keydown', function (e) {
+      // e.key → Name der gedrückten Taste als Text
+      if (e.key === 'Enter') {
+        checkEinmaleins(); // Enter = Prüfen
+      }
+    });
+
+
+    /*
+     * ════════════════════════════════════════════════════════════════
+     *  SECTION 3: BLITZRECHNEN
+     * ════════════════════════════════════════════════════════════════
+     */
+
+    /**
+     * blitzFrageNr   – Nummer der aktuellen Frage (1–10)
+     * blitzScore     – Anzahl richtig beantworteter Fragen
+     * blitzAufgabeA  – erster Faktor der aktuellen Blitz-Aufgabe (1–10)
+     * blitzAufgabeB  – zweiter Faktor der aktuellen Blitz-Aufgabe (1–10)
+     * blitzBeantwortet – Guard: verhindert mehrfaches Prüfen derselben Aufgabe
+     */
+    let blitzFrageNr      = 1;   // Aktuelle Frage-Nummer
+    let blitzScore        = 0;   // Richtig-Zähler
+    let blitzAufgabeA     = 0;   // Erster Faktor
+    let blitzAufgabeB     = 0;   // Zweiter Faktor
+    let blitzBeantwortet  = false; // Guard-Variable
+
+    /**
+     * startBlitzrechnen()
+     * Startet (oder startet neu) das Blitzrechnen-Quiz.
+     *
+     * Was passiert:
+     * 1. Alle Zähler auf Null setzen
+     * 2. Ergebnis-Karte verstecken, Quiz-Bereich einblenden
+     * 3. Erste Aufgabe generieren
+     */
+    function startBlitzrechnen() {
+      /* ── Zähler zurücksetzen ────────────────────────────────────── */
+      blitzFrageNr = 1;  // Wieder bei Frage 1 beginnen
+      blitzScore   = 0;  // Score auf 0
+
+      /* ── Fortschrittsanzeige zurücksetzen ──────────────────────── */
+      document.getElementById('blitz-frage-nr').textContent = '1';
+      document.getElementById('blitz-score').textContent    = '0/10';
+      document.getElementById('blitz-progress-bar').style.width = '0%'; // Balken leer
+
+      /* ── UI-Bereiche umschalten ─────────────────────────────────── */
+      // Ergebnis-Karte verstecken
+      const ergebnisDiv = document.getElementById('blitz-ergebnis');
+      ergebnisDiv.classList.add('hidden');    // display: none
+      ergebnisDiv.classList.remove('flex');   // flex entfernen (wurde beim Anzeigen gesetzt)
+
+      // Quiz-Bereich anzeigen
+      document.getElementById('blitz-quiz-bereich').classList.remove('hidden');
+
+      /* ── Erste Aufgabe generieren ───────────────────────────────── */
+      newBlitzaufgabe();
+    }
+
+    /**
+     * newBlitzaufgabe()
+     * Generiert eine neue zufällige Aufgabe für das Blitzrechnen.
+     * Faktoren: a und b, beide zufällig aus 1–10.
+     * Fragt immer das Produkt: "a × b = ?"
+     */
+    function newBlitzaufgabe() {
+      /* ── Zufällige Faktoren ─────────────────────────────────────── */
+      blitzAufgabeA = zufallszahl(1, 10); // Erster Faktor: 1 bis 10
+      blitzAufgabeB = zufallszahl(1, 10); // Zweiter Faktor: 1 bis 10
+
+      /* ── Guard zurücksetzen → neue Antwort ist möglich ─────────── */
+      blitzBeantwortet = false;
+
+      /* ── Aufgabe anzeigen ───────────────────────────────────────── */
+      document.getElementById('blitz-aufgabe').textContent =
+        `${blitzAufgabeA} × ${blitzAufgabeB} = ?`;
+
+      /* ── Eingabefeld und Feedback zurücksetzen ──────────────────── */
+      const eingabe = document.getElementById('blitz-input');
+      eingabe.value    = '';     // Alten Wert löschen
+      eingabe.disabled = false;  // Eingabe ermöglichen
+      eingabe.focus();           // Direkt fokussieren
+
+      document.getElementById('blitz-feedback').textContent = ''; // Feedback löschen
+      document.getElementById('blitz-feedback').style.color = ''; // Farbe zurücksetzen
+    }
+
+    /**
+     * checkBlitz()
+     * Prüft die Antwort auf die aktuelle Blitzrechnen-Aufgabe.
+     *
+     * Ablauf:
+     * 1. Guard prüfen (schon beantwortet? → nichts tun)
+     * 2. Eingabe prüfen
+     * 3. Feedback anzeigen
+     * 4. Nach kurzer Pause: nächste Aufgabe ODER Ergebnis anzeigen
+     */
+    function checkBlitz() {
+      /* ── Guard: nicht zweimal prüfen ───────────────────────────── */
+      if (blitzBeantwortet) return; // Wenn schon beantwortet: sofort abbrechen
+      blitzBeantwortet = true;      // Guard setzen
+
+      const eingabe  = document.getElementById('blitz-input');
+      const feedback = document.getElementById('blitz-feedback');
+
+      // Eingabe in Zahl umwandeln
+      const antwort = parseInt(eingabe.value);
+
+      // Ungültige Eingabe prüfen
+      if (isNaN(antwort)) {
+        feedback.textContent = 'Bitte gib eine Zahl ein!';
+        feedback.style.color = '#f59e0b'; // amber-400: orange
+        blitzBeantwortet = false; // Guard zurücksetzen, damit erneut geprüft werden kann
+        return; // Funktion beenden
+      }
+
+      /* ── Produkt berechnen und vergleichen ──────────────────────── */
+      const richtigesErgebnis = blitzAufgabeA * blitzAufgabeB;
+
+      if (antwort === richtigesErgebnis) {
+        /* ── Richtig! ─────────────────────────────────────────────── */
+        feedback.textContent = '✓ Richtig!';
+        feedback.style.color = '#34d399'; // emerald-400: grün
+        blitzScore++;                     // Score erhöhen
+
+      } else {
+        /* ── Falsch ───────────────────────────────────────────────── */
+        feedback.textContent =
+          `✗ Falsch. ${blitzAufgabeA} × ${blitzAufgabeB} = ${richtigesErgebnis}`;
+        feedback.style.color = '#f87171'; // red-400: rot
+      }
+
+      // Eingabefeld sperren (kein zweites Tippen während Feedback sichtbar)
+      eingabe.disabled = true;
+
+      /* ── Fortschritts-UI aktualisieren ─────────────────────────── */
+      // Score-Anzeige: z. B. "3/10"
+      document.getElementById('blitz-score').textContent = `${blitzScore}/10`;
+
+      /* ── Nach kurzer Pause: weiter oder Ergebnis ────────────────── */
+      setTimeout(function () {
+        if (blitzFrageNr >= 10) {
+          // 10. Frage beantwortet → Ergebnis anzeigen
+          showBlitzErgebnis();
+        } else {
+          // Noch nicht fertig → Frage-Nummer erhöhen und weiter
+          blitzFrageNr++;
+          // Frage-Nummer anzeigen
+          document.getElementById('blitz-frage-nr').textContent = blitzFrageNr;
+          // Fortschrittsbalken: Breite = (blitzFrageNr - 1) / 10 × 100%
+          // (Frage 1 beginnt bei 0%, nach Beantwortung von Frage 1 → 10%)
+          document.getElementById('blitz-progress-bar').style.width =
+            `${((blitzFrageNr - 1) / 10) * 100}%`;
+          // Neue Aufgabe generieren
+          newBlitzaufgabe();
+        }
+      }, 1000); // 1000 Millisekunden = 1 Sekunde Pause für Feedback
+    }
+
+    /**
+     * showBlitzErgebnis()
+     * Zeigt die Ergebnis-Karte nach dem Quiz.
+     *
+     * Beinhaltet:
+     * - Große Score-Anzeige: "8/10"
+     * - Motivations-Text je nach Score
+     * - Passendes Emoji
+     * - Vollständiger Fortschrittsbalken
+     */
+    function showBlitzErgebnis() {
+      /* ── Quiz-Bereich verstecken ────────────────────────────────── */
+      document.getElementById('blitz-quiz-bereich').classList.add('hidden');
+
+      /* ── Fortschrittsbalken auf 100% setzen ────────────────────── */
+      document.getElementById('blitz-progress-bar').style.width = '100%';
+      document.getElementById('blitz-frage-nr').textContent = '10';
+
+      /* ── Ergebnis-Karte einblenden ──────────────────────────────── */
+      const ergebnisDiv = document.getElementById('blitz-ergebnis');
+      ergebnisDiv.classList.remove('hidden'); // display: none entfernen
+      ergebnisDiv.classList.add('flex');      // flex hinzufügen (flex-col items-center)
+
+      /* ── Score-Anzeige ──────────────────────────────────────────── */
+      document.getElementById('blitz-ergebnis-anzeige').textContent =
+        `${blitzScore}/10`;
+
+      /* ── Motivations-Text und Emoji je nach Score ───────────────── */
+      let emoji, text;
+
+      if (blitzScore === 10) {
+        // Perfekte Punktzahl
+        emoji = '🏆';
+        text  = 'Perfekt! Du hast alle 10 Aufgaben richtig gelöst!';
+      } else if (blitzScore >= 8) {
+        // Sehr gut
+        emoji = '🌟';
+        text  = `Super! Du hast ${blitzScore} von 10 richtig – fast perfekt!`;
+      } else if (blitzScore >= 6) {
+        // Gut
+        emoji = '😊';
+        text  = `Gut gemacht! ${blitzScore} von 10 richtig. Weiter üben!`;
+      } else if (blitzScore >= 4) {
+        // Noch üben
+        emoji = '💪';
+        text  = `${blitzScore} von 10 richtig. Das Einmaleins braucht noch etwas Übung!`;
+      } else {
+        // Viel zu üben
+        emoji = '📚';
+        text  = `${blitzScore} von 10 richtig. Schau dir die Tabelle nochmal an und üb die Reihen!`;
+      }
+
+      document.getElementById('blitz-emoji').textContent        = emoji;
+      document.getElementById('blitz-ergebnis-text').textContent = text;
+    }
+
+    // Enter-Taste im Blitzrechnen-Eingabefeld → checkBlitz() aufrufen
+    document.getElementById('blitz-input').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        checkBlitz(); // Enter = Prüfen
+      }
+    });
+
+
+    /*
+     * ════════════════════════════════════════════════════════════════
+     *  INITIALISIERUNG: Beim Laden der Seite alles starten
+     * ════════════════════════════════════════════════════════════════
+     */
+
+    // 1. Einmaleins-Tabelle aufbauen (Section 1)
+    buildEinmaleinsTabelle();
+
+    // 2. Reihen-Auswahl-Buttons erzeugen (Section 2)
+    buildReihenButtons();
+
+    // 3. Erste Übungsaufgabe generieren (Section 2)
+    newEinmaleinsAufgabe();
+
+    // 4. Blitzrechnen starten (Section 3)
+    startBlitzrechnen();
+
+    // 5. Footer-Jahr setzen
+    // new Date().getFullYear() → aktuelle vierstellige Jahreszahl (z. B. 2026)
+    document.getElementById('y').textContent = new Date().getFullYear();
+  </script>
+
+  <!--
+    Topbar laden:
+    1. window.__i18nBase wird gesetzt BEVOR der Topbar-Fetch läuft,
+       damit script.js weiß, wo die i18n-Sprachdateien liegen.
+    2. fetch('../../topbar.html') holt den Topbar-HTML-Code vom Server.
+    3. Nach erfolgreichem Laden wird script.js dynamisch als <script>-Tag eingefügt.
+
+    Warum dynamisch? → script.js benötigt die Topbar-Elemente im DOM.
+    Wenn script.js fest im <head> wäre, würde es laufen bevor die Topbar geladen ist.
+  -->
+  <script>
+    // __i18nBase: Pfad-Präfix für Sprachdateien (lang-de.json, lang-en.json)
+    // Muss GESETZT sein bevor script.js läuft, sonst findet script.js die Dateien nicht
+    window.__i18nBase = '../../';
+
+    // fetch() → sendet eine HTTP-Anfrage und gibt ein Promise zurück
+    fetch('../../topbar.html')
+      .then(function (r) {
+        // .text() → liest die Antwort als Text (HTML ist ja Text)
+        return r.text();
+      })
+      .then(function (html) {
+        // Den geladenen HTML-Text in den Topbar-Container einfügen
+        document.getElementById('topbar-container').innerHTML = html;
+
+        // Jetzt script.js dynamisch laden
+        // createElement('script') → erzeugt ein neues <script>-Element
+        const s = document.createElement('script');
+        s.src = '../../script.js'; // Pfad zu script.js
+        // appendChild → fügt das <script>-Element zum <body> hinzu
+        // → der Browser lädt und führt script.js sofort aus
+        document.body.appendChild(s);
+      });
+  </script>
+</body>
+</html>

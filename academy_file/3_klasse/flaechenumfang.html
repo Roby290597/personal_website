@@ -1,0 +1,1880 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <!-- Zeichenkodierung: UTF-8 damit Umlaute (ä, ö, ü) und Sonderzeichen korrekt angezeigt werden -->
+  <meta charset="UTF-8" />
+  <!-- Viewport: Seite passt sich an Handys und Tablets an -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Seitentitel im Browser-Tab -->
+  <title>Flächen &amp; Umfang – Mathe-Akademie</title>
+
+  <!-- Favicon: kleines Symbol im Browser-Tab, zwei Ebenen höher -->
+  <link rel="icon" href="../../favicon.ico" />
+  <!-- Apple Touch Icon: Symbol für iPhone-Homescreen -->
+  <link rel="apple-touch-icon" href="../../apple-touch-icon.png" />
+  <!-- Web-App-Manifest: Metadaten für „Auf Startseite hinzufügen" -->
+  <link rel="manifest" href="../../site.webmanifest" />
+
+  <!-- Tailwind CSS via CDN: Ermöglicht alle Utility-Klassen direkt im HTML -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Eigenes Stylesheet (zwei Ebenen höher), mit Version um Browser-Cache zu umgehen -->
+  <link rel="stylesheet" href="../../style.css?v=1.0" />
+
+  <style>
+    /*
+     * Eigene CSS-Regeln, die Tailwind nicht abdeckt
+     * ─────────────────────────────────────────────
+     */
+
+    /* Schieberegler: Standard-Browser-Darstellung überschreiben → grüner Akzent */
+    input[type="range"] {
+      -webkit-appearance: none; /* Standard-Aussehen in WebKit-Browsern (Chrome, Safari) entfernen */
+      appearance: none;
+      height: 6px;             /* Schiene: 6px hoch */
+      border-radius: 3px;      /* Schiene: leicht abgerundet */
+      background: #1e293b;     /* slate-800: dunkle Schiene */
+      outline: none;           /* Fokus-Outline entfernen (wird per Box-Shadow ersetzt) */
+      cursor: pointer;         /* Mauszeiger wird zur Hand → zeigt an: ziehbar */
+    }
+
+    /* Schieberegler: der Anfasser (Thumb) in Chromium-Browsern */
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none; /* Standard-Thumb entfernen */
+      appearance: none;
+      width: 20px;              /* Breite des Kreises */
+      height: 20px;             /* Höhe des Kreises */
+      border-radius: 50%;       /* Kreis: 50% Radius = rund */
+      background: #10b981;      /* emerald-500: grüner Anfasser */
+      border: 2px solid #6ee7b7; /* emerald-300: heller Rahmen um den Thumb */
+      transition: background 0.18s, transform 0.12s; /* weicher Farbwechsel und leichtes Wachsen beim Klick */
+    }
+
+    /* Schieberegler: Thumb in Firefox */
+    input[type="range"]::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #10b981;      /* emerald-500: gleiche Farbe wie WebKit */
+      border: 2px solid #6ee7b7;
+      cursor: pointer;
+    }
+
+    /* Schieberegler: Thumb beim Drücken leicht vergrößern (Feedback für den Nutzer) */
+    input[type="range"]:active::-webkit-slider-thumb {
+      transform: scale(1.18);   /* 18% größer beim Ziehen → haptisches Feedback */
+      background: #34d399;      /* emerald-400: etwas heller beim Aktiv-Zustand */
+    }
+
+    /* SVG-Gitternetz-Linien im Rechteck-Visualisierer */
+    .gitter-linie {
+      stroke: #1e293b;          /* slate-800: sehr dunkle Gitterlinien */
+      stroke-width: 0.5;        /* dünn, damit Felder sichtbar bleiben */
+    }
+
+    /* SVG-Außenrahmen des interaktiven Rechtecks */
+    .rechteck-rahmen {
+      fill: #064e3b;            /* emerald-900: dunkles Grün als Füllung */
+      stroke: #34d399;          /* emerald-400: heller grüner Rahmen */
+      stroke-width: 2;          /* 2px Linienstärke für den Rahmen */
+      transition: all 0.2s ease; /* weicher Übergang wenn sich Größe ändert */
+    }
+
+    /* Hintergrund-Raster des SVG-Koordinatensystems (Millimeterpapier-Effekt) */
+    .hintergrund-gitter {
+      stroke: #0f172a;          /* slate-950: fast unsichtbares Gitter im Hintergrund */
+      stroke-width: 0.3;
+    }
+
+    /* Zähl-Übung: einzelne Quadrat-Zelle */
+    .zaehlen-zelle {
+      transition: fill 0.1s;    /* kurzer Übergang wenn Farbe wechselt */
+    }
+
+    /* Zähl-Übung: Trennlinien zwischen den Quadraten */
+    .zaehlen-gitter {
+      stroke: #334155;          /* slate-700: dezente Trennlinie */
+      stroke-width: 1;
+      fill: none;               /* nur Linie, keine Füllung */
+    }
+
+    /* Animations-Klasse: Element blendet sanft ein */
+    .fade-in {
+      animation: fadeInUp 0.28s ease both; /* both = Startzustand auch VOR der Animation halten */
+    }
+
+    /* Keyframe: von unten leicht einblenden */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Formel-Block: grün hinterlegter Code-Stil */
+    .formel {
+      font-family: ui-monospace, 'Cascadia Code', monospace; /* Monospace-Schrift für Formeln */
+      background: #022c22;      /* emerald-950: sehr dunkler Grünton */
+      border: 1px solid #064e3b; /* emerald-900: dezenter Rahmen */
+      border-radius: 10px;
+      padding: 6px 14px;
+      font-size: 0.95rem;
+      letter-spacing: 0.01em;   /* leicht erhöhter Buchstabenabstand für Lesbarkeit */
+    }
+
+    /* Hinweis-Box: ausgeklappt (Quiz-Hilfe) */
+    .hinweis-box {
+      max-height: 0;            /* zusammengeklappt: Höhe = 0 → unsichtbar */
+      overflow: hidden;
+      transition: max-height 0.35s ease, padding 0.35s ease; /* weich ein-/ausklappen */
+    }
+
+    /* Hinweis-Box: wenn sichtbar (JavaScript fügt diese Klasse hinzu) */
+    .hinweis-box.sichtbar {
+      max-height: 200px;        /* ausgeklappt: ausreichend Platz für den Inhalt */
+    }
+
+    /* Puls-Animation für den „Nächste Aufgabe"-Button */
+    @keyframes pulsGreen {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.4); }
+      50%       { box-shadow: 0 0 0 8px rgba(52, 211, 153, 0); }
+    }
+
+    /* CSS-Klasse die die Puls-Animation anwendet */
+    .puls-gruen {
+      animation: pulsGreen 1.4s ease-in-out infinite;
+    }
+
+    /* Quiz-Eingabefelder: dunkles, grün-fokussiertes Textfeld */
+    .quiz-input {
+      background: #0f172a;      /* slate-950: sehr dunkler Hintergrund */
+      border: 2px solid #334155; /* slate-700: dezenter Rahmen */
+      border-radius: 12px;
+      color: #f1f5f9;           /* slate-100: heller Text */
+      padding: 8px 14px;
+      font-size: 1.1rem;
+      width: 110px;
+      text-align: center;
+      outline: none;
+      transition: border-color 0.18s, box-shadow 0.18s;
+    }
+
+    /* Quiz-Eingabefeld: wenn aktiv (fokussiert) → grüner Rahmen und Schein */
+    .quiz-input:focus {
+      border-color: #10b981;    /* emerald-500 */
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.18); /* dezenter grüner Schimmer */
+    }
+
+    /* Richtige Antwort → grüner Rahmen */
+    .quiz-input.richtig {
+      border-color: #34d399;    /* emerald-400 */
+      background: #022c22;      /* emerald-950 */
+    }
+
+    /* Falsche Antwort → roter Rahmen */
+    .quiz-input.falsch {
+      border-color: #f87171;    /* red-400 */
+      background: #1c0a0a;      /* sehr dunkles Rot */
+    }
+  </style>
+</head>
+
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col">
+  <!--
+    bg-slate-950 → sehr dunkler Hintergrund (fast schwarz), Augen schonend
+    text-slate-100 → sehr heller Text (fast weiß), hoher Kontrast
+    min-h-screen → mindestens so hoch wie der Bildschirm
+    flex flex-col → Elemente senkrecht übereinander (Topbar / Main / Footer)
+  -->
+
+  <!-- Topbar-Container: wird per JavaScript mit dem Inhalt von ../../topbar.html befüllt -->
+  <div id="topbar-container"></div>
+
+  <!-- Haupt-Inhaltsbereich: horizontal zentriert, vertikaler Abstand -->
+  <main class="flex-1 max-w-4xl mx-auto w-full px-4 py-10">
+    <!--
+      flex-1 → nimmt den verfügbaren Platz zwischen Topbar und Footer ein
+      max-w-4xl → maximale Breite ~896px, damit Zeilen nicht zu lang werden
+      mx-auto → zentriert den Block horizontal
+      w-full → volle verfügbare Breite bis max-w-4xl
+      px-4 → 16px horizontaler Innenabstand (wichtig für schmale Handys)
+      py-10 → 40px vertikaler Innenabstand oben und unten
+    -->
+
+    <!-- Zurück-Link zur Akademie-Übersicht -->
+    <a
+      href="../../academy.html"
+      class="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-emerald-300 mb-8 transition-colors"
+    >
+      <!--
+        inline-flex → Link verhält sich als Inline-Block, Inhalt als Flex-Container
+        items-center → Pfeil und Text vertikal ausgerichtet
+        gap-2 → 8px Abstand zwischen Pfeil und Text
+        text-sm → kleine Schrift (14px)
+        text-slate-400 → mittleres Grau
+        hover:text-emerald-300 → bei Mauszeiger-Hover: helles Grün
+        mb-8 → 32px Abstand nach unten zum nächsten Element
+        transition-colors → weicher Farbübergang beim Hover
+      -->
+      ← Zurück zur Akademie
+    </a>
+
+    <!-- ═══════════════════════════════════════════
+         SEITENÜBERSCHRIFT
+         ═══════════════════════════════════════════ -->
+    <header class="mb-10">
+      <!-- mb-10 → 40px Abstand nach unten -->
+
+      <!-- Kategorie-Badge: kleiner grüner Hinweis über der Überschrift -->
+      <span class="inline-block text-xs font-semibold tracking-widest uppercase text-emerald-400 mb-3">
+        <!--
+          inline-block → kein Zeilenumbruch, aber Box-Eigenschaften
+          text-xs → sehr kleine Schrift (12px)
+          font-semibold → halbfett
+          tracking-widest → sehr großer Buchstabenabstand → gesperrter Schriftzug
+          uppercase → Großbuchstaben
+          text-emerald-400 → sattgrüner Farbton
+          mb-3 → 12px Abstand nach unten
+        -->
+        Klasse 3 · Grundlagen
+      </span>
+
+      <!-- Haupt-Seitenüberschrift -->
+      <h1 class="text-4xl font-bold text-white mb-3">
+        <!-- text-4xl → 36px, font-bold → fett, mb-3 → kleiner Abstand nach unten -->
+        Flächen &amp; Umfang
+      </h1>
+
+      <!-- Kurze Beschreibung des Lerninhalts -->
+      <p class="text-slate-400 text-lg max-w-xl">
+        <!--
+          text-slate-400 → mittleres Grau für sekundären Text
+          text-lg → etwas größere Schrift (18px)
+          max-w-xl → max. Breite ~512px, damit Textzeilen nicht zu breit werden
+        -->
+        Lerne, wie du den Umfang und die Fläche von Rechtecken berechnest – mit interaktiven Schiebereglern und Übungsaufgaben!
+      </p>
+    </header>
+
+    <!-- ═══════════════════════════════════════════
+         THEORIE-BOX: 3-SPALTIG
+         ═══════════════════════════════════════════ -->
+    <section aria-labelledby="theorie-heading" class="mb-10">
+      <!-- mb-10 → 40px Abstand nach unten -->
+
+      <!-- Überschrift der Theorie-Box -->
+      <h2
+        id="theorie-heading"
+        class="text-lg font-bold text-slate-300 mb-4 flex items-center gap-2"
+      >
+        <!--
+          text-lg → 18px, font-bold → fett
+          text-slate-300 → helles Grau (nicht ganz weiß, etwas zurückhaltend)
+          mb-4 → 16px Abstand nach unten
+          flex items-center gap-2 → Icon und Text auf einer Linie mit 8px Abstand
+        -->
+        <span aria-hidden="true">📚</span>
+        <!-- aria-hidden="true" → Screenreader überspringt das Dekorations-Emoji -->
+        Wissens-Boxen
+      </h2>
+
+      <!-- Dreispaltiges Raster (auf Mobil einspaltig) -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <!--
+          grid → CSS Grid Layout aktivieren
+          grid-cols-1 → eine Spalte auf kleinen Bildschirmen (Mobil)
+          sm:grid-cols-3 → drei Spalten ab Bildschirmbreite 640px
+          gap-4 → 16px Abstand zwischen den Karten
+        -->
+
+        <!-- ── Theorie-Karte 1: Umfang ── -->
+        <div class="rounded-2xl border border-emerald-400/20 bg-slate-900/50 p-5">
+          <!--
+            rounded-2xl → abgerundete Ecken (16px)
+            border-emerald-400/20 → grüner Rahmen, 20% Deckkraft (sehr dezent)
+            bg-slate-900/50 → halbtransparentes Dunkelblau als Karten-Hintergrund
+            p-5 → 20px Innenabstand auf allen Seiten
+          -->
+
+          <!-- Karten-Titel mit Icon -->
+          <h3 class="text-emerald-300 font-semibold mb-3 flex items-center gap-2">
+            <!-- text-emerald-300 → helles Grün, font-semibold → halbfett -->
+            <span class="text-xl" aria-hidden="true">📐</span>
+            Umfang
+          </h3>
+
+          <!-- Karten-Inhalt: Erklärung des Umfangs -->
+          <ul class="text-slate-300 text-sm space-y-2">
+            <!--
+              text-sm → 14px Schrift
+              space-y-2 → 8px vertikaler Abstand zwischen Listenpunkten
+            -->
+            <li class="flex gap-2">
+              <!-- gap-2 → 8px Abstand zwischen Bullet und Text -->
+              <span class="text-emerald-400 flex-shrink-0">▶</span>
+              <!-- flex-shrink-0 → Bullet wird nicht kleiner wenn Platz knapp ist -->
+              <span>Der Weg <strong class="text-white">einmal rund um die Figur</strong>.</span>
+            </li>
+            <li class="flex gap-2">
+              <span class="text-emerald-400 flex-shrink-0">▶</span>
+              <span>Formel: <strong class="text-white">U = 2 × (b + h)</strong></span>
+            </li>
+            <li class="flex gap-2">
+              <span class="text-emerald-400 flex-shrink-0">▶</span>
+              <span>Beispiel: b = 5, h = 3 → U = 2 × (5 + 3) = <strong class="text-white">16 cm</strong></span>
+            </li>
+            <li class="flex gap-2">
+              <span class="text-emerald-400 flex-shrink-0">▶</span>
+              <span>Einheit: <strong class="text-white">cm</strong> (Zentimeter)</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- ── Theorie-Karte 2: Flächeninhalt ── -->
+        <div class="rounded-2xl border border-emerald-400/20 bg-slate-900/50 p-5">
+          <h3 class="text-emerald-300 font-semibold mb-3 flex items-center gap-2">
+            <span class="text-xl" aria-hidden="true">🟩</span>
+            Flächeninhalt
+          </h3>
+
+          <ul class="text-slate-300 text-sm space-y-2">
+            <li class="flex gap-2">
+              <span class="text-emerald-400 flex-shrink-0">▶</span>
+              <span>Wie viele <strong class="text-white">Einheitsquadrate</strong> passen in die Figur?</span>
+            </li>
+            <li class="flex gap-2">
+              <span class="text-emerald-400 flex-shrink-0">▶</span>
+              <span>Formel: <strong class="text-white">A = b × h</strong></span>
+            </li>
+            <li class="flex gap-2">
+              <span class="text-emerald-400 flex-shrink-0">▶</span>
+              <span>Beispiel: b = 5, h = 3 → A = 5 × 3 = <strong class="text-white">15 cm²</strong></span>
+            </li>
+            <li class="flex gap-2">
+              <span class="text-emerald-400 flex-shrink-0">▶</span>
+              <span>Einheit: <strong class="text-white">cm²</strong> (Quadratzentimeter)</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- ── Theorie-Karte 3: Einheiten ── -->
+        <div class="rounded-2xl border border-emerald-400/20 bg-slate-900/50 p-5">
+          <h3 class="text-emerald-300 font-semibold mb-3 flex items-center gap-2">
+            <span class="text-xl" aria-hidden="true">📏</span>
+            Einheiten
+          </h3>
+
+          <ul class="text-slate-300 text-sm space-y-2">
+            <li class="flex gap-2">
+              <span class="text-emerald-400 flex-shrink-0">▶</span>
+              <span><strong class="text-white">Längen</strong> misst man in cm (Zentimeter).</span>
+            </li>
+            <li class="flex gap-2">
+              <span class="text-emerald-400 flex-shrink-0">▶</span>
+              <span><strong class="text-white">Flächen</strong> misst man in cm² (Quadratzentimeter).</span>
+            </li>
+            <li class="flex gap-2">
+              <span class="text-emerald-400 flex-shrink-0">▶</span>
+              <span>1 cm² = ein Quadrat mit Seitenlänge <strong class="text-white">1 cm × 1 cm</strong>.</span>
+            </li>
+            <li class="flex gap-2">
+              <span class="text-emerald-400 flex-shrink-0">▶</span>
+              <span>Das ² bedeutet: die Einheit wird <strong class="text-white">quadriert</strong> (mal sich selbst).</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════
+         SECTION 1: INTERAKTIVES RECHTECK
+         ═══════════════════════════════════════════ -->
+    <section
+      class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6 mb-8"
+      aria-labelledby="rechteck-heading"
+    >
+      <!--
+        rounded-3xl → sehr stark abgerundete Ecken (24px)
+        border border-slate-800 → dünner dunkler Rahmen
+        bg-slate-900/30 → leicht transparentes Dunkelblau als Karten-Hintergrund
+        p-6 → 24px Innenabstand auf allen Seiten
+        mb-8 → 32px Abstand nach unten
+        aria-labelledby → verknüpft Sektion mit ihrer Überschrift für Screenreader
+      -->
+
+      <!-- Abschnitts-Header: Icon, Titel, Untertitel -->
+      <div class="flex items-start gap-4 mb-6">
+        <!--
+          flex → Elemente nebeneinander
+          items-start → oben ausrichten (nicht strecken)
+          gap-4 → 16px Abstand zwischen Icon-Box und Textblock
+          mb-6 → 24px Abstand nach unten
+        -->
+
+        <!-- Dekoratives Icon als visueller Anker -->
+        <div class="text-3xl select-none" aria-hidden="true">📏</div>
+        <!--
+          text-3xl → 30px, groß genug um aufzufallen
+          select-none → Emoji kann nicht per Maus markiert werden
+          aria-hidden → Screenreader überspringt das dekorative Emoji
+        -->
+
+        <div>
+          <!-- Abschnittstitel, verknüpft mit aria-labelledby -->
+          <h2 id="rechteck-heading" class="text-xl font-bold text-emerald-300 mb-1">
+            <!-- text-xl → 20px, font-bold → fett, text-emerald-300 → helles Grün -->
+            Interaktives Rechteck
+          </h2>
+          <!-- Kurze Erklärung was der Nutzer hier tun soll -->
+          <p class="text-slate-400 text-sm">
+            <!-- text-slate-400 → mittleres Grau, text-sm → 14px -->
+            Verändere Breite und Höhe mit den Reglern – die Formeln aktualisieren sich live!
+          </p>
+        </div>
+      </div>
+
+      <!-- Zweispaltiges Layout: Regler links, SVG rechts (auf Mobil übereinander) -->
+      <div class="flex flex-col lg:flex-row gap-8 items-start">
+        <!--
+          flex-col → standardmäßig untereinander (Mobil)
+          lg:flex-row → ab 1024px nebeneinander
+          gap-8 → 32px Abstand zwischen den Spalten
+          items-start → Spalten oben ausrichten (nicht strecken)
+        -->
+
+        <!-- ── Linke Spalte: Schieberegler und Formeln ── -->
+        <div class="flex flex-col gap-6 min-w-0 w-full lg:w-64">
+          <!--
+            flex-col → Elemente untereinander
+            gap-6 → 24px Abstand zwischen Elementen
+            min-w-0 → verhindert Überlauf in Flex-Container
+            w-full → volle Breite auf Mobil
+            lg:w-64 → feste Breite 256px ab 1024px
+          -->
+
+          <!-- ── Schieberegler: Breite (b) ── -->
+          <div>
+            <!-- Beschriftungs-Zeile mit Wert-Anzeige rechts -->
+            <div class="flex justify-between items-center mb-2">
+              <!--
+                flex → nebeneinander
+                justify-between → Label links, Wert rechts
+                items-center → vertikal zentriert
+                mb-2 → 8px Abstand nach unten zum Regler
+              -->
+
+              <!-- Label für den Breite-Regler -->
+              <label
+                for="sl-breite"
+                class="text-slate-300 text-sm font-medium"
+              >
+                <!--
+                  for="sl-breite" → verknüpft Label mit dem Input (Barrierefreiheit + Klickbereich)
+                  text-slate-300 → helles Grau
+                  text-sm → 14px
+                  font-medium → mittlere Stärke
+                -->
+                Breite <em class="text-emerald-400 not-italic">b</em>
+                <!-- em + not-italic: semantisch hervorgehobene Variable ohne Kursivschrift -->
+              </label>
+
+              <!-- Live-Anzeige des aktuellen Breiten-Werts -->
+              <span class="text-emerald-300 font-bold text-base tabular-nums">
+                <!--
+                  text-emerald-300 → helles Grün für den Wert
+                  font-bold → fett
+                  text-base → 16px
+                  tabular-nums → Ziffern sind gleich breit → kein Layout-Springen
+                -->
+                <span id="out-b">5</span> cm
+                <!-- id="out-b" → wird per JavaScript aktualisiert -->
+              </span>
+            </div>
+
+            <!-- Schieberegler für die Breite (1–10 cm) -->
+            <input
+              type="range"
+              id="sl-breite"
+              min="1"
+              max="10"
+              value="5"
+              class="w-full"
+              oninput="update()"
+              aria-label="Breite b in Zentimeter"
+            />
+            <!--
+              type="range" → horizontaler Schieberegler
+              id="sl-breite" → eindeutige ID, wird per JS gelesen
+              min="1" max="10" → Wertebereich 1 bis 10 cm
+              value="5" → Startwert: 5 cm (Mitte)
+              class="w-full" → volle Breite des Containers
+              oninput="update()" → bei JEDER Änderung (auch während des Ziehens) update() aufrufen
+              aria-label → Beschreibung für Screenreader
+            -->
+          </div>
+
+          <!-- ── Schieberegler: Höhe (h) ── -->
+          <div>
+            <!-- Beschriftungs-Zeile mit Wert-Anzeige -->
+            <div class="flex justify-between items-center mb-2">
+              <label
+                for="sl-hoehe"
+                class="text-slate-300 text-sm font-medium"
+              >
+                Höhe <em class="text-emerald-400 not-italic">h</em>
+              </label>
+
+              <!-- Live-Anzeige des aktuellen Höhen-Werts -->
+              <span class="text-emerald-300 font-bold text-base tabular-nums">
+                <span id="out-h">4</span> cm
+                <!-- id="out-h" → wird per JavaScript aktualisiert -->
+              </span>
+            </div>
+
+            <!-- Schieberegler für die Höhe (1–10 cm) -->
+            <input
+              type="range"
+              id="sl-hoehe"
+              min="1"
+              max="10"
+              value="4"
+              class="w-full"
+              oninput="update()"
+              aria-label="Höhe h in Zentimeter"
+            />
+            <!-- Gleiche Attribute wie sl-breite, nur für die Höhe -->
+          </div>
+
+          <!-- ── Formel-Anzeige: Umfang ── -->
+          <div class="rounded-2xl border border-slate-700 bg-slate-950/60 p-4">
+            <!--
+              rounded-2xl → abgerundete Ecken
+              border border-slate-700 → dezenter Rahmen
+              bg-slate-950/60 → sehr dunkler, leicht transparenter Hintergrund
+              p-4 → 16px Innenabstand
+            -->
+
+            <!-- Label für die Umfang-Formel -->
+            <p class="text-xs text-slate-500 uppercase tracking-wider mb-2 font-semibold">
+              <!-- text-xs → 12px, text-slate-500 → dezentes Grau, tracking-wider → etwas gesperrt -->
+              Umfang
+            </p>
+
+            <!-- Umfang-Formel mit Live-Werten -->
+            <p class="formel text-emerald-300 text-sm">
+              <!--
+                formel → eigene CSS-Klasse: Monospace-Schrift, dunkler Hintergrund (s. <style>)
+                text-emerald-300 → helles Grün für die Formel
+                text-sm → 14px
+              -->
+              U = 2 × (b + h) = <span id="out-u" class="text-white font-bold">18</span> cm
+              <!-- id="out-u" → wird per JavaScript mit dem berechneten Wert befüllt -->
+            </p>
+          </div>
+
+          <!-- ── Formel-Anzeige: Flächeninhalt ── -->
+          <div class="rounded-2xl border border-slate-700 bg-slate-950/60 p-4">
+            <!-- Gleiche Karten-Klassen wie Umfang-Box -->
+
+            <!-- Label für die Flächen-Formel -->
+            <p class="text-xs text-slate-500 uppercase tracking-wider mb-2 font-semibold">
+              Flächeninhalt
+            </p>
+
+            <!-- Flächen-Formel mit Live-Werten -->
+            <p class="formel text-emerald-300 text-sm">
+              A = b × h = <span id="out-a" class="text-white font-bold">20</span> cm²
+              <!-- id="out-a" → wird per JavaScript mit dem berechneten Flächeninhalt befüllt -->
+            </p>
+          </div>
+        </div>
+
+        <!-- ── Rechte Spalte: SVG-Rechteck-Visualisierung ── -->
+        <div class="flex-1 min-w-0">
+          <!--
+            flex-1 → nimmt den verbleibenden Platz ein
+            min-w-0 → verhindert Überlauf in Flex-Container
+          -->
+
+          <!-- SVG-Container mit Beschriftung -->
+          <div class="overflow-x-auto">
+            <!--
+              overflow-x-auto → horizontales Scrollen auf sehr schmalen Bildschirmen
+              (das SVG ist 360px breit, was auf Handys evtl. zu breit sein kann)
+            -->
+
+            <svg
+              id="rechteck-svg"
+              viewBox="0 0 360 260"
+              width="360"
+              height="260"
+              class="block mx-auto"
+              role="img"
+              aria-label="Interaktives Rechteck-Visualisierung mit Gitter"
+            >
+              <!--
+                viewBox="0 0 360 260" → internes Koordinatensystem: 360 Einheiten breit, 260 hoch
+                width="360" height="260" → tatsächliche Größe in Pixeln
+                block mx-auto → SVG zentrieren
+                role="img" + aria-label → Barrierefreiheit für Screenreader
+              -->
+
+              <!-- ── Definitions-Bereich: wiederverwendbare SVG-Muster ── -->
+              <defs>
+                <!-- Gittermuster: wird als Füllung für das Rechteck verwendet -->
+                <pattern
+                  id="gitter-muster"
+                  x="0" y="0"
+                  width="24" height="24"
+                  patternUnits="userSpaceOnUse"
+                >
+                  <!--
+                    id="gitter-muster" → wird im rect-Element als fill="url(#gitter-muster)" referenziert
+                    width="24" height="24" → ein Kästchen = 24×24 SVG-Einheiten = 1 cm²
+                    patternUnits="userSpaceOnUse" → Koordinaten relativ zum umgebenden Element
+                  -->
+
+                  <!-- Kästchen-Hintergrund: leicht transparentes Grün -->
+                  <rect
+                    width="24" height="24"
+                    fill="#022c22"
+                    fill-opacity="0.6"
+                  />
+                  <!-- fill="#022c22" → emerald-950: sehr dunkles Grün -->
+                  <!-- fill-opacity="0.6" → 60% Deckkraft → Hintergrundfarbe scheint durch -->
+
+                  <!-- Vertikale Gitterlinie (rechte Seite jedes Kästchens) -->
+                  <line
+                    x1="24" y1="0" x2="24" y2="24"
+                    class="gitter-linie"
+                  />
+                  <!-- x1=24 x2=24 → senkrechte Linie ganz rechts im Kästchen -->
+
+                  <!-- Horizontale Gitterlinie (untere Seite jedes Kästchens) -->
+                  <line
+                    x1="0" y1="24" x2="24" y2="24"
+                    class="gitter-linie"
+                  />
+                  <!-- y1=24 y2=24 → waagerechte Linie ganz unten im Kästchen -->
+                </pattern>
+              </defs>
+
+              <!-- ── Hintergrund des SVG (dunkles Koordinatenfeld) ── -->
+              <rect
+                x="0" y="0"
+                width="360" height="260"
+                fill="#0f172a"
+                rx="12"
+              />
+              <!--
+                fill="#0f172a" → slate-950: fast schwarzer Hintergrund
+                rx="12" → abgerundete Ecken des Hintergrunds (12px Radius)
+              -->
+
+              <!-- ── Das eigentliche Rechteck (wird per JS in Größe und Position angepasst) ── -->
+              <rect
+                id="svg-rechteck"
+                x="30" y="20"
+                width="120" height="96"
+                class="rechteck-rahmen"
+                fill="url(#gitter-muster)"
+              />
+              <!--
+                id="svg-rechteck" → wird von update() per JavaScript verändert
+                x="30" y="20" → Startposition: 30px vom linken Rand, 20px von oben
+                width="120" height="96" → Startwerte: 5cm×24=120, 4cm×24=96
+                class="rechteck-rahmen" → CSS: grüner Rahmen, dunkle Füllung, Transition
+                fill="url(#gitter-muster)" → Gittermuster als Füllung
+              -->
+
+              <!-- ── Maßlinie Breite (waagerecht, unter dem Rechteck) ── -->
+              <g id="masse-breite">
+                <!--
+                  <g> = Gruppe, alle Elemente der Breiten-Bemaßung zusammen
+                  id="masse-breite" → wird per JS als Gruppe bewegt/aktualisiert
+                -->
+
+                <!-- Linie der Breitenmaßangabe (waagerecht) -->
+                <line
+                  id="mas-b-linie"
+                  x1="30" y1="140" x2="150" y2="140"
+                  stroke="#34d399" stroke-width="1.5"
+                  stroke-dasharray="4 3"
+                />
+                <!--
+                  stroke="#34d399" → emerald-400: helles Grün
+                  stroke-width="1.5" → 1,5px Linienstärke
+                  stroke-dasharray="4 3" → gestrichelte Linie: 4px Strich, 3px Lücke
+                -->
+
+                <!-- Linker Endstrich der Breiten-Maßlinie -->
+                <line
+                  id="mas-b-l1"
+                  x1="30" y1="136" x2="30" y2="144"
+                  stroke="#34d399" stroke-width="1.5"
+                />
+
+                <!-- Rechter Endstrich der Breiten-Maßlinie -->
+                <line
+                  id="mas-b-l2"
+                  x1="150" y1="136" x2="150" y2="144"
+                  stroke="#34d399" stroke-width="1.5"
+                />
+
+                <!-- Textbeschriftung der Breite -->
+                <text
+                  id="mas-b-text"
+                  x="90" y="155"
+                  text-anchor="middle"
+                  fill="#34d399"
+                  font-size="11"
+                  font-family="ui-monospace, monospace"
+                >
+                  <!--
+                    x="90" → horizontal zentriert zwischen x=30 und x=150
+                    y="155" → leicht unterhalb der Maßlinie
+                    text-anchor="middle" → Text wird am Mittelpunkt ausgerichtet
+                    font-family="ui-monospace" → Monospace-Schrift für Formeln
+                  -->
+                  b = 5 cm
+                  <!-- Wird von update() aktualisiert -->
+                </text>
+              </g>
+
+              <!-- ── Maßlinie Höhe (senkrecht, rechts neben dem Rechteck) ── -->
+              <g id="masse-hoehe">
+                <!-- <g> = Gruppe für alle Elemente der Höhen-Bemaßung -->
+
+                <!-- Linie der Höhenmaßangabe (senkrecht) -->
+                <line
+                  id="mas-h-linie"
+                  x1="175" y1="20" x2="175" y2="116"
+                  stroke="#34d399" stroke-width="1.5"
+                  stroke-dasharray="4 3"
+                />
+                <!-- x1=x2=175 → senkrechte Linie rechts neben dem Rechteck -->
+
+                <!-- Oberer Endstrich der Höhen-Maßlinie -->
+                <line
+                  id="mas-h-l1"
+                  x1="171" y1="20" x2="179" y2="20"
+                  stroke="#34d399" stroke-width="1.5"
+                />
+
+                <!-- Unterer Endstrich der Höhen-Maßlinie -->
+                <line
+                  id="mas-h-l2"
+                  x1="171" y1="116" x2="179" y2="116"
+                  stroke="#34d399" stroke-width="1.5"
+                />
+
+                <!-- Textbeschriftung der Höhe (gedreht, senkrecht) -->
+                <text
+                  id="mas-h-text"
+                  x="192"
+                  y="68"
+                  text-anchor="middle"
+                  fill="#34d399"
+                  font-size="11"
+                  font-family="ui-monospace, monospace"
+                  transform="rotate(90, 192, 68)"
+                >
+                  <!--
+                    x="192" y="68" → rechts neben der Maßlinie, vertikal zentriert
+                    transform="rotate(90, 192, 68)" → 90° Drehung um den Ankerpunkt (192,68)
+                    → Text ist senkrecht, lesbar von unten nach oben
+                  -->
+                  h = 4 cm
+                  <!-- Wird von update() aktualisiert -->
+                </text>
+              </g>
+
+              <!-- ── Ecken-Markierung (kleines Quadrat = rechter Winkel) ── -->
+              <rect
+                id="ecke-mark"
+                x="30" y="20"
+                width="8" height="8"
+                fill="none"
+                stroke="#6ee7b7"
+                stroke-width="1.2"
+                opacity="0.7"
+              />
+              <!--
+                Kleines Quadrat in der oberen linken Ecke = Symbol für rechten Winkel
+                fill="none" → nur Rahmen, kein Füllung
+                stroke="#6ee7b7" → emerald-300: helles Grün
+                opacity="0.7" → leicht transparent (dezenter Hinweis)
+              -->
+
+            </svg>
+          </div>
+
+          <!-- Klein-Text: Legende für Kästchengröße -->
+          <p class="text-center text-xs text-slate-500 mt-2">
+            <!-- text-center → zentriert, text-xs → 12px, mt-2 → 8px Abstand nach oben -->
+            1 Kästchen = 1 cm²
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════
+         SECTION 2: QUADRATE ZÄHLEN
+         ═══════════════════════════════════════════ -->
+    <section
+      class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6 mb-8"
+      aria-labelledby="zaehlen-heading"
+    >
+      <!-- Abschnitts-Header -->
+      <div class="flex items-start gap-4 mb-6">
+        <div class="text-3xl select-none" aria-hidden="true">🔢</div>
+        <div>
+          <h2 id="zaehlen-heading" class="text-xl font-bold text-emerald-300 mb-1">
+            Quadrate zählen
+          </h2>
+          <p class="text-slate-400 text-sm">
+            Zähle die Kästchen im Rechteck und gib den Flächeninhalt ein.
+          </p>
+        </div>
+      </div>
+
+      <!-- Zweispaltiges Layout: SVG links, Eingabe rechts (auf Mobil übereinander) -->
+      <div class="flex flex-col sm:flex-row items-center gap-8">
+        <!--
+          flex-col → übereinander auf Mobil
+          sm:flex-row → nebeneinander ab 640px
+          items-center → vertikal zentriert
+          gap-8 → 32px Abstand zwischen SVG und Eingabebereich
+        -->
+
+        <!-- SVG: Rechteck-Gitter zum Zählen -->
+        <div class="flex-shrink-0">
+          <!--
+            flex-shrink-0 → verhindert, dass dieser Bereich kleiner wird wenn Platz knapp ist
+          -->
+
+          <svg
+            id="zaehlen-svg"
+            viewBox="0 0 280 230"
+            width="280"
+            height="230"
+            class="block rounded-xl border border-slate-700 bg-slate-900"
+            role="img"
+            aria-label="Rechteck-Gitter zum Abzählen der Kästchen"
+          >
+            <!--
+              viewBox="0 0 280 230" → Koordinatensystem 280×230
+              rounded-xl → abgerundete Ecken (12px)
+              border border-slate-700 → dezenter Rahmen
+              bg-slate-900 → dunkler Hintergrund
+            -->
+            <!-- Wird von newZaehlAufgabe() per JavaScript befüllt -->
+          </svg>
+
+          <!-- Aufgaben-Text unter dem SVG -->
+          <p class="text-center text-xs text-slate-500 mt-2">
+            Wie viele Kästchen passen hinein?
+          </p>
+        </div>
+
+        <!-- Eingabebereich: Feld, Button, Feedback, Score -->
+        <div class="flex flex-col items-center gap-4 w-full sm:w-auto">
+          <!--
+            flex-col → Elemente untereinander
+            items-center → horizontal zentrieren
+            gap-4 → 16px Abstand
+            w-full sm:w-auto → volle Breite auf Mobil, automatisch ab sm
+          -->
+
+          <!-- Aufgaben-Fragetext -->
+          <p class="text-slate-200 text-base font-medium text-center">
+            Wie groß ist die Fläche?
+          </p>
+
+          <!-- Eingabefeld für die Flächenantwort -->
+          <div class="flex items-center gap-2">
+            <!--
+              flex items-center gap-2 → Eingabefeld und Einheit nebeneinander
+            -->
+            <input
+              id="zaehlen-input"
+              type="number"
+              min="1"
+              max="64"
+              placeholder="?"
+              class="w-20 text-center text-2xl font-bold rounded-2xl border-2 border-slate-600 bg-slate-800 text-white focus:outline-none focus:border-emerald-400 py-3 transition-colors"
+              aria-label="Flächeninhalt in cm² eingeben"
+            />
+            <!--
+              w-20 → 80px Breite (schmal, nur 1-2 Ziffern)
+              text-center → Zahl zentriert
+              text-2xl font-bold → gut lesbar
+              rounded-2xl → stark abgerundet
+              border-2 border-slate-600 → sichtbarer Rahmen
+              focus:border-emerald-400 → grüner Rahmen wenn aktiv
+              transition-colors → weicher Rahmen-Farbwechsel
+            -->
+
+            <!-- Einheit-Anzeige neben dem Eingabefeld -->
+            <span class="text-slate-400 text-base">cm²</span>
+          </div>
+
+          <!-- Prüfen-Button -->
+          <button
+            onclick="checkZaehlen()"
+            class="px-6 py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-slate-950 font-bold text-base transition-colors"
+          >
+            <!--
+              px-6 → 24px horizontaler Innenabstand
+              py-3 → 12px vertikaler Innenabstand
+              bg-emerald-500 → sattes Grün
+              hover:bg-emerald-400 → heller bei Hover
+              active:bg-emerald-600 → dunkler beim Klicken (haptisches Feedback)
+              text-slate-950 → sehr dunkler Text (gut lesbar auf Grün)
+              font-bold → fett
+              transition-colors → weicher Farbübergang
+            -->
+            Prüfen ✓
+          </button>
+
+          <!-- Feedback-Bereich nach dem Prüfen -->
+          <div
+            id="zaehlen-feedback"
+            class="text-base font-semibold min-h-[1.75rem] text-center"
+            aria-live="assertive"
+          >
+            <!--
+              min-h-[1.75rem] → Mindesthöhe verhindert Layout-Sprung wenn Text erscheint
+              aria-live="assertive" → Screenreader liest sofort vor (wichtiges Feedback)
+            -->
+          </div>
+
+          <!-- Punktestand für Zähl-Übung -->
+          <div class="flex items-center gap-3 text-sm text-slate-400">
+            <!-- Richtig-Zähler -->
+            <span class="flex items-center gap-1">
+              Richtig:
+              <span id="zaehlen-score" class="text-emerald-400 font-bold text-base ml-1">0</span>
+              <!-- text-emerald-400 → grüner Zähler, font-bold → fett -->
+            </span>
+
+            <!-- Trennpunkt -->
+            <span class="text-slate-600">·</span>
+
+            <!-- Gesamt-Zähler -->
+            <span class="flex items-center gap-1">
+              Gesamt:
+              <span id="zaehlen-gesamt" class="text-slate-300 font-bold text-base ml-1">0</span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════
+         SECTION 3: QUIZ
+         ═══════════════════════════════════════════ -->
+    <section
+      class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6 mb-10"
+      aria-labelledby="quiz-heading"
+    >
+      <!-- Abschnitts-Header -->
+      <div class="flex items-start gap-4 mb-6">
+        <div class="text-3xl select-none" aria-hidden="true">🧮</div>
+        <div>
+          <h2 id="quiz-heading" class="text-xl font-bold text-emerald-300 mb-1">
+            Aufgaben rechnen
+          </h2>
+          <p class="text-slate-400 text-sm">
+            Berechne Umfang und Flächeninhalt aus den angegebenen Maßen.
+          </p>
+        </div>
+      </div>
+
+      <!-- Aufgaben-Karte: Aufgabentext -->
+      <div
+        id="quiz-aufgabe"
+        class="rounded-2xl border border-slate-700 bg-slate-950/70 p-5 mb-6 text-center"
+      >
+        <!--
+          rounded-2xl → abgerundete Ecken
+          border border-slate-700 → dezenter Rahmen
+          bg-slate-950/70 → sehr dunkler, leicht transparenter Hintergrund
+          p-5 → 20px Innenabstand
+          mb-6 → 24px Abstand nach unten
+          text-center → zentrierter Text
+        -->
+
+        <!-- Aufgaben-Text, wird von newQuizAufgabe() befüllt -->
+        <p id="quiz-text" class="text-slate-100 text-lg font-semibold">
+          <!-- text-slate-100 → fast weiß, text-lg → 18px, font-semibold → halbfett -->
+          Ein Rechteck hat b = <span id="q-b" class="text-emerald-300">6</span> cm
+          und h = <span id="q-h" class="text-emerald-300">4</span> cm.
+          <!-- Farbige Spans für die variablen Maße: emerald-300 → helles Grün -->
+        </p>
+      </div>
+
+      <!-- Eingabe-Zeile: Umfang und Fläche nebeneinander (auf Mobil übereinander) -->
+      <div class="flex flex-col sm:flex-row gap-6 items-center justify-center mb-6">
+        <!--
+          flex-col sm:flex-row → untereinander auf Mobil, nebeneinander ab sm
+          gap-6 → 24px Abstand
+          items-center justify-center → zentriert in beiden Achsen
+          mb-6 → 24px Abstand nach unten
+        -->
+
+        <!-- ── Eingabe: Umfang ── -->
+        <div class="flex flex-col items-center gap-2">
+          <!-- flex-col items-center → Label und Feld untereinander, zentriert -->
+
+          <!-- Label für Umfang-Eingabe -->
+          <label
+            for="quiz-u-input"
+            class="text-slate-400 text-sm font-medium"
+          >
+            Umfang U
+          </label>
+
+          <!-- Eingabezeile: Feld + Einheit -->
+          <div class="flex items-center gap-2">
+            <input
+              id="quiz-u-input"
+              type="number"
+              min="1"
+              max="999"
+              placeholder="?"
+              class="quiz-input"
+              aria-label="Umfang in cm eingeben"
+            />
+            <!-- class="quiz-input" → eigene CSS-Klasse (s. <style>): dunkles Feld, grüner Fokus -->
+            <span class="text-slate-400 text-sm">cm</span>
+          </div>
+        </div>
+
+        <!-- Trennzeichen zwischen den beiden Eingaben -->
+        <div class="text-slate-600 text-2xl hidden sm:block" aria-hidden="true">·</div>
+        <!-- hidden sm:block → auf Mobil unsichtbar (spart Platz), ab sm sichtbar -->
+
+        <!-- ── Eingabe: Flächeninhalt ── -->
+        <div class="flex flex-col items-center gap-2">
+          <label
+            for="quiz-a-input"
+            class="text-slate-400 text-sm font-medium"
+          >
+            Flächeninhalt A
+          </label>
+
+          <!-- Eingabezeile: Feld + Einheit -->
+          <div class="flex items-center gap-2">
+            <input
+              id="quiz-a-input"
+              type="number"
+              min="1"
+              max="9999"
+              placeholder="?"
+              class="quiz-input"
+              aria-label="Flächeninhalt in cm² eingeben"
+            />
+            <span class="text-slate-400 text-sm">cm²</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Button-Leiste: Prüfen, Tipp, Nächste Aufgabe -->
+      <div class="flex flex-wrap items-center justify-center gap-3 mb-5">
+        <!--
+          flex-wrap → bei Platzmangel umbrechen
+          items-center justify-center → zentriert
+          gap-3 → 12px Abstand
+          mb-5 → 20px Abstand nach unten
+        -->
+
+        <!-- Prüfen-Button -->
+        <button
+          onclick="checkQuiz()"
+          class="px-6 py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-slate-950 font-bold text-base transition-colors"
+        >
+          Prüfen ✓
+        </button>
+
+        <!-- Tipp-Button: blendet Formel-Kasten ein/aus -->
+        <button
+          onclick="toggleHinweis()"
+          id="hinweis-btn"
+          class="px-5 py-3 rounded-2xl bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium text-base transition-colors"
+          aria-expanded="false"
+        >
+          <!--
+            bg-slate-700 → dunkler Hintergrund (weniger prominent als Prüfen)
+            hover:bg-slate-600 → etwas heller bei Hover
+            text-slate-200 → heller Text
+            font-medium → mittlere Stärke (weniger auffällig als font-bold)
+            aria-expanded="false" → Barrierefreiheit: zeigt ob der Tipp sichtbar ist
+          -->
+          💡 Tipp
+        </button>
+
+        <!-- Nächste-Aufgabe-Button: startet nach einer richtigen/falschen Antwort -->
+        <button
+          id="quiz-weiter"
+          onclick="newQuizAufgabe()"
+          class="hidden px-6 py-3 rounded-2xl bg-slate-700 hover:bg-emerald-500 hover:text-slate-950 text-slate-100 font-bold text-base transition-all puls-gruen"
+        >
+          <!--
+            hidden → standardmäßig unsichtbar (wird per JS eingeblendet)
+            hover:bg-emerald-500 → bei Hover: grün (auffälliger nach richtiger Antwort)
+            hover:text-slate-950 → sehr dunkler Text auf grünem Hintergrund
+            puls-gruen → Puls-Animation zieht Aufmerksamkeit auf sich
+          -->
+          Nächste Aufgabe →
+        </button>
+      </div>
+
+      <!-- Aufklappbarer Tipp-Kasten mit den Formeln -->
+      <div
+        id="hinweis-box"
+        class="hinweis-box rounded-2xl border border-slate-700 bg-slate-950/60 overflow-hidden"
+        aria-hidden="true"
+      >
+        <!--
+          hinweis-box → eigene CSS-Klasse: max-height: 0 (eingeklappt) → max-height: 200px (ausgeklappt)
+          aria-hidden="true" → wird per JS umgeschaltet wenn sichtbar
+        -->
+        <div class="p-4">
+          <!-- p-4 → 16px Innenabstand innerhalb des Tipp-Kastens -->
+
+          <!-- Tipp-Überschrift -->
+          <p class="text-emerald-400 font-semibold text-sm mb-3">
+            <!-- text-emerald-400 → sattes Grün für den Tipp-Titel -->
+            Formeln für das Rechteck:
+          </p>
+
+          <!-- Formeln als Liste -->
+          <ul class="text-slate-300 text-sm space-y-2">
+            <li class="flex gap-3 items-center">
+              <span class="text-emerald-400 flex-shrink-0">▶</span>
+              <code class="formel text-emerald-200 text-xs">U = 2 × (b + h)</code>
+              <!-- <code> → semantisch korrektes Element für Formeln/Code -->
+              <span class="text-slate-400">&nbsp;→ Umfang</span>
+            </li>
+            <li class="flex gap-3 items-center">
+              <span class="text-emerald-400 flex-shrink-0">▶</span>
+              <code class="formel text-emerald-200 text-xs">A = b × h</code>
+              <span class="text-slate-400">&nbsp;→ Flächeninhalt</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Feedback-Bereich nach dem Prüfen -->
+      <div
+        id="quiz-feedback"
+        class="mt-5 text-base font-semibold min-h-[1.75rem] text-center"
+        aria-live="assertive"
+      >
+        <!-- mt-5 → 20px Abstand nach oben, aria-live → Screenreader liest sofort vor -->
+      </div>
+
+      <!-- Punktestand für Quiz -->
+      <div class="flex items-center justify-center gap-3 text-sm text-slate-400 mt-4">
+        <!-- mt-4 → 16px Abstand nach oben, justify-center → horizontal zentriert -->
+
+        <span class="flex items-center gap-1">
+          Richtig:
+          <span id="quiz-score" class="text-emerald-400 font-bold text-base ml-1">0</span>
+        </span>
+
+        <span class="text-slate-600">·</span>
+
+        <span class="flex items-center gap-1">
+          Gesamt:
+          <span id="quiz-gesamt" class="text-slate-300 font-bold text-base ml-1">0</span>
+        </span>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ═══════════════════════════════════════════
+       FOOTER
+       ═══════════════════════════════════════════ -->
+  <footer class="py-6 text-center text-xs text-slate-500">
+    <!--
+      py-6 → 24px Innenabstand oben und unten
+      text-center → zentrierter Text
+      text-xs → 12px Schriftgröße
+      text-slate-500 → mittleres Grau (dezent, im Hintergrund)
+    -->
+    © <span id="y"></span> Brandon Hank · Düsseldorf
+    <!-- id="y" → wird von JavaScript mit der aktuellen Jahreszahl befüllt -->
+  </footer>
+
+  <!-- ═══════════════════════════════════════════
+       JAVASCRIPT: Interaktive Logik
+       ═══════════════════════════════════════════ -->
+  <script>
+    /*
+     * ════════════════════════════════════════════════════════════════
+     *  GLOBALE HILFSFUNKTIONEN
+     * ════════════════════════════════════════════════════════════════
+     */
+
+    /**
+     * zufallszahl(min, max)
+     * Gibt eine zufällige ganze Zahl zurück, die zwischen min und max liegt (beide inklusive).
+     *
+     * Math.random() → liefert eine Dezimalzahl zwischen 0 (inklusive) und 1 (exklusive)
+     * * (max - min + 1) → skaliert auf den gewünschten Bereich
+     * Math.floor() → rundet die Dezimalzahl NACH UNTEN zur nächsten ganzen Zahl ab
+     * + min → verschiebt den Bereich zum Minimum
+     *
+     * Beispiel: zufallszahl(2, 8) kann 2, 3, 4, 5, 6, 7 oder 8 zurückgeben
+     */
+    function zufallszahl(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    /**
+     * createSVGElement(tag)
+     * Erstellt ein SVG-Element mit dem korrekten XML-Namespace.
+     *
+     * Warum createElementNS()? → SVG-Elemente müssen im SVG-Namespace erstellt werden.
+     * Normales document.createElement() funktioniert für SVG NICHT – der Browser
+     * würde das Element nicht als SVG-Element erkennen und nicht zeichnen.
+     *
+     * 'http://www.w3.org/2000/svg' ist der offizielle W3C-Namespace für SVG.
+     */
+    function createSVGElement(tag) {
+      return document.createElementNS('http://www.w3.org/2000/svg', tag);
+    }
+
+    /**
+     * setAttr(el, attrs)
+     * Hilfsfunktion: setzt mehrere SVG/HTML-Attribute auf einmal.
+     *
+     * @param {Element} el - Das Element auf das Attribute gesetzt werden
+     * @param {Object} attrs - Objekt mit Attribut-Namen als Keys und Werten als Values
+     *
+     * Statt: el.setAttribute('x', 10); el.setAttribute('y', 20); ...
+     * Einfach: setAttr(el, { x: 10, y: 20, ... })
+     *
+     * Wie es funktioniert:
+     * Object.entries() → wandelt ein Objekt in ein Array von [key, value]-Paaren um
+     * forEach → iteriert über jedes Paar und setzt das Attribut
+     */
+    function setAttr(el, attrs) {
+      Object.entries(attrs).forEach(function(paar) {
+        var schluessel = paar[0]; // Attribut-Name (z.B. "x1")
+        var wert       = paar[1]; // Attribut-Wert (z.B. "30")
+        el.setAttribute(schluessel, wert);
+      });
+    }
+
+
+    /*
+     * ════════════════════════════════════════════════════════════════
+     *  SECTION 1: INTERAKTIVES RECHTECK
+     *  Schieberegler steuern Breite und Höhe eines SVG-Rechtecks.
+     *  Umfang und Fläche werden live berechnet und angezeigt.
+     * ════════════════════════════════════════════════════════════════
+     */
+
+    /**
+     * update()
+     * Wird bei JEDER Änderung an einem der beiden Schieberegler aufgerufen (oninput).
+     *
+     * Was diese Funktion tut:
+     * 1. Aktuelle Werte der Schieberegler lesen
+     * 2. Umfang (U) und Fläche (A) berechnen
+     * 3. Text-Ausgaben aktualisieren (out-b, out-h, out-u, out-a)
+     * 4. SVG-Rechteck und Maßlinien aktualisieren
+     *
+     * Koordinatensystem des SVG:
+     *   - Ursprung (0,0) ist oben links
+     *   - x wächst nach rechts
+     *   - y wächst nach unten
+     *   - Maßstab: 1 cm = 24 SVG-Einheiten (Pixel)
+     *   - Rechteck startet bei x=30, y=20 (Rand für Maßlinien)
+     *   - Maximale Breite: 10 cm × 24 = 240px → endet bei x=270
+     *   - Maximale Höhe: 10 cm × 24 = 240px → endet bei y=260
+     */
+    function update() {
+      // ── Schritt 1: Werte aus den Schiebereglern lesen ─────────────
+      // parseInt() → wandelt den String-Wert des Inputs in eine ganze Zahl um
+      var b = parseInt(document.getElementById('sl-breite').value); // Breite in cm (1-10)
+      var h = parseInt(document.getElementById('sl-hoehe').value);  // Höhe in cm (1-10)
+
+      // ── Schritt 2: Formeln berechnen ──────────────────────────────
+      var U = 2 * (b + h); // Umfang: U = 2 × (Breite + Höhe)
+      var A = b * h;        // Flächeninhalt: A = Breite × Höhe
+
+      // ── Schritt 3: Text-Ausgaben aktualisieren ────────────────────
+      document.getElementById('out-b').textContent = b;  // Breiten-Wert über dem Regler
+      document.getElementById('out-h').textContent = h;  // Höhen-Wert über dem Regler
+      document.getElementById('out-u').textContent = U;  // Umfang-Ergebnis in Formel-Box
+      document.getElementById('out-a').textContent = A;  // Flächen-Ergebnis in Formel-Box
+
+      // ── Schritt 4: SVG-Rechteck aktualisieren ─────────────────────
+      // Maßstab: 1 cm entspricht 24 SVG-Einheiten
+      var MASSSTAB   = 24;   // 1 cm = 24 SVG-Pixel
+      var X_OFFSET   = 30;   // Rechteck beginnt 30px vom linken Rand (Platz für Höhen-Maßlinie)
+      var Y_OFFSET   = 20;   // Rechteck beginnt 20px von oben (Platz für Breiten-Label)
+
+      // Breite und Höhe des SVG-Rechtecks in Pixeln
+      var svgBreite = b * MASSSTAB; // z.B. b=5 → 120px
+      var svgHoehe  = h * MASSSTAB; // z.B. h=4 → 96px
+
+      // SVG-Rechteck-Element holen und neue Größe setzen
+      var rechteck = document.getElementById('svg-rechteck');
+      setAttr(rechteck, {
+        x:      X_OFFSET,   // Startposition x (bleibt fest)
+        y:      Y_OFFSET,   // Startposition y (bleibt fest)
+        width:  svgBreite,  // neue Breite in SVG-Einheiten
+        height: svgHoehe    // neue Höhe in SVG-Einheiten
+      });
+
+      // ── SVG-Maßlinien aktualisieren ───────────────────────────────
+      // Endpunkte des Rechtecks berechnen (brauchen wir für die Maßlinien)
+      var xRechts = X_OFFSET + svgBreite; // rechte Kante des Rechtecks
+      var yUnten  = Y_OFFSET + svgHoehe;  // untere Kante des Rechtecks
+
+      // Abstände der Maßlinien vom Rechteck
+      var ABSTAND_UNTEN = 18;  // Breiten-Maßlinie: so weit unter der unteren Kante
+      var ABSTAND_RECHTS = 20; // Höhen-Maßlinie: so weit rechts von der rechten Kante
+
+      // Positionen der Maßlinien
+      var yMasBr    = yUnten + ABSTAND_UNTEN;        // y-Position der Breiten-Maßlinie
+      var xMasH     = xRechts + ABSTAND_RECHTS;       // x-Position der Höhen-Maßlinie
+      var xMitteB   = X_OFFSET + svgBreite / 2;      // x-Mitte der Breite (für Text)
+      var yMitteH   = Y_OFFSET + svgHoehe / 2;       // y-Mitte der Höhe (für Text)
+
+      // ── Breiten-Maßlinie: waagerechte Linie unter dem Rechteck ───
+      // Hauptlinie
+      setAttr(document.getElementById('mas-b-linie'), {
+        x1: X_OFFSET, y1: yMasBr,  // linker Startpunkt
+        x2: xRechts,  y2: yMasBr   // rechter Endpunkt
+      });
+
+      // Linker Endstrich (senkrechter Strich am Anfang der Maßlinie)
+      setAttr(document.getElementById('mas-b-l1'), {
+        x1: X_OFFSET, y1: yMasBr - 4,  // 4px über der Maßlinie
+        x2: X_OFFSET, y2: yMasBr + 4   // 4px unter der Maßlinie
+      });
+
+      // Rechter Endstrich
+      setAttr(document.getElementById('mas-b-l2'), {
+        x1: xRechts, y1: yMasBr - 4,
+        x2: xRechts, y2: yMasBr + 4
+      });
+
+      // Breiten-Text (zentriert unter der Maßlinie)
+      var masBreiteText = document.getElementById('mas-b-text');
+      setAttr(masBreiteText, {
+        x: xMitteB,          // horizontal zentriert
+        y: yMasBr + 14       // 14px unter der Maßlinie
+      });
+      masBreiteText.textContent = 'b = ' + b + ' cm'; // Text aktualisieren
+
+      // ── Höhen-Maßlinie: senkrechte Linie rechts vom Rechteck ─────
+      // Hauptlinie
+      setAttr(document.getElementById('mas-h-linie'), {
+        x1: xMasH, y1: Y_OFFSET, // oberer Startpunkt
+        x2: xMasH, y2: yUnten    // unterer Endpunkt
+      });
+
+      // Oberer Endstrich
+      setAttr(document.getElementById('mas-h-l1'), {
+        x1: xMasH - 4, y1: Y_OFFSET,  // 4px links der Maßlinie
+        x2: xMasH + 4, y2: Y_OFFSET   // 4px rechts der Maßlinie
+      });
+
+      // Unterer Endstrich
+      setAttr(document.getElementById('mas-h-l2'), {
+        x1: xMasH - 4, y1: yUnten,
+        x2: xMasH + 4, y2: yUnten
+      });
+
+      // Höhen-Text (senkrecht, neben der Maßlinie)
+      var masHoeheText = document.getElementById('mas-h-text');
+      var textX = xMasH + 16; // 16px rechts von der Maßlinie
+      var textY = yMitteH;    // vertikal zentriert
+
+      setAttr(masHoeheText, {
+        x: textX,
+        y: textY,
+        // Rotation um den Text-Ankerpunkt → Text ist senkrecht
+        transform: 'rotate(90, ' + textX + ', ' + textY + ')'
+      });
+      masHoeheText.textContent = 'h = ' + h + ' cm';
+
+      // ── Ecken-Markierung (rechter-Winkel-Symbol) aktualisieren ───
+      // Bleibt immer in der oberen linken Ecke des Rechtecks
+      setAttr(document.getElementById('ecke-mark'), {
+        x: X_OFFSET,      // linke Kante des Rechtecks
+        y: Y_OFFSET,      // obere Kante des Rechtecks
+        width: 8,          // feste Größe (8×8 SVG-Einheiten)
+        height: 8
+      });
+    }
+
+
+    /*
+     * ════════════════════════════════════════════════════════════════
+     *  SECTION 2: QUADRATE ZÄHLEN
+     *  Ein zufälliges Rechteck wird als Gitter gezeichnet.
+     *  Der Schüler zählt die Kästchen und gibt die Fläche ein.
+     * ════════════════════════════════════════════════════════════════
+     */
+
+    // Speichert die aktuellen Abmessungen der Zähl-Aufgabe
+    var zaehlenBreite  = 0; // aktuelle Breite in cm
+    var zaehlenHoehe   = 0; // aktuelle Höhe in cm
+    var zaehlenAntwort = 0; // richtige Antwort (= Breite × Höhe)
+
+    // Punktestand für Zähl-Übung
+    var zaehlenScore   = 0; // Anzahl richtiger Antworten
+    var zaehlenGesamt  = 0; // Gesamtzahl der Versuche
+
+    /**
+     * newZaehlAufgabe()
+     * Generiert eine neue Zähl-Aufgabe:
+     * - Wählt zufällige Breite (2-8 cm) und Höhe (2-8 cm)
+     * - Zeichnet das Rechteck als Gitter im SVG
+     * - Setzt Eingabefeld und Feedback zurück
+     *
+     * Das SVG-Gitter:
+     *   - Jede Zelle = 1 cm² (ein Kästchen)
+     *   - Zellgröße: 30×30 SVG-Pixel
+     *   - Das Gitter beginnt bei x=20, y=15 (Rand)
+     *   - Kein Text, keine Beschriftung → Schüler muss selbst zählen
+     */
+    function newZaehlAufgabe() {
+      // ── Zufällige Dimensionen wählen (beide 2-8 cm) ────────────────
+      zaehlenBreite  = zufallszahl(2, 8); // Breite: 2 bis 8 cm
+      zaehlenHoehe   = zufallszahl(2, 8); // Höhe: 2 bis 8 cm
+      zaehlenAntwort = zaehlenBreite * zaehlenHoehe; // Fläche in cm²
+
+      // ── SVG leeren und neu zeichnen ────────────────────────────────
+      var svg = document.getElementById('zaehlen-svg');
+      svg.innerHTML = ''; // alten Inhalt löschen
+
+      // ── Gitter-Konstanten ──────────────────────────────────────────
+      var ZELL_GROESSE = 30;  // Jede Zelle: 30×30 SVG-Pixel = 1 cm²
+      var X_START      = 20;  // Gitter beginnt 20px vom linken Rand
+      var Y_START      = 15;  // Gitter beginnt 15px von oben
+
+      // ── Hintergrund-Rechteck (dunkler Rahmen um das Gitter) ───────
+      var hintergrund = createSVGElement('rect');
+      setAttr(hintergrund, {
+        x:      X_START - 2,                        // 2px Rand links außen
+        y:      Y_START - 2,                        // 2px Rand oben außen
+        width:  zaehlenBreite * ZELL_GROESSE + 4,  // 4px Rand links+rechts
+        height: zaehlenHoehe  * ZELL_GROESSE + 4,  // 4px Rand oben+unten
+        rx:     4,                                  // leicht abgerundete Ecken
+        fill:   '#134e4a',                          // teal-900: dunkles Grün
+        stroke: '#14b8a6',                          // teal-500: heller Rahmen
+        'stroke-width': '2'
+      });
+      svg.appendChild(hintergrund);
+
+      // ── Für jede Zeile und Spalte: Gitter-Zellen zeichnen ─────────
+      for (var zeile = 0; zeile < zaehlenHoehe; zeile++) {
+        // zeile: 0 bis (Höhe-1) → iteriert durch die Zeilen von oben nach unten
+
+        for (var spalte = 0; spalte < zaehlenBreite; spalte++) {
+          // spalte: 0 bis (Breite-1) → iteriert durch die Spalten von links nach rechts
+
+          // Position der Zelle berechnen
+          var zellX = X_START + spalte * ZELL_GROESSE; // x-Position: Start + Spalten-Index × Zellgröße
+          var zellY = Y_START + zeile  * ZELL_GROESSE; // y-Position: Start + Zeilen-Index × Zellgröße
+
+          // Gitter-Zelle (ausgefülltes Quadrat) zeichnen
+          var zelle = createSVGElement('rect');
+          setAttr(zelle, {
+            x:      zellX,
+            y:      zellY,
+            width:  ZELL_GROESSE,   // Breite einer Zelle
+            height: ZELL_GROESSE,   // Höhe einer Zelle (= Breite → Quadrat)
+            fill:   '#0d9488',      // teal-600: sattes Grün-Blau als Füllung
+            'fill-opacity': '0.55', // halb-transparent: Gitterlinien bleiben sichtbar
+            stroke: '#134e4a',      // teal-900: Trennlinie zwischen Zellen
+            'stroke-width': '1',
+            'class': 'zaehlen-zelle'
+          });
+          svg.appendChild(zelle);
+        }
+      }
+
+      // ── Äußerer Rahmen (nochmal drüber, damit er nicht halb überdeckt ist) ──
+      var rahmen = createSVGElement('rect');
+      setAttr(rahmen, {
+        x:      X_START,
+        y:      Y_START,
+        width:  zaehlenBreite * ZELL_GROESSE, // exakte Außenmaße
+        height: zaehlenHoehe  * ZELL_GROESSE,
+        fill:   'none',          // kein Hintergrund, nur Linie
+        stroke: '#2dd4bf',       // teal-400: hellerer Außenrahmen
+        'stroke-width': '2'      // 2px Rahmen
+      });
+      svg.appendChild(rahmen);
+
+      // ── Eingabefeld zurücksetzen und fokussieren ───────────────────
+      var eingabe = document.getElementById('zaehlen-input');
+      eingabe.value    = '';       // Feld leeren
+      eingabe.disabled = false;    // Feld aktivieren (war evtl. deaktiviert)
+      eingabe.className = 'w-20 text-center text-2xl font-bold rounded-2xl border-2 border-slate-600 bg-slate-800 text-white focus:outline-none focus:border-emerald-400 py-3 transition-colors';
+      // Klassen zurücksetzen (ohne richtig/falsch-Farben vom letzten Versuch)
+
+      // ── Feedback-Text löschen ──────────────────────────────────────
+      var feedback = document.getElementById('zaehlen-feedback');
+      feedback.textContent = ''; // alten Feedback-Text entfernen
+      feedback.style.color = ''; // Textfarbe zurücksetzen
+
+      // ── Weiter-Button ausblenden (falls er vom letzten Mal noch sichtbar ist) ──
+      // (Abschnitt 2 hat keinen eigenen Weiter-Button, Aufgabe startet automatisch neu)
+    }
+
+    /**
+     * checkZaehlen()
+     * Prüft die eingegebene Flächenantwort für die Zähl-Übung.
+     *
+     * Bei richtiger Antwort:
+     *   - Grünes Feedback + Score erhöhen
+     *   - Eingabefeld grün einfärben
+     *   - Nach 1,5 Sekunden automatisch neue Aufgabe
+     *
+     * Bei falscher Antwort:
+     *   - Rotes Feedback mit richtiger Antwort
+     *   - Eingabefeld rot einfärben
+     *   - Nach 2,5 Sekunden neue Aufgabe
+     */
+    function checkZaehlen() {
+      var eingabe  = document.getElementById('zaehlen-input');
+      var feedback = document.getElementById('zaehlen-feedback');
+
+      // parseInt() → wandelt String-Wert in ganze Zahl um
+      var antwort = parseInt(eingabe.value);
+
+      // Ungültige Eingabe abfangen
+      if (isNaN(antwort) || antwort < 1) {
+        feedback.textContent = 'Bitte gib eine Zahl ein!';
+        feedback.style.color = '#f59e0b'; // amber-400: Warnfarbe
+        return; // Funktion hier beenden
+      }
+
+      // Gesamtzähler erhöhen
+      zaehlenGesamt++;
+      document.getElementById('zaehlen-gesamt').textContent = zaehlenGesamt;
+
+      // ── Vergleich: Eingabe mit richtiger Antwort ──────────────────
+      if (antwort === zaehlenAntwort) {
+        // ✓ Richtig!
+        feedback.textContent = '✓ Richtig! ' + zaehlenBreite + ' × ' + zaehlenHoehe + ' = ' + zaehlenAntwort + ' cm²';
+        feedback.style.color = '#34d399'; // emerald-400: grün
+
+        // Eingabefeld grün einfärben
+        eingabe.classList.add('richtig');
+        eingabe.disabled = true; // Feld sperren, kein erneutes Eingeben
+
+        // Score erhöhen
+        zaehlenScore++;
+        document.getElementById('zaehlen-score').textContent = zaehlenScore;
+
+        // Nach 1500ms automatisch neue Aufgabe starten
+        setTimeout(function() {
+          newZaehlAufgabe(); // nächste Aufgabe
+        }, 1500); // 1500 Millisekunden = 1,5 Sekunden
+
+      } else {
+        // ✗ Falsch – richtige Antwort anzeigen
+        feedback.textContent = '✗ Nicht ganz. Richtig: ' + zaehlenAntwort + ' cm² (' + zaehlenBreite + ' × ' + zaehlenHoehe + ')';
+        feedback.style.color = '#f87171'; // red-400: rot
+
+        // Eingabefeld rot einfärben
+        eingabe.classList.add('falsch');
+        eingabe.disabled = true;
+
+        // Nach 2500ms automatisch neue Aufgabe starten (mehr Zeit für rote Antwort)
+        setTimeout(function() {
+          newZaehlAufgabe();
+        }, 2500); // 2500 Millisekunden = 2,5 Sekunden
+      }
+    }
+
+    // Enter-Taste im Zähl-Eingabefeld = Prüfen-Button drücken
+    document.getElementById('zaehlen-input').addEventListener('keydown', function(event) {
+      if (event.key === 'Enter') {
+        checkZaehlen(); // Enter-Taste löst Prüfung aus
+      }
+    });
+
+
+    /*
+     * ════════════════════════════════════════════════════════════════
+     *  SECTION 3: QUIZ
+     *  Zufällige Rechteck-Maße werden angezeigt.
+     *  Schüler berechnet Umfang und Flächeninhalt und gibt sie ein.
+     * ════════════════════════════════════════════════════════════════
+     */
+
+    // Speichert die Maße der aktuellen Quiz-Aufgabe
+    var quizB = 0; // aktuelle Breite in cm
+    var quizH = 0; // aktuelle Höhe in cm
+
+    // Punktestand für Quiz
+    var quizScore  = 0; // Anzahl richtiger Antworten (beide Werte richtig)
+    var quizGesamt = 0; // Gesamtzahl der Versuche
+
+    // Guard: verhindert Mehrfach-Beantwortung derselben Aufgabe
+    var quizBeantwortet = false;
+
+    /**
+     * newQuizAufgabe()
+     * Generiert eine neue Quiz-Aufgabe:
+     * - Wählt zufällige Breite (2-12 cm) und Höhe (2-12 cm)
+     * - Aktualisiert den Aufgaben-Text
+     * - Setzt alle Eingaben und Feedback zurück
+     * - Versteckt den Weiter-Button
+     */
+    function newQuizAufgabe() {
+      // ── Neue zufällige Maße wählen ──────────────────────────────────
+      quizB = zufallszahl(2, 12); // Breite: 2 bis 12 cm
+      quizH = zufallszahl(2, 12); // Höhe: 2 bis 12 cm
+
+      // ── Aufgaben-Text aktualisieren ───────────────────────────────
+      document.getElementById('q-b').textContent = quizB; // Breite im Satz
+      document.getElementById('q-h').textContent = quizH; // Höhe im Satz
+
+      // ── Eingabefelder zurücksetzen ────────────────────────────────
+      var inputU = document.getElementById('quiz-u-input');
+      var inputA = document.getElementById('quiz-a-input');
+
+      inputU.value    = '';       // Feld leeren
+      inputA.value    = '';       // Feld leeren
+      inputU.disabled = false;    // Feld aktivieren
+      inputA.disabled = false;
+
+      // richtig/falsch-Klassen entfernen (Farbe zurücksetzen)
+      inputU.classList.remove('richtig', 'falsch');
+      inputA.classList.remove('richtig', 'falsch');
+
+      // ── Feedback-Text löschen ─────────────────────────────────────
+      var feedback = document.getElementById('quiz-feedback');
+      feedback.textContent = '';
+      feedback.style.color = '';
+
+      // ── Weiter-Button ausblenden ──────────────────────────────────
+      document.getElementById('quiz-weiter').classList.add('hidden');
+      // classList.add('hidden') → Tailwind-Klasse hidden → display: none
+
+      // ── Tipp-Box schließen (falls offen) ──────────────────────────
+      var hinweisBox = document.getElementById('hinweis-box');
+      hinweisBox.classList.remove('sichtbar'); // max-height zurück auf 0
+      hinweisBox.setAttribute('aria-hidden', 'true'); // für Screenreader verbergen
+
+      // Tipp-Button zurücksetzen
+      var hinweisBtn = document.getElementById('hinweis-btn');
+      hinweisBtn.setAttribute('aria-expanded', 'false');
+      hinweisBtn.textContent = '💡 Tipp'; // Standard-Text
+
+      // ── Guard zurücksetzen ────────────────────────────────────────
+      quizBeantwortet = false;
+
+      // Erstes Eingabefeld fokussieren (damit der Nutzer direkt tippen kann)
+      inputU.focus();
+    }
+
+    /**
+     * checkQuiz()
+     * Prüft beide Eingaben (Umfang und Flächeninhalt) der Quiz-Aufgabe.
+     *
+     * Berechnet die richtigen Werte:
+     *   - Umfang:  U = 2 × (b + h)
+     *   - Fläche:  A = b × h
+     *
+     * Gibt für jede Eingabe grünes/rotes Feedback.
+     * Score zählt nur wenn BEIDE Werte korrekt sind.
+     *
+     * Guard-Variable quizBeantwortet verhindert Mehrfach-Klicks.
+     */
+    function checkQuiz() {
+      // Guard: wenn schon beantwortet → nichts tun
+      if (quizBeantwortet) return;
+
+      var inputU   = document.getElementById('quiz-u-input');
+      var inputA   = document.getElementById('quiz-a-input');
+      var feedback = document.getElementById('quiz-feedback');
+
+      // ── Eingaben als ganze Zahlen lesen ───────────────────────────
+      var eingabeU = parseInt(inputU.value);
+      var eingabeA = parseInt(inputA.value);
+
+      // ── Richtige Werte berechnen ──────────────────────────────────
+      var richtigU = 2 * (quizB + quizH); // Umfang-Formel
+      var richtigA = quizB * quizH;        // Flächen-Formel
+
+      // ── Ungültige Eingaben abfangen ───────────────────────────────
+      // Wenn eines der Felder leer oder kein Zahlenwert ist → Warnung
+      if (isNaN(eingabeU) || isNaN(eingabeA)) {
+        feedback.textContent = 'Bitte beide Felder ausfüllen!';
+        feedback.style.color = '#f59e0b'; // amber-400: Warnfarbe
+        return; // Funktion beenden, ohne Guard zu setzen
+      }
+
+      // ── Guard setzen: ab jetzt keine weiteren Versuche bis Weiter-Klick ──
+      quizBeantwortet = true;
+
+      // Gesamtzähler erhöhen
+      quizGesamt++;
+      document.getElementById('quiz-gesamt').textContent = quizGesamt;
+
+      // ── Einzeln prüfen: Umfang ────────────────────────────────────
+      var uRichtig = (eingabeU === richtigU); // true wenn Umfang korrekt
+
+      if (uRichtig) {
+        inputU.classList.add('richtig');    // grüner Rahmen
+        inputU.classList.remove('falsch');
+      } else {
+        inputU.classList.add('falsch');     // roter Rahmen
+        inputU.classList.remove('richtig');
+      }
+
+      // ── Einzeln prüfen: Flächeninhalt ─────────────────────────────
+      var aRichtig = (eingabeA === richtigA); // true wenn Fläche korrekt
+
+      if (aRichtig) {
+        inputA.classList.add('richtig');
+        inputA.classList.remove('falsch');
+      } else {
+        inputA.classList.add('falsch');
+        inputA.classList.remove('richtig');
+      }
+
+      // ── Felder sperren (kein erneutes Eingeben) ───────────────────
+      inputU.disabled = true;
+      inputA.disabled = true;
+
+      // ── Feedback-Text zusammenbauen ───────────────────────────────
+      if (uRichtig && aRichtig) {
+        // ✓ Beide Werte richtig
+        feedback.textContent = '✓ Super! Beide Werte stimmen!';
+        feedback.style.color = '#34d399'; // emerald-400: grün
+
+        // Score erhöhen (nur wenn BEIDE richtig)
+        quizScore++;
+        document.getElementById('quiz-score').textContent = quizScore;
+
+      } else {
+        // ✗ Mindestens ein Wert falsch → richtige Werte anzeigen
+        var teileFalsch = [];
+        if (!uRichtig) teileFalsch.push('Umfang: ' + richtigU + ' cm');
+        if (!aRichtig) teileFalsch.push('Fläche: ' + richtigA + ' cm²');
+        // Array.join() → verbindet Array-Elemente zu einem String mit Trennzeichen
+        feedback.textContent = '✗ Richtig wäre: ' + teileFalsch.join(' · ');
+        feedback.style.color = '#f87171'; // red-400: rot
+      }
+
+      // ── Weiter-Button einblenden ──────────────────────────────────
+      document.getElementById('quiz-weiter').classList.remove('hidden');
+      // classList.remove('hidden') → entfernt Tailwind-Klasse → Element wird sichtbar
+    }
+
+    /**
+     * toggleHinweis()
+     * Blendet den Formel-Tipp-Kasten ein oder aus.
+     *
+     * Wie funktioniert das Auf-/Zuklappen?
+     * Die CSS-Klasse 'sichtbar' setzt max-height auf 200px (s. <style>).
+     * Durch die CSS-Transition entsteht ein weicher Klapp-Effekt.
+     *
+     * classList.toggle() → fügt die Klasse hinzu wenn sie fehlt, entfernt sie wenn sie vorhanden ist.
+     */
+    function toggleHinweis() {
+      var box = document.getElementById('hinweis-box');
+      var btn = document.getElementById('hinweis-btn');
+
+      // Klasse 'sichtbar' umschalten (ein-/ausklappen)
+      var jetzSichtbar = box.classList.toggle('sichtbar');
+      // toggle gibt true zurück wenn Klasse HINZUGEFÜGT wurde, false wenn entfernt
+
+      // ARIA-Attribute für Barrierefreiheit aktualisieren
+      box.setAttribute('aria-hidden', jetzSichtbar ? 'false' : 'true');
+      // aria-hidden="false" → Screenreader sieht den Inhalt (wenn sichtbar)
+      // aria-hidden="true"  → Screenreader ignoriert (wenn versteckt)
+
+      btn.setAttribute('aria-expanded', jetzSichtbar ? 'true' : 'false');
+      // aria-expanded teilt Screenreadern mit, ob der zugehörige Bereich geöffnet ist
+
+      // Button-Text anpassen (Feedback für sehende Nutzer)
+      btn.textContent = jetzSichtbar ? '💡 Tipp verbergen' : '💡 Tipp';
+    }
+
+    // Enter-Taste in Quiz-Eingabefeldern = Prüfen
+    document.getElementById('quiz-u-input').addEventListener('keydown', function(event) {
+      if (event.key === 'Enter') checkQuiz();
+    });
+    document.getElementById('quiz-a-input').addEventListener('keydown', function(event) {
+      if (event.key === 'Enter') checkQuiz();
+    });
+
+
+    /*
+     * ════════════════════════════════════════════════════════════════
+     *  INITIALISIERUNG: Beim Seitenaufruf alles starten
+     * ════════════════════════════════════════════════════════════════
+     */
+
+    // ── Section 1: Interaktives Rechteck initialisieren ───────────
+    // update() berechnet alles auf Basis der Startwerte der Schieberegler (b=5, h=4)
+    update();
+
+    // ── Section 2: Erste Zähl-Aufgabe erzeugen ────────────────────
+    newZaehlAufgabe();
+
+    // ── Section 3: Erste Quiz-Aufgabe erzeugen ────────────────────
+    newQuizAufgabe();
+
+    // ── Footer: aktuelles Jahr eintragen ──────────────────────────
+    // new Date() → aktuelles Datum und Uhrzeit
+    // .getFullYear() → vierstellige Jahreszahl (z. B. 2025)
+    document.getElementById('y').textContent = new Date().getFullYear();
+  </script>
+
+  <!--
+    ═══════════════════════════════════════════
+    TOPBAR LADEN (muss nach dem Haupt-Script kommen)
+    ═══════════════════════════════════════════
+
+    Warum dynamisch laden?
+    → script.js braucht die Topbar-Elemente im DOM.
+    → Wenn script.js im <head> wäre, würde es vor der Topbar laufen.
+    → Durch dynamisches Laden stellen wir die richtige Reihenfolge sicher.
+
+    Reihenfolge:
+    1. window.__i18nBase setzen (Pfad für Sprachdateien)
+    2. topbar.html per fetch() laden
+    3. HTML in den Container einfügen
+    4. script.js dynamisch als <script>-Tag einfügen → wird sofort ausgeführt
+  -->
+  <script>
+    // __i18nBase: Pfad-Präfix für die Sprachdateien (lang-de.json, lang-en.json)
+    // Muss gesetzt sein BEVOR script.js läuft, sonst findet es die Dateien nicht
+    window.__i18nBase = '../../';
+
+    // fetch() → HTTP-Anfrage an den Server; gibt ein Promise zurück
+    fetch('../../topbar.html')
+      .then(function(r) {
+        // .text() → liest die Antwort als Text (HTML ist Text)
+        return r.text();
+      })
+      .then(function(html) {
+        // Topbar-HTML in den Container-Div einfügen
+        document.getElementById('topbar-container').innerHTML = html;
+
+        // script.js dynamisch laden (nach dem Einfügen der Topbar)
+        var s = document.createElement('script'); // neues <script>-Element erzeugen
+        s.src = '../../script.js';                // Pfad zu script.js (zwei Ebenen höher)
+        document.body.appendChild(s);             // zum <body> hinzufügen → Browser führt es aus
+      });
+  </script>
+</body>
+</html>

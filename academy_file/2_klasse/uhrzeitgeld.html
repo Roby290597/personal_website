@@ -1,0 +1,1650 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <!-- Zeichenkodierung: UTF-8 damit Umlaute (ä, ö, ü) und Sonderzeichen korrekt angezeigt werden -->
+  <meta charset="UTF-8" />
+  <!-- Viewport: Seite passt sich an Handys und Tablets an -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Seitentitel im Browser-Tab -->
+  <title>Uhrzeit &amp; Geld – Mathe-Akademie Klasse 2</title>
+
+  <!-- Favicon: kleines Symbol im Browser-Tab -->
+  <link rel="icon" href="../../favicon.ico" />
+  <!-- Apple Touch Icon: Symbol für iPhone-Homescreen -->
+  <link rel="apple-touch-icon" href="../../apple-touch-icon.png" />
+  <!-- Web-App-Manifest: Metadaten für „Auf Startseite hinzufügen" -->
+  <link rel="manifest" href="../../site.webmanifest" />
+
+  <!-- Tailwind CSS via CDN: Ermöglicht alle Utility-Klassen direkt im HTML -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Eigenes Stylesheet (zwei Ebenen höher), mit Version um Browser-Cache zu umgehen -->
+  <link rel="stylesheet" href="../../style.css?v=1.0" />
+
+  <style>
+    /*
+     * Eigene CSS-Regeln, die Tailwind nicht abdeckt
+     * ─────────────────────────────────────────────
+     */
+
+    /* Antwort-Button: Standard-Aussehen (dunkler Rahmen, slate-Hintergrund) */
+    .antwort-btn {
+      transition: background-color 0.18s, border-color 0.18s, transform 0.1s;
+      /* Weiche Farbübergänge und minimale Skalierung beim Drücken */
+    }
+
+    /* Antwort-Button: beim Hover leicht grün schimmern */
+    .antwort-btn:hover:not(:disabled) {
+      border-color: #34d399;        /* emerald-400: heller Rand */
+      background-color: #064e3b;    /* emerald-900: sehr dunkles Grün */
+    }
+
+    /* Antwort-Button: kurzes Eindrücken simulieren wenn geklickt */
+    .antwort-btn:active:not(:disabled) {
+      transform: scale(0.96);       /* 4% kleiner beim Klicken → fühlbares Feedback */
+    }
+
+    /* Antwort-Button: richtige Antwort (wird per JS gesetzt) */
+    .antwort-btn.richtig {
+      background-color: #059669;    /* emerald-600: sattes Grün */
+      border-color: #6ee7b7;        /* emerald-300: heller Rand */
+      color: #ffffff;
+    }
+
+    /* Antwort-Button: falsche Antwort (wird per JS gesetzt) */
+    .antwort-btn.falsch {
+      background-color: #7f1d1d;    /* red-900: dunkles Rot */
+      border-color: #f87171;        /* red-400: roter Rand */
+      color: #fca5a5;               /* red-300: heller Rotton für Text */
+    }
+
+    /* Antwort-Button: deaktiviert (nach dem Antworten) */
+    .antwort-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;          /* Verbots-Cursor: zeigt, nicht mehr klickbar */
+    }
+
+    /* Analog-Uhr: Zeiger-Linie (gemeinsame Basis für Stunden- und Minutenzeiger) */
+    .uhr-zeiger {
+      stroke-linecap: round;        /* Abgerundete Enden für einen schöneren Look */
+      transition: none;             /* Keine Transition: Zeiger springt sofort zur neuen Position */
+    }
+
+    /* Stunden-Beschriftungen auf der Uhr */
+    .uhr-zahl {
+      font-size: 11px;
+      fill: #cbd5e1;                /* slate-300: helles Grau */
+      text-anchor: middle;          /* Horizontal zentriert */
+      dominant-baseline: central;   /* Vertikal zentriert */
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-weight: 600;             /* Halbfett damit Zahlen gut lesbar sind */
+      user-select: none;            /* Nicht markierbar */
+      pointer-events: none;         /* Klicks gehen durch die Zahlen durch */
+    }
+
+    /* Stunden-Marker: kurze Strichlein an jeder Stunde */
+    .uhr-marker {
+      stroke: #475569;              /* slate-600 */
+      stroke-width: 2;
+    }
+
+    /* Minuten-Marker: noch kürzere Striche zwischen den Stunden */
+    .uhr-marker-klein {
+      stroke: #334155;              /* slate-700: dunkler, dezenter */
+      stroke-width: 1;
+    }
+
+    /* Mittelpunkt der Uhr (kleiner Kreis in der Mitte) */
+    .uhr-nabe {
+      fill: #e2e8f0;                /* slate-200: fast weiß */
+    }
+
+    /* Ziffernblatt-Kreis: äußerer Rand */
+    .uhr-rand {
+      fill: #0f172a;                /* slate-950: sehr dunkel – fast schwarz */
+      stroke: #475569;              /* slate-600: grauer Rand */
+      stroke-width: 3;
+    }
+
+    /* Ziffernblatt-Innenfläche */
+    .uhr-flaeche {
+      fill: #1e293b;                /* slate-800: dunkler Hintergrund für das Ziffernblatt */
+    }
+
+    /* Münz-SVG-Label: Text auf den Münzen */
+    .muenz-label {
+      font-size: 10px;
+      fill: #0f172a;                /* slate-950: sehr dunkler Text auf heller Münze */
+      text-anchor: middle;
+      dominant-baseline: central;
+      font-weight: 700;             /* Fett damit die Wertangabe gut lesbar ist */
+      user-select: none;
+      pointer-events: none;
+    }
+
+    /* Animations-Keyframe: von unsichtbar und leicht verschoben nach sichtbar */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Feedback-Box: weich einblenden nach dem Beantworten */
+    .feedback-box {
+      animation: fadeIn 0.25s ease;
+    }
+
+    /* Puls-Animation für den „Nächste Aufgabe"-Button – zieht Aufmerksamkeit auf sich */
+    @keyframes pulsGreen {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.4); }
+      50%       { box-shadow: 0 0 0 8px rgba(52, 211, 153, 0); }
+    }
+
+    /* Klasse für pulsierende Buttons */
+    .puls-gruen {
+      animation: pulsGreen 1.4s ease-in-out infinite;
+    }
+
+    /* Geld-Eingabefeld: Fokus-Stil */
+    #geld-input:focus {
+      outline: none;
+      border-color: #34d399;        /* emerald-400 */
+    }
+  </style>
+</head>
+
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col">
+  <!--
+    bg-slate-950 → sehr dunkler Hintergrund (fast schwarz) – Dark Theme
+    text-slate-100 → sehr heller Text (fast weiß)
+    min-h-screen → mindestens Bildschirmhöhe
+    flex flex-col → Topbar, Inhalt und Footer untereinander (Spalten-Flexbox)
+  -->
+
+  <!-- Topbar-Container: wird per JavaScript mit dem Inhalt von ../../topbar.html befüllt -->
+  <div id="topbar-container"></div>
+
+  <!-- Haupt-Wrapper: Inhalte horizontal zentrieren, Abstand oben/unten -->
+  <main class="flex-1 max-w-4xl mx-auto w-full px-4 py-10">
+    <!--
+      flex-1 → füllt den Raum zwischen Topbar und Footer
+      max-w-4xl → maximale Breite ~896px damit Zeilen nicht zu lang werden
+      mx-auto → zentriert den Block horizontal
+      w-full → nutzt volle verfügbare Breite bis max-w-4xl
+      px-4 → 16px seitlicher Innenabstand für kleine Bildschirme
+      py-10 → 40px Innenabstand oben und unten
+    -->
+
+    <!-- Zurück-Link zur Akademie-Übersicht -->
+    <a
+      href="../../academy.html"
+      class="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-emerald-300 mb-8 transition-colors"
+    >
+      <!--
+        inline-flex → Link als Inline-Flex-Box (Pfeil und Text auf einer Linie)
+        items-center → vertikal zentrieren
+        gap-2 → 8px Abstand zwischen Pfeil und Text
+        text-sm → kleine Schrift (14px)
+        text-slate-400 → mittleres Grau
+        hover:text-emerald-300 → bei Hover: helles Grün
+        mb-8 → 32px Abstand nach unten
+        transition-colors → weicher Farbübergang beim Hover
+      -->
+      ← Zurück zur Akademie
+    </a>
+
+    <!-- ═══════════════════════════════════════════
+         SEITENÜBERSCHRIFT
+         ═══════════════════════════════════════════ -->
+    <header class="mb-10">
+      <!-- mb-10 → 40px Abstand nach unten -->
+
+      <!-- Kategorie-Badge: kleines Label über der Überschrift -->
+      <span class="inline-block text-xs font-semibold tracking-widest uppercase text-emerald-400 mb-3">
+        <!--
+          inline-block → kein Zeilenumbruch, aber Box-Eigenschaften
+          text-xs → sehr kleine Schrift (12px)
+          font-semibold → halbfett
+          tracking-widest → großer Buchstabenabstand (gesperrt wirkend)
+          uppercase → Großbuchstaben
+          text-emerald-400 → sattgrüner Farbton
+          mb-3 → 12px Abstand nach unten
+        -->
+        Klasse 2 · Grundlagen
+      </span>
+
+      <!-- Haupt-Seitenüberschrift -->
+      <h1 class="text-4xl font-bold text-white mb-3">
+        <!-- text-4xl → große Schrift (36px), font-bold → fett, mb-3 → kleiner Abstand -->
+        Uhrzeit &amp; Geld
+      </h1>
+
+      <!-- Kurze Beschreibung des Lerninhalts -->
+      <p class="text-slate-400 text-lg max-w-xl">
+        <!--
+          text-slate-400 → mittleres Grau
+          text-lg → etwas größere Schrift (18px)
+          max-w-xl → max. Breite ~512px damit Text nicht zu breit wird
+        -->
+        Lerne die Uhr lesen, verstehe „halb" und „Uhr" – und zähle Euro-Münzen zusammen!
+      </p>
+    </header>
+
+    <!-- ═══════════════════════════════════════════
+         SECTION 1: UHRZEIT LESEN (ANALOGE UHR)
+         ═══════════════════════════════════════════ -->
+    <section
+      class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6 mb-8"
+      aria-labelledby="uhr-lesen-heading"
+    >
+      <!--
+        rounded-3xl → sehr abgerundete Ecken (24px)
+        border border-slate-800 → dünner dunkler Rahmen
+        bg-slate-900/30 → leicht transparentes Dunkelblau
+        p-6 → 24px Innenabstand
+        mb-8 → 32px Abstand nach unten
+        aria-labelledby → Barrierefreiheit: verknüpft Sektion mit ihrer Überschrift
+      -->
+
+      <!-- Abschnitts-Header mit Icon, Titel und Untertitel -->
+      <div class="flex items-start gap-4 mb-6">
+        <!--
+          flex → nebeneinander
+          items-start → oben ausrichten
+          gap-4 → 16px Abstand zwischen Icon und Text
+          mb-6 → 24px Abstand nach unten
+        -->
+
+        <!-- Dekoratives Emoji-Icon -->
+        <div class="text-3xl select-none" aria-hidden="true">🕐</div>
+        <!--
+          text-3xl → Emoji groß (30px)
+          select-none → nicht markierbar
+          aria-hidden → Screenreader überspringt das dekorative Emoji
+        -->
+
+        <div>
+          <!-- Abschnitts-Überschrift -->
+          <h2 id="uhr-lesen-heading" class="text-xl font-bold text-emerald-300 mb-1">
+            <!-- text-xl → 20px, font-bold → fett, text-emerald-300 → helles Grün -->
+            Uhrzeit lesen
+          </h2>
+          <!-- Kurze Aufgaben-Beschreibung -->
+          <p class="text-slate-400 text-sm">
+            <!-- text-sm → 14px, text-slate-400 → mittleres Grau -->
+            Schau auf die Uhr und wähle die richtige Uhrzeit.
+          </p>
+        </div>
+      </div>
+
+      <!-- Inhalt: Uhr links, Antwort-Buttons rechts -->
+      <div class="flex flex-col sm:flex-row items-center gap-8">
+        <!--
+          flex-col → untereinander auf Mobilgeräten
+          sm:flex-row → nebeneinander ab 640px
+          items-center → vertikal zentriert
+          gap-8 → 32px Abstand zwischen Uhr und Buttons
+        -->
+
+        <!-- SVG-Analoguhr: 200×200 px internes Koordinatensystem, Mittelpunkt bei (100,100) -->
+        <div class="flex-shrink-0">
+          <!--
+            flex-shrink-0 → Uhr wird nicht kleiner wenn Platz knapp ist
+          -->
+          <svg
+            id="uhr-svg"
+            viewBox="0 0 200 200"
+            width="200"
+            height="200"
+            role="img"
+            aria-label="Analoge Uhr – Zeiger zeigen die gesuchte Uhrzeit"
+            class="block"
+          >
+            <!--
+              viewBox="0 0 200 200" → internes Koordinatensystem 200×200
+              Mittelpunkt der Uhr: cx=100, cy=100
+              Radius des Ziffernblatts: 90
+            -->
+
+            <!-- Äußerer Rand der Uhr (dicker Kreis) -->
+            <circle cx="100" cy="100" r="90" class="uhr-rand" />
+            <!--
+              cx="100" cy="100" → Mittelpunkt
+              r="90" → Radius 90 → fast so groß wie das viewBox-Quadrat
+              class="uhr-rand" → dunkle Füllung + grauer Rand (aus dem CSS oben)
+            -->
+
+            <!-- Innenfläche des Ziffernblatts (etwas kleiner, etwas heller) -->
+            <circle cx="100" cy="100" r="86" class="uhr-flaeche" />
+            <!--
+              r="86" → Radius 86 → 4px Platz für den Rand sichtbar
+              class="uhr-flaeche" → dunkle Innenfläche
+            -->
+
+            <!-- Minuten-Marker: 60 kleine Striche (je 6°), werden per JS gezeichnet -->
+            <!-- Stunden-Marker: 12 längere Striche (je 30°), ebenfalls per JS -->
+            <!-- Stunden-Zahlen 12, 3, 6, 9: per JS eingezeichnet -->
+            <!-- Minutenzeiger und Stundenzeiger: per JS gezeichnet und rotiert -->
+
+            <!-- Alle dynamischen Elemente der Uhr werden per drawClock() befüllt -->
+          </svg>
+        </div>
+
+        <!-- Antwort-Bereich: Feedback + 4 Buttons + Score -->
+        <div class="flex flex-col items-center gap-4 w-full sm:w-auto">
+          <!--
+            flex-col → Elemente untereinander
+            items-center → horizontal zentriert
+            gap-4 → 16px Abstand
+            w-full sm:w-auto → volle Breite auf Mobil
+          -->
+
+          <!-- Aufgaben-Aufforderung -->
+          <p class="text-slate-300 text-base font-medium text-center">
+            Welche Uhrzeit zeigt die Uhr?
+          </p>
+
+          <!-- 4 Antwort-Buttons: werden per JS befüllt (id="uhr-antwort-0" bis "uhr-antwort-3") -->
+          <div class="grid grid-cols-2 gap-3 w-full max-w-xs">
+            <!--
+              grid grid-cols-2 → 2×2 Raster für die 4 Antwort-Buttons
+              gap-3 → 12px Abstand zwischen den Buttons
+              w-full max-w-xs → volle Breite, max ~320px
+            -->
+
+            <!-- Button 0 (Inhalt und onclick per JS gesetzt) -->
+            <button
+              id="uhr-antwort-0"
+              class="antwort-btn px-3 py-4 rounded-2xl border-2 border-slate-600 bg-slate-800 text-white text-base font-bold"
+            >
+              <!--
+                antwort-btn → Basis-Styles aus CSS (hover, active, disabled)
+                px-3 py-4 → Innenabstand: 12px waagerecht, 16px senkrecht
+                rounded-2xl → abgerundete Ecken (16px)
+                border-2 border-slate-600 → sichtbarer Rahmen
+                bg-slate-800 → dunkler Hintergrund
+                text-white text-base font-bold → weißer, mittelgroßer, fetter Text
+              -->
+            </button>
+
+            <!-- Button 1 -->
+            <button
+              id="uhr-antwort-1"
+              class="antwort-btn px-3 py-4 rounded-2xl border-2 border-slate-600 bg-slate-800 text-white text-base font-bold"
+            >
+            </button>
+
+            <!-- Button 2 -->
+            <button
+              id="uhr-antwort-2"
+              class="antwort-btn px-3 py-4 rounded-2xl border-2 border-slate-600 bg-slate-800 text-white text-base font-bold"
+            >
+            </button>
+
+            <!-- Button 3 -->
+            <button
+              id="uhr-antwort-3"
+              class="antwort-btn px-3 py-4 rounded-2xl border-2 border-slate-600 bg-slate-800 text-white text-base font-bold"
+            >
+            </button>
+          </div>
+
+          <!-- Feedback-Bereich: erscheint nach dem Antworten -->
+          <div
+            id="uhr-feedback"
+            class="text-base font-semibold min-h-[1.5rem] text-center"
+            aria-live="assertive"
+          >
+            <!--
+              font-semibold → halbfett
+              min-h-[1.5rem] → Mindesthöhe verhindert Layout-Sprung
+              aria-live="assertive" → Screenreader liest sofort vor
+            -->
+          </div>
+
+          <!-- Score-Anzeige: Anzahl richtiger Antworten -->
+          <div class="flex items-center gap-2 text-sm text-slate-400">
+            <!-- gap-2 → 8px Abstand zwischen Label und Zahl -->
+            <span>Richtig:</span>
+            <span id="uhr-score" class="text-emerald-400 font-bold text-base">0</span>
+            <!--
+              text-emerald-400 → grüner Zähler
+              font-bold text-base → fett, 16px
+            -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════
+         SECTION 2: UHRZEIT SCHREIBEN (TEXT → DIGITAL)
+         ═══════════════════════════════════════════ -->
+    <section
+      class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6 mb-8"
+      aria-labelledby="uhr-schreiben-heading"
+    >
+      <!--
+        Gleiche Karten-Klassen wie Section 1 für konsistentes Design
+      -->
+
+      <!-- Abschnitts-Header -->
+      <div class="flex items-start gap-4 mb-6">
+        <div class="text-3xl select-none" aria-hidden="true">✏️</div>
+        <div>
+          <h2 id="uhr-schreiben-heading" class="text-xl font-bold text-emerald-300 mb-1">
+            Uhrzeit schreiben
+          </h2>
+          <p class="text-slate-400 text-sm">
+            Lies den deutschen Ausdruck und wähle die richtige digitale Uhrzeit.
+          </p>
+        </div>
+      </div>
+
+      <!-- Aufgaben-Anzeige und Antwort-Buttons -->
+      <div class="flex flex-col items-center gap-6">
+        <!--
+          flex-col → alles untereinander
+          items-center → horizontal zentriert
+          gap-6 → 24px Abstand zwischen den Elementen
+        -->
+
+        <!-- Deutsch-Ausdruck in großer Schrift (z. B. „halb vier" oder „drei Uhr") -->
+        <div
+          id="schreiben-ausdruck"
+          class="text-4xl font-bold text-white text-center px-6 py-4 rounded-2xl border border-slate-700 bg-slate-800/50 min-w-[220px]"
+          aria-live="polite"
+        >
+          <!--
+            text-4xl font-bold → große, fette Schrift – gut lesbar für Kinder
+            text-center → zentriert
+            px-6 py-4 → Innenabstand
+            rounded-2xl → abgerundete Ecken
+            border border-slate-700 → dezenter Rahmen
+            bg-slate-800/50 → halbtransparenter dunkler Hintergrund
+            min-w-[220px] → Mindestbreite damit das Layout nicht springt
+            aria-live="polite" → Screenreader liest neue Ausdrücke vor
+          -->
+          <!-- Wird per JS befüllt -->
+        </div>
+
+        <!-- Kleine Hilfe-Beschriftung -->
+        <p class="text-slate-400 text-sm">Welche digitale Uhrzeit passt dazu?</p>
+
+        <!-- 4 Antwort-Buttons in 2×2-Raster -->
+        <div class="grid grid-cols-2 gap-3 w-full max-w-xs">
+          <!-- grid grid-cols-2 → zwei Spalten, gap-3 → 12px Abstand -->
+
+          <!-- Schreiben-Button 0 -->
+          <button
+            id="schreiben-antwort-0"
+            class="antwort-btn px-3 py-4 rounded-2xl border-2 border-slate-600 bg-slate-800 text-white text-base font-bold"
+          ></button>
+
+          <!-- Schreiben-Button 1 -->
+          <button
+            id="schreiben-antwort-1"
+            class="antwort-btn px-3 py-4 rounded-2xl border-2 border-slate-600 bg-slate-800 text-white text-base font-bold"
+          ></button>
+
+          <!-- Schreiben-Button 2 -->
+          <button
+            id="schreiben-antwort-2"
+            class="antwort-btn px-3 py-4 rounded-2xl border-2 border-slate-600 bg-slate-800 text-white text-base font-bold"
+          ></button>
+
+          <!-- Schreiben-Button 3 -->
+          <button
+            id="schreiben-antwort-3"
+            class="antwort-btn px-3 py-4 rounded-2xl border-2 border-slate-600 bg-slate-800 text-white text-base font-bold"
+          ></button>
+        </div>
+
+        <!-- Feedback-Bereich -->
+        <div
+          id="schreiben-feedback"
+          class="text-base font-semibold min-h-[1.5rem] text-center"
+          aria-live="assertive"
+        ></div>
+
+        <!-- Score-Anzeige -->
+        <div class="flex items-center gap-2 text-sm text-slate-400">
+          <span>Richtig:</span>
+          <span id="schreiben-score" class="text-emerald-400 font-bold text-base">0</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════
+         SECTION 3: GELD ZÄHLEN (EURO-MÜNZEN)
+         ═══════════════════════════════════════════ -->
+    <section
+      class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6 mb-10"
+      aria-labelledby="geld-heading"
+    >
+      <!--
+        mb-10 → 40px Abstand nach unten (größer als die anderen Sektionen, weil Theorie folgt)
+      -->
+
+      <!-- Abschnitts-Header -->
+      <div class="flex items-start gap-4 mb-6">
+        <div class="text-3xl select-none" aria-hidden="true">🪙</div>
+        <div>
+          <h2 id="geld-heading" class="text-xl font-bold text-emerald-300 mb-1">
+            Geld zählen
+          </h2>
+          <p class="text-slate-400 text-sm">
+            Zähle die Münzen zusammen und gib den Gesamtbetrag ein.
+          </p>
+        </div>
+      </div>
+
+      <!-- Inhalt: Münzen-SVG oben, Eingabe darunter -->
+      <div class="flex flex-col items-center gap-6">
+        <!--
+          flex-col → untereinander angeordnet
+          items-center → horizontal zentriert
+          gap-6 → 24px Abstand
+        -->
+
+        <!-- SVG-Container für die Münzen -->
+        <div class="w-full overflow-x-auto">
+          <!--
+            w-full → volle verfügbare Breite
+            overflow-x-auto → horizontales Scrollen wenn zu viele Münzen
+          -->
+          <svg
+            id="geld-svg"
+            viewBox="0 0 500 140"
+            width="500"
+            height="140"
+            class="block mx-auto rounded-xl bg-slate-800/40 border border-slate-700"
+            role="img"
+            aria-label="Euro-Münzen zum Zählen"
+          >
+            <!--
+              viewBox="0 0 500 140" → 500 breit, 140 hoch – Platz für 5 Münzen nebeneinander
+              width="500" height="140" → tatsächliche Pixel-Größe
+              block mx-auto → zentriert das SVG
+              rounded-xl → abgerundete Ecken (12px)
+              bg-slate-800/40 → leicht transparenter dunkler Hintergrund
+              border border-slate-700 → dezenter Rahmen
+            -->
+            <!-- Wird per newGeldAufgabe() / drawMuenzen() befüllt -->
+          </svg>
+        </div>
+
+        <!-- Eingabe-Bereich: Betrag in Euro oder Cent -->
+        <div class="flex flex-col items-center gap-3 w-full max-w-sm">
+          <!--
+            max-w-sm → max. Breite ~384px
+            items-center → zentriert
+            gap-3 → 12px Abstand
+          -->
+
+          <!-- Aufgaben-Frage mit Hinweis auf akzeptierte Formate -->
+          <p class="text-slate-300 text-base text-center">
+            Wie viel Geld siehst du?
+          </p>
+          <p class="text-slate-500 text-xs text-center">
+            <!--
+              text-slate-500 → mittleres Grau (Hinweistext, weniger prominent)
+              text-xs → sehr kleine Schrift (12px)
+            -->
+            Tipp: Gib Cent ein (z.&nbsp;B. 85) oder Euro mit Punkt (z.&nbsp;B. 0.85)
+          </p>
+
+          <!-- Eingabefeld für den Betrag -->
+          <input
+            id="geld-input"
+            type="text"
+            inputmode="decimal"
+            placeholder="Betrag eingeben…"
+            class="w-full text-center text-xl font-bold rounded-2xl border-2 border-slate-600 bg-slate-800 text-white py-3 px-4"
+            aria-label="Gesamtbetrag der Münzen eingeben"
+          />
+          <!--
+            type="text" → Freitext damit wir sowohl Cent (85) als auch Euro (0.85) akzeptieren
+            inputmode="decimal" → Mobil-Tastatur zeigt Dezimaltastatur
+            text-center text-xl font-bold → großer, fetter, zentrierter Text
+            rounded-2xl → abgerundete Ecken
+            border-2 border-slate-600 → sichtbarer Rahmen (Farbe bei Fokus per CSS)
+            bg-slate-800 → dunkler Hintergrund
+            py-3 px-4 → Innenabstand
+          -->
+
+          <!-- Prüfen-Button -->
+          <button
+            onclick="checkGeld()"
+            class="w-full px-6 py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-base transition-colors"
+          >
+            <!--
+              w-full → volle Breite (gleich wie Eingabefeld)
+              bg-emerald-500 hover:bg-emerald-400 → grüner Button, heller bei Hover
+              text-slate-950 → sehr dunkler Text (gut lesbar auf grün)
+              transition-colors → weicher Farbübergang
+            -->
+            Prüfen ✓
+          </button>
+
+          <!-- Feedback-Bereich -->
+          <div
+            id="geld-feedback"
+            class="text-base font-semibold min-h-[1.5rem] text-center"
+            aria-live="assertive"
+          >
+            <!--
+              aria-live="assertive" → Screenreader liest Feedback sofort vor
+            -->
+          </div>
+
+          <!-- Score-Anzeige -->
+          <div class="flex items-center gap-2 text-sm text-slate-400">
+            <span>Richtig:</span>
+            <span id="geld-score" class="text-emerald-400 font-bold text-base">0</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════
+         THEORIE-BOX: 3-SPALTIG
+         ═══════════════════════════════════════════ -->
+    <section aria-labelledby="theorie-heading" class="mb-10">
+      <!--
+        aria-labelledby → Barrierefreiheit: verknüpft Sektion mit Überschrift
+        mb-10 → 40px Abstand nach unten
+      -->
+
+      <!-- Überschrift der Theorie-Box -->
+      <h2
+        id="theorie-heading"
+        class="text-lg font-bold text-slate-300 mb-4 flex items-center gap-2"
+      >
+        <!--
+          text-lg → 18px, font-bold → fett, text-slate-300 → helles Grau
+          flex items-center gap-2 → Emoji und Text auf einer Linie
+        -->
+        <span aria-hidden="true">📚</span>
+        Wissens-Boxen
+      </h2>
+
+      <!-- Dreispaltiges Raster (auf Mobilgeräten einspaltig) -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <!--
+          grid → CSS Grid Layout
+          grid-cols-1 → 1 Spalte auf Mobilgeräten
+          sm:grid-cols-3 → 3 Spalten ab 640px
+          gap-4 → 16px Abstand zwischen den Karten
+        -->
+
+        <!-- ── Theorie-Karte 1: Volle Stunde ── -->
+        <div class="rounded-2xl border border-emerald-400/20 bg-slate-900/50 p-5">
+          <!--
+            rounded-2xl → abgerundete Ecken (16px)
+            border-emerald-400/20 → grüner Rand, sehr dezent (20% Deckkraft)
+            bg-slate-900/50 → halbtransparentes Dunkelblau
+            p-5 → Innenabstand 20px
+          -->
+
+          <!-- Karten-Titel -->
+          <h3 class="text-emerald-300 font-semibold mb-3 flex items-center gap-2">
+            <!-- text-emerald-300 → helles Grün, font-semibold → halbfett -->
+            <span class="text-xl" aria-hidden="true">🕐</span>
+            Volle Stunde
+          </h3>
+
+          <!-- Karten-Inhalt -->
+          <ul class="text-slate-300 text-sm space-y-2">
+            <!--
+              text-sm → 14px
+              space-y-2 → 8px Abstand zwischen Listenpunkten
+            -->
+            <li class="flex gap-2">
+              <!-- gap-2 → 8px Abstand zwischen Bullet und Text -->
+              <span class="text-emerald-400 flex-shrink-0">▶</span>
+              <!-- flex-shrink-0 → Bullet-Punkt wird nicht kleiner bei engem Platz -->
+              <span>Der <strong class="text-white">Minutenzeiger</strong> zeigt auf die <strong class="text-white">12</strong>.</span>
+            </li>
+            <li class="flex gap-2">
+              <span class="text-emerald-400 flex-shrink-0">▶</span>
+              <span>Man sagt: <strong class="text-white">„Es ist 4 Uhr."</strong></span>
+            </li>
+            <li class="flex gap-2">
+              <span class="text-emerald-400 flex-shrink-0">▶</span>
+              <span>Digital: <strong class="text-white">4:00</strong></span>
+            </li>
+            <li class="flex gap-2">
+              <span class="text-emerald-400 flex-shrink-0">▶</span>
+              <span>Der Stundenzeiger zeigt genau auf die <strong class="text-white">Stundenzahl</strong>.</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- ── Theorie-Karte 2: Halbe Stunde ── -->
+        <div class="rounded-2xl border border-emerald-400/20 bg-slate-900/50 p-5">
+          <h3 class="text-emerald-300 font-semibold mb-3 flex items-center gap-2">
+            <span class="text-xl" aria-hidden="true">🕧</span>
+            Halbe Stunde
+          </h3>
+
+          <ul class="text-slate-300 text-sm space-y-2">
+            <li class="flex gap-2">
+              <span class="text-emerald-400 flex-shrink-0">▶</span>
+              <span>Der <strong class="text-white">Minutenzeiger</strong> zeigt auf die <strong class="text-white">6</strong>.</span>
+            </li>
+            <li class="flex gap-2">
+              <span class="text-emerald-400 flex-shrink-0">▶</span>
+              <span>Man sagt: <strong class="text-white">„Es ist halb 5."</strong> (= 4:30 Uhr)</span>
+            </li>
+            <li class="flex gap-2">
+              <span class="text-emerald-400 flex-shrink-0">▶</span>
+              <span>„Halb X" = die nächste Stunde ist X, aber erst halb vorbei.</span>
+            </li>
+            <li class="flex gap-2">
+              <span class="text-emerald-400 flex-shrink-0">▶</span>
+              <span>Digital: <strong class="text-white">4:30</strong> = halb 5</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- ── Theorie-Karte 3: Euro &amp; Cent ── -->
+        <div class="rounded-2xl border border-emerald-400/20 bg-slate-900/50 p-5">
+          <h3 class="text-emerald-300 font-semibold mb-3 flex items-center gap-2">
+            <span class="text-xl" aria-hidden="true">🪙</span>
+            Euro &amp; Cent
+          </h3>
+
+          <ul class="text-slate-300 text-sm space-y-2">
+            <li class="flex gap-2">
+              <span class="text-emerald-400 flex-shrink-0">▶</span>
+              <span><strong class="text-white">1 Euro = 100 Cent</strong></span>
+            </li>
+            <li class="flex gap-2">
+              <span class="text-emerald-400 flex-shrink-0">▶</span>
+              <span>85 Cent = <strong class="text-white">0,85 €</strong></span>
+            </li>
+            <li class="flex gap-2">
+              <span class="text-emerald-400 flex-shrink-0">▶</span>
+              <span>Kupfer-Münzen: <strong class="text-white">1, 2, 5 Ct</strong> (braun)</span>
+            </li>
+            <li class="flex gap-2">
+              <span class="text-emerald-400 flex-shrink-0">▶</span>
+              <span>Silber-Münzen: <strong class="text-white">10, 20, 50 Ct</strong></span>
+            </li>
+            <li class="flex gap-2">
+              <span class="text-emerald-400 flex-shrink-0">▶</span>
+              <span>Gold-Münzen: <strong class="text-white">1 €, 2 €</strong></span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ═══════════════════════════════════════════
+       FOOTER
+       ═══════════════════════════════════════════ -->
+  <footer class="py-6 text-center text-xs text-slate-500">
+    <!--
+      py-6 → 24px Innenabstand oben und unten
+      text-center → zentrierter Text
+      text-xs → sehr kleine Schrift (12px)
+      text-slate-500 → mittleres Grau (dezent)
+    -->
+    &copy; <span id="y"></span> Brandon Hank &middot; Düsseldorf
+    <!--
+      &copy; → Copyright-Symbol ©
+      &middot; → mittiger Punkt · als Trenner
+    -->
+  </footer>
+
+  <!-- ═══════════════════════════════════════════
+       JAVASCRIPT
+       ═══════════════════════════════════════════ -->
+  <script>
+    /*
+     * ════════════════════════════════════════════════════════════════
+     *  GLOBALE HILFSFUNKTIONEN
+     * ════════════════════════════════════════════════════════════════
+     */
+
+    /**
+     * zufallszahl(min, max)
+     * Gibt eine zufällige ganze Zahl zwischen min und max zurück (beide inklusiv).
+     *
+     * Math.random() → Dezimalzahl zwischen 0 und 1 (z. B. 0.7342)
+     * * (max - min + 1) → skaliert auf den gewünschten Bereich
+     * Math.floor() → rundet nach unten zur nächsten ganzen Zahl
+     * + min → verschiebt auf den Bereich [min, max]
+     */
+    function zufallszahl(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    /**
+     * createSVG(tag)
+     * Erstellt ein SVG-Element mit dem korrekten W3C-SVG-Namespace.
+     *
+     * Warum createElementNS()? → SVG-Elemente brauchen den SVG-Namespace,
+     * sonst ignoriert der Browser sie. document.createElement() reicht NICHT.
+     */
+    function createSVG(tag) {
+      // Offizieller SVG-Namespace der W3C-Organisation
+      return document.createElementNS('http://www.w3.org/2000/svg', tag);
+    }
+
+    /**
+     * mischArray(arr)
+     * Mischt ein Array zufällig durch (Fisher-Yates-Algorithmus).
+     *
+     * Warum Fisher-Yates? → Einfaches Math.random()-Sortieren verzerrt
+     * die Verteilung. Fisher-Yates garantiert echte Gleichverteilung.
+     *
+     * @param {Array} arr - Das zu mischende Array (wird verändert!)
+     * @returns {Array} Das gemischte Array (zur Bequemlichkeit)
+     */
+    function mischArray(arr) {
+      // Von hinten nach vorne durch das Array laufen
+      for (let i = arr.length - 1; i > 0; i--) {
+        // Zufälliger Index zwischen 0 und i (inklusiv)
+        const j = Math.floor(Math.random() * (i + 1));
+        // Elemente i und j tauschen (Destructuring-Assignment)
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    /**
+     * deaktiviereButtons(buttonIds)
+     * Deaktiviert alle angegebenen Buttons (nach dem Beantworten einer Frage).
+     *
+     * @param {string[]} buttonIds - Array mit den IDs der zu deaktivierenden Buttons
+     */
+    function deaktiviereButtons(buttonIds) {
+      buttonIds.forEach(function(id) {
+        const btn = document.getElementById(id);
+        if (btn) btn.disabled = true; // disabled → nicht klickbar, anders aussehend (CSS)
+      });
+    }
+
+
+    /*
+     * ════════════════════════════════════════════════════════════════
+     *  SECTION 1: UHRZEIT LESEN (ANALOGE UHR)
+     * ════════════════════════════════════════════════════════════════
+     */
+
+    // Aktuelle Aufgaben-Stunde und -Minute (global damit checkUhrzeit darauf zugreifen kann)
+    let qHour   = 0;  // Stunde der aktuellen Aufgabe (0–11)
+    let qMinute = 0;  // Minute der aktuellen Aufgabe (0 oder 30)
+
+    // Zählt richtige Antworten in Section 1
+    let uhrScore = 0;
+
+    /**
+     * drawClock(h, m)
+     * Zeichnet die Analoguhr mit Stunden- und Minutenzeiger.
+     *
+     * SVG-Koordinaten:
+     *   Mittelpunkt: (100, 100)
+     *   Ziffernblatt-Radius: 90
+     *   Stunden-Marker: r=82 bis r=90 (lang) / r=86 bis r=90 (kurz)
+     *   Zahlen 12,3,6,9: auf Radius 72 um den Mittelpunkt
+     *   Stundenzeiger: Länge 55, von Mittelpunkt
+     *   Minutenzeiger: Länge 75, von Mittelpunkt
+     *
+     * Drehwinkel-Berechnung:
+     *   SVG-Rotation beginnt bei 0° = 12-Uhr-Position (oben)
+     *   Stundenzeiger: (h % 12) * 30 + m * 0.5
+     *     → 360°/12 = 30° pro Stunde, plus 0.5° pro Minute (Zeiger wandert innerhalb der Stunde)
+     *   Minutenzeiger: m * 6
+     *     → 360°/60 = 6° pro Minute
+     *
+     * @param {number} h - Stunde (0–12)
+     * @param {number} m - Minute (0 oder 30)
+     */
+    function drawClock(h, m) {
+      // SVG-Element aus dem DOM holen
+      const svg = document.getElementById('uhr-svg');
+
+      // Alles löschen was vorher drin war (außer den statischen Kreisen aus dem HTML)
+      // Wir löschen alles und zeichnen alles neu – einfacher und zuverlässiger
+      svg.innerHTML = '';
+
+      /*
+       * ── ZIFFERNBLATT ────────────────────────────────────────────────
+       */
+
+      // Äußerer Rand (dunkel mit grauem Strich)
+      const rand = createSVG('circle');
+      rand.setAttribute('cx', '100');         // Mittelpunkt x
+      rand.setAttribute('cy', '100');         // Mittelpunkt y
+      rand.setAttribute('r', '90');           // Radius
+      rand.setAttribute('class', 'uhr-rand'); // CSS: fill + stroke
+      svg.appendChild(rand);
+
+      // Innenfläche des Ziffernblatts (etwas kleiner, etwas heller)
+      const flaeche = createSVG('circle');
+      flaeche.setAttribute('cx', '100');
+      flaeche.setAttribute('cy', '100');
+      flaeche.setAttribute('r', '86');
+      flaeche.setAttribute('class', 'uhr-flaeche'); // CSS: dunklere Füllung
+      svg.appendChild(flaeche);
+
+      /*
+       * ── MINUTEN-MARKER: 60 kleine Striche ───────────────────────────
+       * Für jede Minute (0–59) einen kurzen Strich vom Rand nach innen zeichnen.
+       * Formel: Punkt auf Kreis mit Radius r und Winkel θ:
+       *   x = cx + r * sin(θ_rad)
+       *   y = cy - r * cos(θ_rad)
+       * (sin/cos weil SVG-y nach unten geht, Uhr-12 ist oben = -y-Richtung)
+       */
+      for (let min = 0; min < 60; min++) {
+        // Winkel in Grad: jede Minute = 6° (360° / 60 Minuten)
+        const grad = min * 6;
+        // Umrechnung Grad → Bogenmass: Math.PI / 180
+        const rad = grad * Math.PI / 180;
+
+        // Ob dies auch eine volle Stunden-Position ist (0, 5, 10, ... 55 → jede 5. Minute)
+        const istStunde = min % 5 === 0;
+
+        // Außenpunkt (immer bei Radius 90, dem Rand des Ziffernblatts)
+        const x2 = 100 + 90 * Math.sin(rad);  // x-Koordinate außen
+        const y2 = 100 - 90 * Math.cos(rad);  // y-Koordinate außen (Minus weil y nach unten)
+
+        // Innenpunkt: Stunden-Marker länger (r=76), Minuten-Marker kürzer (r=83)
+        const r1 = istStunde ? 76 : 83;         // Innerer Radius des Markers
+        const x1 = 100 + r1 * Math.sin(rad);   // x-Koordinate innen
+        const y1 = 100 - r1 * Math.cos(rad);   // y-Koordinate innen
+
+        // Marker-Linie zeichnen
+        const marker = createSVG('line');
+        marker.setAttribute('x1', x1.toFixed(2)); // .toFixed(2) → 2 Nachkommastellen
+        marker.setAttribute('y1', y1.toFixed(2));
+        marker.setAttribute('x2', x2.toFixed(2));
+        marker.setAttribute('y2', y2.toFixed(2));
+        // Stunden-Marker dicker und heller, Minuten-Marker dünner und dunkler
+        marker.setAttribute('class', istStunde ? 'uhr-marker' : 'uhr-marker-klein');
+        svg.appendChild(marker);
+      }
+
+      /*
+       * ── STUNDEN-ZAHLEN: 12, 3, 6, 9 ────────────────────────────────
+       * Nur die vier Hauptzahlen anzeigen (für 2. Klasse übersichtlicher).
+       * Position: Radius 68 um den Mittelpunkt (etwas weiter innen als die Marker).
+       */
+      const hauptZahlen = [
+        { zahl: '12', grad: 0   },   // 12 Uhr: oben (0°)
+        { zahl: '3',  grad: 90  },   // 3 Uhr: rechts (90°)
+        { zahl: '6',  grad: 180 },   // 6 Uhr: unten (180°)
+        { zahl: '9',  grad: 270 },   // 9 Uhr: links (270°)
+      ];
+
+      hauptZahlen.forEach(function(eintrag) {
+        const rad = eintrag.grad * Math.PI / 180; // Grad in Bogenmass umrechnen
+        // Position auf Radius 68 (gut lesbar, nicht zu nah an Zeigern)
+        const x = 100 + 68 * Math.sin(rad);
+        const y = 100 - 68 * Math.cos(rad);
+
+        const text = createSVG('text');
+        text.setAttribute('x', x.toFixed(2));
+        text.setAttribute('y', y.toFixed(2));
+        text.setAttribute('class', 'uhr-zahl'); // CSS: Schriftgröße, Farbe, Ausrichtung
+        text.textContent = eintrag.zahl;
+        svg.appendChild(text);
+      });
+
+      /*
+       * ── STUNDENZEIGER ────────────────────────────────────────────────
+       * Länge 55 (kürzerer Zeiger)
+       * Winkel: (h % 12) * 30 + m * 0.5
+       *   Beispiel: 4:30 → (4 % 12) * 30 + 30 * 0.5 = 120 + 15 = 135°
+       * SVG-Rotation um den Mittelpunkt (100, 100)
+       */
+      const stundenWinkel = (h % 12) * 30 + m * 0.5; // Drehwinkel in Grad
+
+      const stundenZeiger = createSVG('line');
+      stundenZeiger.setAttribute('x1', '100');      // Startpunkt: Mittelpunkt x
+      stundenZeiger.setAttribute('y1', '100');      // Startpunkt: Mittelpunkt y
+      stundenZeiger.setAttribute('x2', '100');      // Endpunkt vor Rotation: zeigt nach oben
+      stundenZeiger.setAttribute('y2', '100 - 55'); // wird durch transform gedreht
+      // Genauere Berechnung mit sin/cos statt SVG-transform für Zuverlässigkeit:
+      const shRad = stundenWinkel * Math.PI / 180;
+      stundenZeiger.setAttribute('x2', (100 + 55 * Math.sin(shRad)).toFixed(2));
+      stundenZeiger.setAttribute('y2', (100 - 55 * Math.cos(shRad)).toFixed(2));
+      stundenZeiger.setAttribute('stroke', '#e2e8f0');       // slate-200: fast weiß
+      stundenZeiger.setAttribute('stroke-width', '5');       // Dick → deutlich erkennbar
+      stundenZeiger.setAttribute('class', 'uhr-zeiger');    // stroke-linecap: round
+      svg.appendChild(stundenZeiger);
+
+      /*
+       * ── MINUTENZEIGER ────────────────────────────────────────────────
+       * Länge 75 (längerer Zeiger)
+       * Winkel: m * 6
+       *   Beispiel: 30 Minuten → 30 * 6 = 180° → zeigt nach unten (auf die 6)
+       */
+      const minutenWinkel = m * 6; // Drehwinkel in Grad
+
+      const minutenZeiger = createSVG('line');
+      const mmRad = minutenWinkel * Math.PI / 180;
+      minutenZeiger.setAttribute('x1', '100');                                    // Mittelpunkt x
+      minutenZeiger.setAttribute('y1', '100');                                    // Mittelpunkt y
+      minutenZeiger.setAttribute('x2', (100 + 75 * Math.sin(mmRad)).toFixed(2)); // Endpunkt x
+      minutenZeiger.setAttribute('y2', (100 - 75 * Math.cos(mmRad)).toFixed(2)); // Endpunkt y
+      minutenZeiger.setAttribute('stroke', '#34d399');       // emerald-400: grün (hebt sich ab)
+      minutenZeiger.setAttribute('stroke-width', '3');       // Dünner als Stundenzeiger
+      minutenZeiger.setAttribute('class', 'uhr-zeiger');
+      svg.appendChild(minutenZeiger);
+
+      /*
+       * ── NABE (Mittelpunkt-Kreis) ─────────────────────────────────────
+       * Kleiner weißer Kreis in der Mitte verdeckt die Zeiger-Enden
+       * und gibt der Uhr einen schönen Abschluss.
+       */
+      const nabe = createSVG('circle');
+      nabe.setAttribute('cx', '100');
+      nabe.setAttribute('cy', '100');
+      nabe.setAttribute('r', '5');             // Kleiner Kreis (Radius 5)
+      nabe.setAttribute('class', 'uhr-nabe'); // CSS: fast weiße Füllung
+      svg.appendChild(nabe);
+    }
+
+    /**
+     * uhrzeitAlsText(h, m)
+     * Wandelt Stunde/Minute in einen lesbaren deutschen Uhrzeittext um.
+     * Nur für volle und halbe Stunden relevant (Klasse 2).
+     *
+     * @param {number} h - Stunde (1–12)
+     * @param {number} m - Minute (0 oder 30)
+     * @returns {string} z. B. "3:00" oder "3:30"
+     */
+    function uhrzeitAlsText(h, m) {
+      // Stunde immer 1-stellig, Minute mit führender Null (00 oder 30)
+      return h + ':' + (m === 0 ? '00' : '30');
+    }
+
+    /**
+     * newUhrzeitAufgabe()
+     * Generiert eine neue zufällige Uhrzeit (volle oder halbe Stunde)
+     * und bereitet die 4 Antwort-Buttons vor.
+     *
+     * Vorgehen:
+     * 1. Zufällige Stunde (1–12) und Minute (0 oder 30) wählen
+     * 2. Uhr zeichnen
+     * 3. 3 falsche Antworten generieren (andere Uhrzeiten)
+     * 4. Alle 4 Antworten mischen
+     * 5. Buttons beschriften und onclick setzen
+     * 6. Buttons aktivieren (für die nächste Runde)
+     */
+    function newUhrzeitAufgabe() {
+      // Zufällige Stunde zwischen 1 und 12
+      qHour   = zufallszahl(1, 12);
+      // Minute: entweder 0 (volle Stunde) oder 30 (halbe Stunde)
+      // Math.random() < 0.5 → 50% Chance für 0, 50% für 30
+      qMinute = Math.random() < 0.5 ? 0 : 30;
+
+      // Uhr mit der gewählten Zeit zeichnen
+      drawClock(qHour, qMinute);
+
+      // Richtiger Antworttext (z. B. "3:00" oder "3:30")
+      const richtigeAntwort = uhrzeitAlsText(qHour, qMinute);
+
+      // ── 3 falsche Antworten generieren ───────────────────────────────
+      const alleAntworten = [richtigeAntwort]; // Array mit der richtigen Antwort starten
+
+      while (alleAntworten.length < 4) {
+        // Zufällige andere Stunde (1–12) und Minute (0 oder 30)
+        const falscheStunde  = zufallszahl(1, 12);
+        const falscheMinute  = Math.random() < 0.5 ? 0 : 30;
+        const falscheAntwort = uhrzeitAlsText(falscheStunde, falscheMinute);
+
+        // Nur hinzufügen wenn diese Zeit noch nicht im Array ist (kein Duplikat)
+        // includes() → prüft ob der Wert bereits im Array vorhanden ist
+        if (!alleAntworten.includes(falscheAntwort)) {
+          alleAntworten.push(falscheAntwort); // am Ende des Arrays anfügen
+        }
+      }
+
+      // Array mischen damit die richtige Antwort nicht immer an Position 0 steht
+      mischArray(alleAntworten);
+
+      // ── Buttons beschriften und klickbar machen ───────────────────────
+      for (let i = 0; i < 4; i++) {
+        const btn = document.getElementById('uhr-antwort-' + i); // Button per ID holen
+        btn.textContent = alleAntworten[i]; // Uhrzeittext als Button-Beschriftung
+        btn.disabled    = false;             // Button aktivieren (war evtl. deaktiviert)
+        // CSS-Klassen für Richtig/Falsch-Markierung entfernen (von der letzten Aufgabe)
+        btn.classList.remove('richtig', 'falsch');
+
+        // onclick per closure: welche Zeit hat dieser Button?
+        // WICHTIG: Closure mit let oder einer IIFE damit i den richtigen Wert hat
+        // Hier: btn.onclick direkt zuweisen (kein addEventListener um vorherige zu überschreiben)
+        ;(function(antwortText) {
+          // IIFE (Immediately Invoked Function Expression) damit antwortText den richtigen Wert behält
+          btn.onclick = function() {
+            checkUhrzeit(antwortText);
+          };
+        })(alleAntworten[i]);
+      }
+
+      // Feedback-Text der letzten Runde löschen
+      const feedback = document.getElementById('uhr-feedback');
+      feedback.textContent = '';
+      feedback.style.color = '';
+    }
+
+    /**
+     * checkUhrzeit(antwort)
+     * Prüft ob die gewählte Uhrzeit korrekt ist.
+     *
+     * @param {string} antwort - Die gewählte Zeit als Text (z. B. "3:30")
+     *
+     * Bei Richtig: grünes Feedback, Score +1, nach 1,5s neue Aufgabe
+     * Bei Falsch:  rotes Feedback, richtige Antwort anzeigen, nach 2s neue Aufgabe
+     */
+    function checkUhrzeit(antwort) {
+      // Alle 4 Buttons deaktivieren → keine weitere Eingabe möglich
+      deaktiviereButtons(['uhr-antwort-0', 'uhr-antwort-1', 'uhr-antwort-2', 'uhr-antwort-3']);
+
+      // Richtiger Antworttext für den Vergleich
+      const richtig = uhrzeitAlsText(qHour, qMinute);
+
+      // Feedback-Element holen
+      const feedback = document.getElementById('uhr-feedback');
+
+      // Alle Buttons: richtigen grün, bei falscher Antwort auch den gedrückten rot
+      for (let i = 0; i < 4; i++) {
+        const btn = document.getElementById('uhr-antwort-' + i);
+        if (btn.textContent === richtig) {
+          btn.classList.add('richtig'); // Richtigen Button immer grün markieren
+        } else if (btn.textContent === antwort) {
+          btn.classList.add('falsch');  // Falsch gedrückten Button rot markieren
+        }
+      }
+
+      if (antwort === richtig) {
+        // ✓ Richtig!
+        feedback.textContent = '✓ Super! Das ist richtig!';
+        feedback.style.color = '#34d399'; // emerald-400: grün
+
+        // Score erhöhen und anzeigen
+        uhrScore++;
+        document.getElementById('uhr-score').textContent = uhrScore;
+
+        // Nach 1500ms automatisch zur nächsten Aufgabe
+        setTimeout(newUhrzeitAufgabe, 1500); // 1,5 Sekunden Zeit zum Lesen
+
+      } else {
+        // ✗ Falsch
+        feedback.textContent = '✗ Leider falsch. Richtig: ' + richtig;
+        feedback.style.color = '#f87171'; // red-400: rot
+
+        // Nach 2000ms neue Aufgabe (mehr Zeit weil richtige Antwort abgelesen werden muss)
+        setTimeout(newUhrzeitAufgabe, 2000); // 2 Sekunden
+      }
+    }
+
+
+    /*
+     * ════════════════════════════════════════════════════════════════
+     *  SECTION 2: UHRZEIT SCHREIBEN (TEXT → DIGITAL)
+     * ════════════════════════════════════════════════════════════════
+     */
+
+    // Aktuelle richtige Antwort für Section 2 (digitale Zeit als Text, z. B. "4:30")
+    let schreibenRichtig = '';
+
+    // Zählt richtige Antworten in Section 2
+    let schreibenScore = 0;
+
+    /**
+     * uhrzeitAlsDeutsch(h, m)
+     * Wandelt Stunde/Minute in einen deutschen Uhrzeitausdruck um.
+     *
+     * Regeln:
+     *   m = 0  → „X Uhr"     (volle Stunde)
+     *   m = 30 → „halb Y"    (Y = h + 1, weil „halb fünf" = 4:30)
+     *
+     * Sonderfall: „halb 13" gibt es nicht → „halb eins" bei h=12, m=30
+     * Aber da wir nur 1–12 verwenden: h+1 kann 13 sein → muss zu 1 werden
+     *
+     * @param {number} h - Stunde (1–12)
+     * @param {number} m - Minute (0 oder 30)
+     * @returns {string} z. B. "drei Uhr" oder "halb vier"
+     */
+    function uhrzeitAlsDeutsch(h, m) {
+      // Deutsche Zahlwörter für die Uhrzeiten 1–12
+      const zahlwoerter = [
+        '',        // Index 0 → nicht verwendet
+        'eins',    // 1 Uhr / halb zwei
+        'zwei',    // 2 Uhr / halb drei
+        'drei',    // 3 Uhr / halb vier
+        'vier',    // 4 Uhr / halb fünf
+        'fünf',    // 5 Uhr / halb sechs
+        'sechs',   // 6 Uhr / halb sieben
+        'sieben',  // 7 Uhr / halb acht
+        'acht',    // 8 Uhr / halb neun
+        'neun',    // 9 Uhr / halb zehn
+        'zehn',    // 10 Uhr / halb elf
+        'elf',     // 11 Uhr / halb zwölf
+        'zwölf',   // 12 Uhr / halb eins
+      ];
+
+      if (m === 0) {
+        // Volle Stunde: „X Uhr"
+        // Sonderfall: „1 Uhr" heißt „ein Uhr", nicht „eins Uhr"
+        const name = h === 1 ? 'ein' : zahlwoerter[h];
+        return name + ' Uhr';
+      } else {
+        // Halbe Stunde: „halb Y" wo Y = h + 1
+        // Modulo 12: 12 + 1 = 13 → 13 % 12 = 1 → halb eins
+        const naechste = (h % 12) + 1;
+        return 'halb ' + zahlwoerter[naechste];
+      }
+    }
+
+    /**
+     * newSchreibenAufgabe()
+     * Generiert eine neue Aufgabe für Section 2:
+     * Zeigt einen deutschen Uhrzeitausdruck und bietet 4 digitale Zeiten zur Auswahl.
+     */
+    function newSchreibenAufgabe() {
+      // Zufällige Stunde (1–12) und Minute (0 oder 30)
+      const h = zufallszahl(1, 12);
+      const m = Math.random() < 0.5 ? 0 : 30;
+
+      // Deutschen Ausdruck anzeigen (z. B. „halb vier")
+      document.getElementById('schreiben-ausdruck').textContent = uhrzeitAlsDeutsch(h, m);
+
+      // Richtige digitale Antwort merken (z. B. „3:30")
+      schreibenRichtig = uhrzeitAlsText(h, m);
+
+      // ── 3 falsche Antworten generieren ───────────────────────────────
+      const alleAntworten = [schreibenRichtig]; // Mit richtiger Antwort starten
+
+      while (alleAntworten.length < 4) {
+        const falschH = zufallszahl(1, 12);
+        const falschM = Math.random() < 0.5 ? 0 : 30;
+        const falsch  = uhrzeitAlsText(falschH, falschM);
+
+        // Nur hinzufügen wenn noch nicht vorhanden (keine Duplikate)
+        if (!alleAntworten.includes(falsch)) {
+          alleAntworten.push(falsch);
+        }
+      }
+
+      // Array mischen
+      mischArray(alleAntworten);
+
+      // ── Buttons beschriften ───────────────────────────────────────────
+      for (let i = 0; i < 4; i++) {
+        const btn = document.getElementById('schreiben-antwort-' + i);
+        btn.textContent = alleAntworten[i];
+        btn.disabled    = false;
+        btn.classList.remove('richtig', 'falsch'); // Markierungen der letzten Runde entfernen
+
+        // onclick mit closure (IIFE)
+        ;(function(txt) {
+          btn.onclick = function() { checkSchreiben(txt); };
+        })(alleAntworten[i]);
+      }
+
+      // Feedback löschen
+      const fb = document.getElementById('schreiben-feedback');
+      fb.textContent = '';
+      fb.style.color = '';
+    }
+
+    /**
+     * checkSchreiben(antwort)
+     * Prüft die gewählte digitale Uhrzeit gegen schreibenRichtig.
+     *
+     * @param {string} antwort - Die gewählte digitale Zeit (z. B. "4:30")
+     */
+    function checkSchreiben(antwort) {
+      // Alle 4 Buttons deaktivieren
+      deaktiviereButtons(['schreiben-antwort-0', 'schreiben-antwort-1', 'schreiben-antwort-2', 'schreiben-antwort-3']);
+
+      // Richtigen Button grün markieren, falsch gedrückten rot
+      for (let i = 0; i < 4; i++) {
+        const btn = document.getElementById('schreiben-antwort-' + i);
+        if (btn.textContent === schreibenRichtig) {
+          btn.classList.add('richtig');
+        } else if (btn.textContent === antwort) {
+          btn.classList.add('falsch');
+        }
+      }
+
+      const fb = document.getElementById('schreiben-feedback');
+
+      if (antwort === schreibenRichtig) {
+        // ✓ Richtig!
+        fb.textContent = '✓ Sehr gut!';
+        fb.style.color = '#34d399'; // emerald-400
+
+        schreibenScore++;
+        document.getElementById('schreiben-score').textContent = schreibenScore;
+
+        setTimeout(newSchreibenAufgabe, 1500); // 1,5 Sekunden → nächste Aufgabe
+      } else {
+        // ✗ Falsch
+        fb.textContent = '✗ Falsch. Richtig: ' + schreibenRichtig;
+        fb.style.color = '#f87171'; // red-400
+
+        setTimeout(newSchreibenAufgabe, 2000); // 2 Sekunden → nächste Aufgabe
+      }
+    }
+
+
+    /*
+     * ════════════════════════════════════════════════════════════════
+     *  SECTION 3: GELD ZÄHLEN (EURO-MÜNZEN)
+     * ════════════════════════════════════════════════════════════════
+     */
+
+    // Gesamtbetrag der aktuellen Münzen-Aufgabe in Cent (Integer, verhindert Floating-Point-Fehler)
+    let geldSummeInCent = 0;
+
+    // Zählt richtige Antworten in Section 3
+    let geldScore = 0;
+
+    /*
+     * Münzen-Definitionen:
+     * Jede Münze hat:
+     *   wert      → Wert in Cent (für Berechnungen)
+     *   label     → Text auf der Münze (für die Darstellung)
+     *   radius    → SVG-Kreis-Radius (größere Münzen → größer)
+     *   fuellung  → Füllfarbe (Kupfer / Silber / Gold)
+     *   rand      → Rand-/Strichfarbe (etwas dunkler als Füllung)
+     *
+     * Kupfer:  1ct, 2ct, 5ct  (amber-Töne)
+     * Silber:  10ct, 20ct, 50ct (slate-Töne)
+     * Gold:    1€, 2€ (yellow-Töne)
+     */
+    const MUENZEN = [
+      { wert: 1,   label: '1 Ct',  radius: 16, fuellung: '#92400e', rand: '#78350f' }, // amber-800 / amber-900: dunkles Kupfer
+      { wert: 2,   label: '2 Ct',  radius: 18, fuellung: '#b45309', rand: '#92400e' }, // amber-700 / amber-800
+      { wert: 5,   label: '5 Ct',  radius: 20, fuellung: '#d97706', rand: '#b45309' }, // amber-600 / amber-700: helles Kupfer
+      { wert: 10,  label: '10 Ct', radius: 20, fuellung: '#94a3b8', rand: '#64748b' }, // slate-400 / slate-500: Silber
+      { wert: 20,  label: '20 Ct', radius: 22, fuellung: '#cbd5e1', rand: '#94a3b8' }, // slate-300 / slate-400: helles Silber
+      { wert: 50,  label: '50 Ct', radius: 24, fuellung: '#e2e8f0', rand: '#cbd5e1' }, // slate-200 / slate-300: sehr helles Silber
+      { wert: 100, label: '1 €',   radius: 26, fuellung: '#eab308', rand: '#ca8a04' }, // yellow-500 / yellow-600: Gold
+      { wert: 200, label: '2 €',   radius: 28, fuellung: '#facc15', rand: '#eab308' }, // yellow-400 / yellow-500: helles Gold
+    ];
+
+    /**
+     * drawMuenzen(ausgewaehlteMuenzen)
+     * Zeichnet die übergebenen Münzen als SVG-Kreise nebeneinander.
+     *
+     * SVG viewBox: 500 × 140
+     * Münzen werden horizontal zentriert, vertikal auf y=70 (Mitte) platziert.
+     *
+     * @param {Object[]} ausgewaehlteMuenzen - Array von Münzen-Definitionen (aus MUENZEN)
+     */
+    function drawMuenzen(ausgewaehlteMuenzen) {
+      const svg = document.getElementById('geld-svg');
+      svg.innerHTML = ''; // Altes Zeichnung löschen
+
+      const anzahl = ausgewaehlteMuenzen.length; // Wie viele Münzen werden gezeichnet?
+      const mitteY = 70;                          // Vertikale Mitte des SVGs
+
+      /*
+       * Horizontale Verteilung berechnen:
+       * Gesamtbreite = Summe aller Durchmesser + Abstände zwischen Münzen
+       * Wir nehmen 20px Abstand zwischen Münzen (Rand zu Rand).
+       *
+       * Gesamtbreite = Σ(2 * radius_i) + (anzahl - 1) * 20
+       * Dann: Startpunkt x0 = (500 - Gesamtbreite) / 2
+       */
+
+      // Gesamtbreite aller Münzen und Abstände berechnen
+      let gesamtBreite = 0;
+      ausgewaehlteMuenzen.forEach(function(muenze, idx) {
+        gesamtBreite += 2 * muenze.radius; // Durchmesser
+        if (idx < anzahl - 1) gesamtBreite += 20; // Abstand zwischen Münzen (außer nach der letzten)
+      });
+
+      // x-Startpunkt so dass alle Münzen zentriert sind
+      let x = (500 - gesamtBreite) / 2; // Linker Rand der ersten Münze
+
+      // Jede Münze zeichnen
+      ausgewaehlteMuenzen.forEach(function(muenze) {
+        const cx = x + muenze.radius; // Mittelpunkt x = linker Rand + Radius
+
+        // ── Kreisschatten / Tiefeneffekt (kleiner, leicht versetzter Kreis) ──
+        const schatten = createSVG('circle');
+        schatten.setAttribute('cx', (cx + 2).toFixed(1)); // 2px nach rechts versetzt
+        schatten.setAttribute('cy', (mitteY + 3).toFixed(1)); // 3px nach unten versetzt
+        schatten.setAttribute('r', muenze.radius.toString());
+        schatten.setAttribute('fill', 'rgba(0,0,0,0.35)'); // Halbtransparent schwarz
+        svg.appendChild(schatten);
+
+        // ── Münzkreis ───────────────────────────────────────────────────
+        const kreis = createSVG('circle');
+        kreis.setAttribute('cx', cx.toFixed(1));
+        kreis.setAttribute('cy', mitteY.toString());
+        kreis.setAttribute('r', muenze.radius.toString());
+        kreis.setAttribute('fill', muenze.fuellung);         // Münzfarbe (Kupfer/Silber/Gold)
+        kreis.setAttribute('stroke', muenze.rand);           // Rand etwas dunkler
+        kreis.setAttribute('stroke-width', '1.5');
+        svg.appendChild(kreis);
+
+        // ── Glanzfleck (heller Kreis oben links auf der Münze) ─────────
+        const glanz = createSVG('ellipse');
+        glanz.setAttribute('cx', (cx - muenze.radius * 0.25).toFixed(1)); // Leicht links von Mitte
+        glanz.setAttribute('cy', (mitteY - muenze.radius * 0.3).toFixed(1)); // Leicht über Mitte
+        glanz.setAttribute('rx', (muenze.radius * 0.35).toFixed(1)); // Horizontaler Radius
+        glanz.setAttribute('ry', (muenze.radius * 0.2).toFixed(1));  // Vertikaler Radius (flach)
+        glanz.setAttribute('fill', 'rgba(255,255,255,0.25)'); // Weißer Glanz, halbtransparent
+        svg.appendChild(glanz);
+
+        // ── Wert-Label auf der Münze ─────────────────────────────────────
+        const textEl = createSVG('text');
+        textEl.setAttribute('x', cx.toFixed(1));
+        textEl.setAttribute('y', mitteY.toString());
+        textEl.setAttribute('class', 'muenz-label'); // CSS: Größe, Farbe, Ausrichtung
+        textEl.textContent = muenze.label;
+        svg.appendChild(textEl);
+
+        // x für die nächste Münze weiterrücken: Durchmesser + Abstand
+        x += 2 * muenze.radius + 20; // Diameter + 20px Abstand
+      });
+    }
+
+    /**
+     * newGeldAufgabe()
+     * Generiert eine neue Münzen-Aufgabe:
+     * 1. Zufällig 3–5 Münzen auswählen (mit Wiederholung möglich)
+     * 2. Summe berechnen
+     * 3. Münzen zeichnen
+     * 4. Eingabefeld zurücksetzen
+     */
+    function newGeldAufgabe() {
+      // Anzahl der Münzen zufällig zwischen 3 und 5
+      const anzahl = zufallszahl(3, 5);
+
+      // Münzen zufällig auswählen (mit Wiederholung – eine Münzart kann mehrfach vorkommen)
+      const ausgewaehlt = [];
+      for (let i = 0; i < anzahl; i++) {
+        // Zufälligen Index in MUENZEN wählen
+        const idx = zufallszahl(0, MUENZEN.length - 1);
+        ausgewaehlt.push(MUENZEN[idx]); // Münze hinzufügen
+      }
+
+      // Summe in Cent berechnen (Integer-Arithmetik → kein Floating-Point-Problem)
+      geldSummeInCent = 0;
+      ausgewaehlt.forEach(function(muenze) {
+        geldSummeInCent += muenze.wert; // Wert in Cent addieren
+      });
+
+      // Münzen zeichnen
+      drawMuenzen(ausgewaehlt);
+
+      // Eingabefeld leeren und fokussieren
+      const eingabe = document.getElementById('geld-input');
+      eingabe.value    = '';
+      eingabe.disabled = false;
+      eingabe.focus();
+
+      // Feedback löschen
+      const fb = document.getElementById('geld-feedback');
+      fb.textContent = '';
+      fb.style.color = '';
+    }
+
+    /**
+     * checkGeld()
+     * Prüft ob die eingegebene Summe mit geldSummeInCent übereinstimmt.
+     *
+     * Akzeptierte Eingabeformate:
+     *   - Ganzzahl in Cent: z. B. "85" für 85 Cent
+     *   - Dezimalzahl in Euro: z. B. "0.85" oder "0,85" für 85 Cent
+     *   - Euro-Beträge: z. B. "1.50" oder "1,50" für 150 Cent
+     *
+     * Toleranz: ±0 Cent (exakt richtig)
+     */
+    function checkGeld() {
+      const eingabe = document.getElementById('geld-input');
+      const fb      = document.getElementById('geld-feedback');
+
+      // Eingabe trimmen (Leerzeichen entfernen) und Komma durch Punkt ersetzen
+      // (Deutsches Dezimalkomma: 0,85 → 0.85 damit parseFloat funktioniert)
+      const rohwert = eingabe.value.trim().replace(',', '.');
+
+      // Eingabe in eine Zahl umwandeln
+      // parseFloat() → kann Dezimalzahlen parsen (im Gegensatz zu parseInt)
+      const eingabeZahl = parseFloat(rohwert);
+
+      // Prüfen ob eine gültige Zahl eingegeben wurde
+      if (isNaN(eingabeZahl) || eingabeZahl < 0) {
+        fb.textContent = 'Bitte gib einen gültigen Betrag ein!';
+        fb.style.color = '#f59e0b'; // amber-400: Warnorange
+        return; // Funktion hier beenden
+      }
+
+      /*
+       * Eingabe in Cent umrechnen:
+       * Wenn die Eingabe kleiner als 10 ist, interpretieren wir sie als Euro-Betrag
+       * (z. B. "0.85" → 85 Cent, "1.50" → 150 Cent).
+       * Wenn die Eingabe >= 10 ist, interpretieren wir sie als Cent-Betrag
+       * (z. B. "85" → 85 Cent, "150" → 150 Cent).
+       *
+       * Heuristik: 9 oder weniger ist immer < 1 Euro → als Euro-Betrag sinnlos als ganze Zahl
+       * Deshalb: Wenn Eingabe < 10 → als Euro interpretieren
+       *
+       * ABER: 1ct, 2ct, 5ct sind alles < 10 → Ausnahme!
+       * Wir prüfen ob die Eingabe eine Dezimalstelle hat:
+       *   "0.85" hat Dezimalpunkt → Euro
+       *   "85" hat keinen → Cent
+       */
+      let eingabeInCent;
+
+      if (rohwert.includes('.')) {
+        // Eingabe enthält einen Punkt → Euro-Betrag
+        // Math.round() vermeidet Floating-Point-Ungenauigkeiten wie 0.85 * 100 = 84.99999...
+        eingabeInCent = Math.round(eingabeZahl * 100);
+      } else {
+        // Keine Dezimalstelle → Cent-Betrag
+        eingabeInCent = Math.round(eingabeZahl); // Abrunden falls nötig
+      }
+
+      // Eingabefeld deaktivieren während der Auswertung
+      eingabe.disabled = true;
+
+      // ── Vergleich mit der richtigen Summe ─────────────────────────────
+      if (eingabeInCent === geldSummeInCent) {
+        // ✓ Richtig!
+        // Betrag für Feedback aufbereiten: unter 100ct als Cent, ab 100ct als Euro
+        const anzeige = geldSummeInCent >= 100
+          ? (geldSummeInCent / 100).toFixed(2).replace('.', ',') + ' €'
+          : geldSummeInCent + ' Ct';
+
+        fb.textContent = '✓ Richtig! Der Betrag ist ' + anzeige;
+        fb.style.color = '#34d399'; // emerald-400: grün
+
+        geldScore++;
+        document.getElementById('geld-score').textContent = geldScore;
+
+        setTimeout(newGeldAufgabe, 1800); // 1,8 Sekunden → nächste Aufgabe
+
+      } else {
+        // ✗ Falsch
+        const richtigeAnzeige = geldSummeInCent >= 100
+          ? (geldSummeInCent / 100).toFixed(2).replace('.', ',') + ' €'
+          : geldSummeInCent + ' Ct';
+
+        fb.textContent = '✗ Leider falsch. Richtig: ' + richtigeAnzeige;
+        fb.style.color = '#f87171'; // red-400: rot
+
+        setTimeout(newGeldAufgabe, 2200); // 2,2 Sekunden → etwas mehr Zeit zum Lesen
+      }
+    }
+
+
+    /*
+     * ════════════════════════════════════════════════════════════════
+     *  TASTATUR-UNTERSTÜTZUNG: Enter-Taste für das Geld-Eingabefeld
+     * ════════════════════════════════════════════════════════════════
+     */
+
+    // Enter-Taste im Geld-Eingabefeld = Prüfen-Button
+    document.getElementById('geld-input').addEventListener('keydown', function(event) {
+      // event.key → Name der gedrückten Taste
+      if (event.key === 'Enter') {
+        checkGeld(); // Enter drücken = Prüfen-Button klicken
+      }
+    });
+
+
+    /*
+     * ════════════════════════════════════════════════════════════════
+     *  INITIALISIERUNG: Beim Laden der Seite alles starten
+     * ════════════════════════════════════════════════════════════════
+     */
+
+    // ── Section 1: Erste Uhrzeit-Aufgabe ──────────────────────────────
+    newUhrzeitAufgabe();
+
+    // ── Section 2: Erste Schreib-Aufgabe ──────────────────────────────
+    newSchreibenAufgabe();
+
+    // ── Section 3: Erste Geld-Aufgabe ─────────────────────────────────
+    newGeldAufgabe();
+
+    // ── Footer-Jahr setzen ────────────────────────────────────────────
+    // new Date() → aktuelles Datum, .getFullYear() → vierstellige Jahreszahl
+    document.getElementById('y').textContent = new Date().getFullYear();
+  </script>
+
+  <!--
+    Topbar laden:
+    1. window.__i18nBase wird gesetzt BEVOR der Topbar-Fetch läuft,
+       damit script.js weiß wo die Sprachdateien liegen.
+    2. fetch('../../topbar.html') holt den HTML-Code der Topbar vom Server.
+    3. Nach erfolgreichem Laden wird script.js dynamisch als <script>-Tag eingefügt.
+
+    Warum dynamisch? → script.js benötigt die Topbar-Elemente im DOM.
+    Würde script.js im <head> stehen, liefe es bevor die Topbar existiert.
+  -->
+  <script>
+    // __i18nBase: Pfad-Präfix für die Sprachdateien (../../lang-de.json usw.)
+    // Muss gesetzt sein BEVOR script.js läuft
+    window.__i18nBase = '../../';
+
+    // Topbar-HTML laden und einfügen
+    fetch('../../topbar.html')
+      .then(function(r) {
+        return r.text(); // Antwort als Text lesen (HTML ist ja Text)
+      })
+      .then(function(html) {
+        // Den geladenen HTML-Code in den Container einfügen
+        document.getElementById('topbar-container').innerHTML = html;
+
+        // Jetzt script.js dynamisch laden
+        const s = document.createElement('script'); // Neues <script>-Element erstellen
+        s.src = '../../script.js';                  // Pfad zu script.js
+        document.body.appendChild(s);               // Dem <body> hinzufügen → wird sofort ausgeführt
+      });
+  </script>
+</body>
+</html>

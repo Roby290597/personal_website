@@ -1,0 +1,1234 @@
+<!doctype html>
+<html lang="de">
+
+<head>
+  <!-- Zeichenkodierung und Viewport für mobile Geräte -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+  <!-- Seitentitel und Beschreibung für SEO -->
+  <title>Schriftlich Multiplizieren · Klasse 4 · Mathe Akademie</title>
+  <meta name="description" content="Lerne schriftlich zu multiplizieren – mit Schritt-für-Schritt-Algorithmus, halbschriftlicher Methode und Quiz." />
+
+  <!-- Favicon und App-Icons -->
+  <link rel="icon" href="../../favicon.ico">
+  <link rel="manifest" href="../../site.webmanifest">
+  <link rel="apple-touch-icon" href="../../apple-touch-icon.png">
+
+  <!-- Tailwind CSS über CDN für Utility-Klassen -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Globale Theme-Variablen und Stile -->
+  <link rel="stylesheet" href="../../style.css?v=1.0">
+
+  <style>
+    /* ── Eingabefeld: Zahlen-Spinner ausblenden ──────────────── */
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type=number] {
+      -moz-appearance: textfield; /* Firefox: kein Spinner */
+    }
+
+    /* ── Einblend-Animation für Feedback und Schritte ────────── */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .fade-in {
+      animation: fadeInUp 0.3s ease forwards;
+    }
+
+    /* ── Schritt-Karte erscheint mit leichtem Glow ───────────── */
+    @keyframes stepAppear {
+      from { opacity: 0; transform: scale(0.96); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+    .step-appear {
+      animation: stepAppear 0.25s ease forwards;
+    }
+
+    /* ── Übertrag-Zahl oben: rose-Farbe und kleiner Text ─────── */
+    .uebertrag {
+      color: #fb7185; /* rose-400 */
+      font-size: 0.75rem;
+      font-weight: 700;
+      font-family: ui-monospace, monospace;
+    }
+
+    /* ── Multiplikations-Raster: monospace für Ausrichtung ───── */
+    .mult-grid {
+      font-family: ui-monospace, monospace;
+      font-size: 1.5rem;
+      line-height: 1.8;
+    }
+
+    /* ── Eingabe im Halbschriftlich-Abschnitt ────────────────── */
+    .halb-input {
+      width: 80px;
+      text-align: center;
+      font-size: 1.1rem;
+      font-family: ui-monospace, monospace;
+      border-radius: 0.75rem;
+      border: 1px solid #334155; /* slate-700 */
+      background: #1e293b;       /* slate-800 */
+      color: #f1f5f9;            /* slate-100 */
+      padding: 0.4rem 0.5rem;
+      transition: border-color 0.2s;
+    }
+    .halb-input:focus {
+      outline: none;
+      border-color: #34d399; /* emerald-400 */
+    }
+
+    /* ── Richtig-/Falsch-Hintergrund für Eingabefelder ──────── */
+    .input-richtig {
+      border-color: #34d399 !important; /* emerald-400 */
+      background: #064e3b !important;   /* emerald-950 */
+    }
+    .input-falsch {
+      border-color: #fb7185 !important; /* rose-400 */
+      background: #4c0519 !important;   /* rose-950 */
+    }
+
+    /* ── Trennlinie im Schriftlichen Algorithmus ─────────────── */
+    .trennlinie {
+      border-top: 2px solid #475569; /* slate-600 */
+      margin: 4px 0;
+    }
+
+    /* ── Stelle im Algorithmus hervorgehoben ─────────────────── */
+    .stelle-aktiv {
+      background: #1d4ed8; /* blue-700 */
+      border-radius: 4px;
+      padding: 0 3px;
+      color: #bfdbfe; /* blue-200 */
+    }
+
+    /* ── Quiz-Eingabefeld gross ──────────────────────────────── */
+    .quiz-input {
+      width: 120px;
+      text-align: center;
+      font-size: 1.8rem;
+      font-weight: 700;
+      border-radius: 1rem;
+      border: 2px solid #334155;
+      background: #1e293b;
+      color: #f1f5f9;
+      padding: 0.5rem;
+      transition: border-color 0.2s;
+    }
+    .quiz-input:focus {
+      outline: none;
+      border-color: #34d399;
+    }
+
+    /* ── Fortschrittsbalken für das Quiz ─────────────────────── */
+    .progress-bar {
+      height: 6px;
+      border-radius: 3px;
+      background: #1e293b;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: #34d399; /* emerald-400 */
+      border-radius: 3px;
+      transition: width 0.4s ease;
+    }
+
+    /* ── Zusammenfassungs-Karte: erscheint mit Animation ─────── */
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+    .pop-in {
+      animation: popIn 0.35s cubic-bezier(.34,1.56,.64,1) forwards;
+    }
+  </style>
+</head>
+
+<!-- Dunkles Hintergrund-Design gemäß Design-System -->
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col">
+
+  <!-- ── Top-Bar Container ─────────────────────────────────── -->
+  <!-- Wird per fetch() aus topbar.html geladen -->
+  <header class="border-b border-slate-800 bg-slate-950/80 backdrop-blur sticky top-0 z-50">
+    <div id="topbar-container"></div>
+  </header>
+
+  <!-- ── Hauptinhalt ───────────────────────────────────────── -->
+  <main class="mx-auto max-w-3xl w-full px-4 flex-1 pb-16">
+
+    <!-- ── Zurück-Link und Hero-Bereich ────────────────────── -->
+    <section class="pt-10 pb-6">
+
+      <!-- Link zurück zur Akademie-Übersicht -->
+      <a href="../../academy.html"
+         class="inline-flex items-center gap-1 text-sm text-slate-400 hover:text-emerald-300 transition-colors mb-6 group">
+        <!-- Pfeil-Icon verschiebt sich beim Hover leicht nach links -->
+        <span class="group-hover:-translate-x-0.5 transition-transform">←</span>
+        Zurück zur Akademie
+      </a>
+
+      <!-- Klassen-Badge mit Smaragd-Akzent -->
+      <div class="flex items-center gap-2 mb-3">
+        <span class="inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-xs font-medium text-emerald-300">
+          <!-- Kleiner leuchtender Punkt als Deko-Element -->
+          <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+          Klasse 4 · Grundlagen
+        </span>
+      </div>
+
+      <!-- Seitentitel -->
+      <h1 class="text-3xl md:text-4xl font-semibold tracking-tight">
+        Schriftlich
+        <!-- Smaragd-Akzent auf dem Schlüsselwort -->
+        <span class="text-emerald-300">Multiplizieren</span>
+      </h1>
+
+      <!-- Kurze Beschreibung des Lerninhalts -->
+      <p class="mt-3 text-slate-300 text-sm md:text-base max-w-xl">
+        Lerne den schriftlichen Multiplikations-Algorithmus Schritt für Schritt –
+        mit Übertrag, halbschriftlicher Zerlegung und einem Quiz.
+      </p>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════════ -->
+    <!-- ABSCHNITT 1: Schritt-für-Schritt-Algorithmus            -->
+    <!-- ════════════════════════════════════════════════════════ -->
+    <section class="mb-6">
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+
+        <!-- Abschnitts-Kopfzeile mit Titel und Neue-Aufgabe-Button -->
+        <div class="flex items-center justify-between mb-5">
+          <div>
+            <!-- Abschnitts-Überschrift -->
+            <h2 class="text-lg font-semibold text-slate-200">Schritt-für-Schritt-Algorithmus</h2>
+            <!-- Erklärung der Methode -->
+            <p class="text-xs text-slate-400 mt-1">Von rechts nach links – Stelle für Stelle multiplizieren.</p>
+          </div>
+          <!-- Neue-Aufgabe-Button rechts oben -->
+          <button
+            onclick="neueSchriftlicheAufgabe()"
+            class="px-4 py-2 rounded-2xl text-sm font-semibold border border-slate-700 text-slate-300 hover:border-emerald-400 hover:text-emerald-300 transition-colors active:scale-95">
+            Neue Aufgabe
+          </button>
+        </div>
+
+        <!-- ── Algorithmus-Darstellung ──────────────────────── -->
+        <!-- Zeigt die Rechnung im schriftlichen Format mit Überträgen -->
+        <div class="flex flex-col items-center mb-6">
+
+          <!-- Container für die visuelle Multiplikation -->
+          <!-- id="mult-display" wird per JS vollständig neu gerendert -->
+          <div id="mult-display"
+               class="mult-grid text-slate-100 select-none">
+            <!-- Wird von renderMultDisplay() befüllt -->
+          </div>
+
+        </div>
+
+        <!-- ── Schritt-Anzeige: erklärender Text zum aktuellen Schritt ── -->
+        <!-- Startet leer, wird von showNextStep() befüllt -->
+        <div id="schritt-erklarung"
+             class="min-h-[60px] rounded-2xl bg-slate-800/60 px-4 py-3 text-sm text-slate-300 leading-relaxed mb-4">
+          <!-- Platzhaltertext bei leerem Zustand -->
+          <span class="text-slate-500">Klicke „Schritt anzeigen" um zu beginnen.</span>
+        </div>
+
+        <!-- ── Steuerungsbuttons ─────────────────────────────── -->
+        <div class="flex gap-3 flex-wrap">
+
+          <!-- Nächsten Schritt anzeigen -->
+          <button
+            id="btn-schritt"
+            onclick="showNextStep()"
+            class="flex-1 py-3 rounded-2xl font-semibold text-sm bg-emerald-400 text-slate-950 hover:bg-emerald-300 transition-colors active:scale-95">
+            Schritt anzeigen →
+          </button>
+
+          <!-- Alle Schritte auf einmal zeigen -->
+          <button
+            onclick="alleSchritte()"
+            class="px-5 py-3 rounded-2xl font-semibold text-sm border border-slate-700 text-slate-300 hover:border-slate-500 transition-colors active:scale-95">
+            Alle zeigen
+          </button>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════════ -->
+    <!-- ABSCHNITT 2: Halbschriftliche Multiplikation            -->
+    <!-- ════════════════════════════════════════════════════════ -->
+    <section class="mb-6">
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+
+        <!-- Abschnitts-Kopfzeile -->
+        <div class="flex items-center justify-between mb-5">
+          <div>
+            <h2 class="text-lg font-semibold text-slate-200">Halbschriftliche Multiplikation</h2>
+            <!-- Erklärung der Zerlegungsmethode -->
+            <p class="text-xs text-slate-400 mt-1">Zerlege die Zahl in Hunderter, Zehner und Einer – rechne getrennt.</p>
+          </div>
+          <!-- Neue Aufgabe generieren -->
+          <button
+            onclick="newHalbschriftlich()"
+            class="px-4 py-2 rounded-2xl text-sm font-semibold border border-slate-700 text-slate-300 hover:border-emerald-400 hover:text-emerald-300 transition-colors active:scale-95">
+            Neue Aufgabe
+          </button>
+        </div>
+
+        <!-- ── Aufgabenzeile: zeigt die Hauptaufgabe ─────────── -->
+        <!-- z.B. "243 × 7 = ?" – wird per JS gesetzt -->
+        <div id="halb-aufgabe"
+             class="text-3xl font-bold font-mono text-center text-slate-100 mb-6">
+          <!-- Wird von newHalbschriftlich() gesetzt -->
+          …
+        </div>
+
+        <!-- ── Zerlegungsdarstellung: 3 Teilaufgaben ─────────── -->
+        <!-- Jede Zeile: Teilaufgabe = Eingabefeld -->
+        <div class="space-y-3 mb-5">
+
+          <!-- Zeile 1: Hunderter-Anteil, z.B. 200 × 7 = ? -->
+          <div class="flex items-center gap-3 justify-center flex-wrap">
+            <!-- Farbiger Punkt zeigt die Stelle (blau = Hunderter) -->
+            <span class="w-3 h-3 rounded-full bg-blue-400 flex-shrink-0"></span>
+            <!-- Teilaufgaben-Text, z.B. "200 × 7 =" -->
+            <span id="halb-h-text"
+                  class="font-mono text-lg text-slate-300 w-32 text-right">
+              …
+            </span>
+            <!-- Eingabefeld für Hunderter-Produkt -->
+            <input
+              id="halb-h-input"
+              type="number"
+              placeholder="?"
+              autocomplete="off"
+              class="halb-input"
+            />
+          </div>
+
+          <!-- Zeile 2: Zehner-Anteil, z.B. 40 × 7 = ? -->
+          <div class="flex items-center gap-3 justify-center flex-wrap">
+            <!-- gelber Punkt = Zehner -->
+            <span class="w-3 h-3 rounded-full bg-yellow-400 flex-shrink-0"></span>
+            <span id="halb-z-text"
+                  class="font-mono text-lg text-slate-300 w-32 text-right">
+              …
+            </span>
+            <!-- Eingabefeld für Zehner-Produkt -->
+            <input
+              id="halb-z-input"
+              type="number"
+              placeholder="?"
+              autocomplete="off"
+              class="halb-input"
+            />
+          </div>
+
+          <!-- Zeile 3: Einer-Anteil, z.B. 3 × 7 = ? -->
+          <div class="flex items-center gap-3 justify-center flex-wrap">
+            <!-- smaragd-Punkt = Einer -->
+            <span class="w-3 h-3 rounded-full bg-emerald-400 flex-shrink-0"></span>
+            <span id="halb-e-text"
+                  class="font-mono text-lg text-slate-300 w-32 text-right">
+              …
+            </span>
+            <!-- Eingabefeld für Einer-Produkt -->
+            <input
+              id="halb-e-input"
+              type="number"
+              placeholder="?"
+              autocomplete="off"
+              class="halb-input"
+            />
+          </div>
+
+          <!-- Trennlinie vor der Summe -->
+          <div class="flex justify-center">
+            <div class="w-64 trennlinie"></div>
+          </div>
+
+          <!-- Summen-Zeile: Gesamt-Ergebnis -->
+          <div class="flex items-center gap-3 justify-center flex-wrap">
+            <!-- weißer Punkt = Summe -->
+            <span class="w-3 h-3 rounded-full bg-slate-300 flex-shrink-0"></span>
+            <!-- Summen-Beschriftung -->
+            <span id="halb-sum-text"
+                  class="font-mono text-lg text-slate-300 w-32 text-right font-bold">
+              Summe =
+            </span>
+            <!-- Eingabefeld für die Gesamtsumme -->
+            <input
+              id="halb-sum-input"
+              type="number"
+              placeholder="?"
+              autocomplete="off"
+              class="halb-input"
+            />
+          </div>
+
+        </div>
+
+        <!-- ── Prüfen-Button und Punkte-Anzeige ──────────────── -->
+        <div class="flex items-center gap-4 flex-wrap">
+
+          <!-- Prüfen-Button -->
+          <button
+            onclick="checkHalbschriftlich()"
+            class="flex-1 py-3 rounded-2xl font-semibold text-sm bg-emerald-400 text-slate-950 hover:bg-emerald-300 transition-colors active:scale-95">
+            Prüfen ✓
+          </button>
+
+          <!-- Punktestand für Halbschriftlich-Abschnitt -->
+          <div class="text-sm text-slate-400 flex items-center gap-2">
+            <span>Punkte:</span>
+            <!-- Wird von checkHalbschriftlich() aktualisiert -->
+            <span id="halb-score"
+                  class="font-bold text-emerald-300 text-base tabular-nums">0</span>
+          </div>
+
+        </div>
+
+        <!-- Feedback-Bereich für Halbschriftlich -->
+        <!-- Startet leer, wird per showHalbFeedback() befüllt -->
+        <div id="halb-feedback"
+             class="mt-3 text-center text-base font-semibold min-h-[24px]">
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════════ -->
+    <!-- ABSCHNITT 3: Quiz – direkte Multiplikation eingeben     -->
+    <!-- ════════════════════════════════════════════════════════ -->
+    <section class="mb-8">
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+
+        <!-- Abschnitts-Kopfzeile mit Fortschritt und Punkten -->
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-lg font-semibold text-slate-200">Quiz</h2>
+          <!-- Fortschritts- und Punktestand-Anzeige -->
+          <div class="flex items-center gap-4 text-sm text-slate-400">
+            <!-- Aufgaben-Fortschritt: z.B. "3 / 10" -->
+            <span>Aufgabe <span id="quiz-nr" class="text-slate-200 font-bold tabular-nums">1</span> / 10</span>
+            <!-- Punktestand -->
+            <span>Punkte: <span id="quiz-score" class="font-bold text-emerald-300 text-base tabular-nums">0</span></span>
+          </div>
+        </div>
+
+        <!-- ── Fortschrittsbalken: zeigt wie weit das Quiz ist ── -->
+        <div class="progress-bar mb-5">
+          <!-- Breite wird per JS als inline-style gesetzt: z.B. style="width: 30%" -->
+          <div id="quiz-progress" class="progress-fill" style="width: 0%"></div>
+        </div>
+
+        <!-- Aufgaben-Zusammenfassung (erscheint nach 10 Aufgaben) -->
+        <!-- Startet versteckt (hidden), wird per finishQuiz() gezeigt -->
+        <div id="quiz-summary" class="hidden">
+          <!-- Inhalt wird von finishQuiz() befüllt -->
+        </div>
+
+        <!-- Haupt-Quiz-Bereich (versteckt sich nach Abschluss) -->
+        <div id="quiz-main">
+
+          <!-- Aufgaben-Anzeige: große Rechnung, z.B. "324 × 6 = ?" -->
+          <div class="flex items-center justify-center mb-6">
+            <div id="quiz-aufgabe"
+                 class="text-4xl md:text-5xl font-bold tracking-tight font-mono text-slate-100 text-center">
+              <!-- Platzhalter bis newMultiQuiz() läuft -->
+              …
+            </div>
+          </div>
+
+          <!-- Eingabezeile: Quiz-Input und Prüfen-Button -->
+          <div class="flex gap-3 items-center justify-center mb-4">
+
+            <!-- Großes Eingabefeld für die vollständige Antwort -->
+            <input
+              id="quiz-input"
+              type="number"
+              min="0"
+              placeholder="?"
+              autocomplete="off"
+              class="quiz-input"
+            />
+
+            <!-- Prüfen-Button -->
+            <button
+              onclick="checkMultiQuiz()"
+              class="px-6 py-3 rounded-2xl font-semibold text-sm bg-emerald-400 text-slate-950 hover:bg-emerald-300 transition-colors active:scale-95">
+              Prüfen ✓
+            </button>
+
+            <!-- Aufgabe überspringen ohne Prüfung -->
+            <button
+              onclick="newMultiQuiz()"
+              class="px-4 py-3 rounded-2xl font-semibold text-sm border border-slate-700 text-slate-300 hover:border-slate-500 transition-colors active:scale-95">
+              Weiter →
+            </button>
+
+          </div>
+
+          <!-- Feedback-Bereich für das Quiz -->
+          <!-- Startet leer, wird von checkMultiQuiz() befüllt -->
+          <div id="quiz-feedback"
+               class="text-center text-lg font-semibold min-h-[28px]">
+          </div>
+
+        </div><!-- Ende #quiz-main -->
+
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════════ -->
+    <!-- THEORIE-BOX: Erklärungen zu den Regeln                  -->
+    <!-- ════════════════════════════════════════════════════════ -->
+    <section class="mb-8">
+      <!-- 3-Spalten-Grid auf Desktop, 1 Spalte auf Mobil -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+        <!-- Theorie-Karte 1: Algorithmus -->
+        <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+          <!-- Titel mit Smaragd-Akzent -->
+          <h3 class="text-base font-semibold text-emerald-300 mb-3">🔢 Algorithmus</h3>
+          <p class="text-sm text-slate-300 leading-relaxed">
+            <strong class="text-slate-100">Immer von rechts nach links!</strong>
+            Jede Stelle des Faktors mit dem Einzel-Faktor multiplizieren.
+          </p>
+          <!-- Beispiel-Formel farblich hervorgehoben -->
+          <div class="mt-3 rounded-2xl bg-slate-800/60 px-4 py-3 text-sm font-mono text-emerald-300">
+            243 × 7:<br>
+            7×3 → 7×4 → 7×2
+          </div>
+        </div>
+
+        <!-- Theorie-Karte 2: Übertrag -->
+        <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+          <!-- Titel in rose-Farbe (Übertrag-Farbe) -->
+          <h3 class="text-base font-semibold text-rose-300 mb-3">↑ Übertrag</h3>
+          <p class="text-sm text-slate-300 leading-relaxed">
+            Wenn das Produkt <strong class="text-slate-100">≥ 10</strong>:
+            Einerstelle schreiben,
+            Zehnerstelle <em class="text-rose-300">merken</em> (Übertrag).
+          </p>
+          <!-- Konkretes Beispiel mit farbigem Übertrag -->
+          <div class="mt-3 rounded-2xl bg-slate-800/60 px-4 py-3 text-sm font-mono">
+            <span class="text-rose-300">²</span><span class="text-slate-300"> ← Übertrag</span><br>
+            <span class="text-slate-300">7×4=28, +2=</span><span class="text-emerald-300">30</span>
+          </div>
+        </div>
+
+        <!-- Theorie-Karte 3: Probe -->
+        <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+          <!-- Titel in blauer Farbe -->
+          <h3 class="text-base font-semibold text-blue-300 mb-3">✓ Probe</h3>
+          <p class="text-sm text-slate-300 leading-relaxed">
+            Ergebnis mit der <strong class="text-slate-100">Umkehr-Rechnung</strong> prüfen:
+            Division durch den Einzel-Faktor.
+          </p>
+          <!-- Probe-Beispiel -->
+          <div class="mt-3 rounded-2xl bg-slate-800/60 px-4 py-3 text-sm font-mono text-blue-300">
+            1701 ÷ 7 = 243 ✓
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main><!-- Ende main -->
+
+  <!-- ── Fußzeile ─────────────────────────────────────────── -->
+  <footer class="py-6 text-center text-xs text-slate-500">
+    <!-- Aktuelles Jahr wird per JS eingesetzt -->
+    © <span id="footer-year"></span> Brandon Hank · Düsseldorf
+  </footer>
+
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <!-- JAVASCRIPT: Gesamte Interaktionslogik                     -->
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <script>
+    /* ════════════════════════════════════════════════════════════
+       GLOBALE ZUSTANDSVARIABLEN
+       ════════════════════════════════════════════════════════════ */
+
+    /* ── Abschnitt 1: Schriftlicher Algorithmus ──────────────── */
+    let algA        = 0;   // Dreistelliger Faktor (z.B. 243)
+    let algB        = 0;   // Einstelliger Faktor  (z.B. 7)
+    let currentStep = 0;   // Index des aktuell angezeigten Schritts (0 = keiner)
+    let steps       = [];  // Array mit den einzelnen Schritt-Objekten
+
+    /* ── Abschnitt 2: Halbschriftliche Multiplikation ─────────── */
+    let halbA      = 0;   // Dreistelliger Faktor für Halbschriftlich
+    let halbB      = 0;   // Einstelliger Faktor für Halbschriftlich
+    let halbScore  = 0;   // Punktestand für Halbschriftlich
+
+    /* ── Abschnitt 3: Quiz ────────────────────────────────────── */
+    let quizA         = 0;   // Dreistelliger Faktor für das Quiz
+    let quizB         = 0;   // Einstelliger Faktor für das Quiz
+    let quizScore     = 0;   // Aktueller Punktestand im Quiz
+    let quizNummer    = 1;   // Aktuelle Aufgaben-Nummer (1–10)
+    let quizGeprueft  = false; // Verhindert Doppelklick auf "Prüfen"
+
+    /* ════════════════════════════════════════════════════════════
+       HILFSFUNKTIONEN
+       ════════════════════════════════════════════════════════════ */
+
+    /* ── Zufallszahl im Bereich [min, max] ────────────────────── */
+    function zufall(min, max) {
+      // Math.random() → [0,1), skalieren auf gewünschten Bereich
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    /* ── Dreistellige Zahl in Hunderter, Zehner, Einer zerlegen ─ */
+    function zerlegeZahl(n) {
+      // Beispiel: 243 → { h: 200, z: 40, e: 3 }
+      const hunderter = Math.floor(n / 100) * 100; // Hunderter-Anteil
+      const zehner    = Math.floor((n % 100) / 10) * 10; // Zehner-Anteil
+      const einer     = n % 10;                           // Einer-Anteil
+      return { h: hunderter, z: zehner, e: einer };
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       ABSCHNITT 1: SCHRIFTLICHER ALGORITHMUS
+       ════════════════════════════════════════════════════════════ */
+
+    /* ── Alle Schritte für a × b berechnen und in steps[] speichern ─ */
+    function buildSteps(a, b) {
+      steps = []; // Schritte-Array zurücksetzen
+
+      // Einzelne Ziffern von a extrahieren
+      const einer   = a % 10;                   // z.B. 243 → 3
+      const zehner  = Math.floor(a / 10) % 10;  // z.B. 243 → 4
+      const hunderter = Math.floor(a / 100);    // z.B. 243 → 2
+
+      // Kumulierter Übertrag: beginnt bei 0
+      let uebertrag = 0;
+
+      /* ── Schritt 1: Einerstelle × b ─────────────────────────── */
+      // Produkt der Einerstelle inkl. vorherigem Übertrag
+      const prod1   = einer * b;                // z.B. 3 × 7 = 21
+      const schreib1 = prod1 % 10;             // zu schreibende Stelle (Einer des Produkts)
+      const trag1    = Math.floor(prod1 / 10); // neuer Übertrag (Zehner des Produkts)
+
+      steps.push({
+        stelle: 'Einer',         // Name der Stelle für die Erklärung
+        faktor: einer,           // Ziffer der Stelle
+        multiplikator: b,        // Mit diesem Wert multipliziert
+        produkt: prod1,          // Rohprodukt ohne Übertrag
+        uebertragEin: 0,         // Übertrag der hereinkam (noch keiner)
+        gesamtProdukt: prod1,    // Endprodukt inkl. Übertrag (hier gleich)
+        schreibe: schreib1,      // Diese Ziffer wird ins Ergebnis geschrieben
+        neuerUebertrag: trag1,   // Dieser Übertrag geht in den nächsten Schritt
+        ergebnisBisher: String(schreib1), // Aufbauendes Ergebnis-Feld
+      });
+
+      uebertrag = trag1; // Übertrag merken
+
+      /* ── Schritt 2: Zehnerstelle × b + Übertrag ─────────────── */
+      const prod2       = zehner * b;                    // z.B. 4 × 7 = 28
+      const gesamtProd2 = prod2 + uebertrag;            // 28 + 2 = 30
+      const schreib2    = gesamtProd2 % 10;             // Stelle schreiben: 0
+      const trag2       = Math.floor(gesamtProd2 / 10); // neuer Übertrag: 3
+
+      steps.push({
+        stelle: 'Zehner',
+        faktor: zehner,
+        multiplikator: b,
+        produkt: prod2,
+        uebertragEin: uebertrag,    // Übertrag aus Schritt 1
+        gesamtProdukt: gesamtProd2,
+        schreibe: schreib2,
+        neuerUebertrag: trag2,
+        // Ergebnis-String wächst von rechts nach links
+        ergebnisBisher: String(schreib2) + String(schreib1),
+      });
+
+      uebertrag = trag2; // neuen Übertrag merken
+
+      /* ── Schritt 3: Hunderterstelle × b + Übertrag ─────────── */
+      const prod3       = hunderter * b;                 // z.B. 2 × 7 = 14
+      const gesamtProd3 = prod3 + uebertrag;            // 14 + 3 = 17
+      // Bei der letzten Stelle wird das gesamte Ergebnis geschrieben
+      // (kein weiterer Übertrag nötig – wird vorne angehängt)
+      const schreib3    = gesamtProd3; // z.B. 17 komplett schreiben
+
+      steps.push({
+        stelle: 'Hunderter',
+        faktor: hunderter,
+        multiplikator: b,
+        produkt: prod3,
+        uebertragEin: uebertrag,
+        gesamtProdukt: gesamtProd3,
+        schreibe: schreib3,         // Kompletter Rest vorne anschreiben
+        neuerUebertrag: 0,          // Kein weiterer Übertrag
+        // Vollständiges Ergebnis: vordere Ziffern + bisheriger String
+        ergebnisBisher: String(schreib3) + String(schreib2) + String(schreib1),
+      });
+    }
+
+    /* ── Neue Schriftlich-Aufgabe generieren ────────────────────
+       Wählt zufällige Zahlen, berechnet Schritte, rendert Display  */
+    function neueSchriftlicheAufgabe() {
+      // Dreistelliger Faktor: 100–799 (damit Ergebnis nicht zu riesig wird)
+      algA = zufall(100, 799);
+      // Einstelliger Faktor: 2–9 (nicht 1, da trivial)
+      algB = zufall(2, 9);
+
+      // Schritte neu berechnen
+      buildSteps(algA, algB);
+
+      // Anzeige-Status zurücksetzen: noch kein Schritt sichtbar
+      currentStep = 0;
+
+      // Algorithmus-Darstellung neu rendern (zeigt nur die Aufgabe)
+      renderMultDisplay(algA, algB, 0);
+
+      // Erklärungs-Box zurücksetzen
+      const erklBox = document.getElementById('schritt-erklarung');
+      erklBox.innerHTML = '<span class="text-slate-500">Klicke „Schritt anzeigen" um zu beginnen.</span>';
+
+      // Schritt-Button wieder aktivieren und beschriften
+      const btn = document.getElementById('btn-schritt');
+      btn.textContent = 'Schritt anzeigen →';
+      btn.disabled = false;
+      btn.className = 'flex-1 py-3 rounded-2xl font-semibold text-sm bg-emerald-400 text-slate-950 hover:bg-emerald-300 transition-colors active:scale-95';
+    }
+
+    /* ── Multiplikations-Display als HTML-Divs rendern ───────────
+       visibleSteps: wie viele Schritte bereits angezeigt wurden   */
+    function renderMultDisplay(a, b, visibleSteps) {
+      const container = document.getElementById('mult-display');
+
+      // Überträge berechnen (für die Anzeige über den Ziffern)
+      // Array: [u_hunderter, u_zehner] – Überträge die über den Ziffern stehen
+      let ue = [0, 0, 0]; // ue[0]=Einer-Übertrag, ue[1]=Zehner-Übertrag
+
+      if (visibleSteps >= 1 && steps.length >= 1) {
+        ue[0] = steps[0].neuerUebertrag; // Übertrag aus Schritt 1 (über Zehner)
+      }
+      if (visibleSteps >= 2 && steps.length >= 2) {
+        ue[1] = steps[1].neuerUebertrag; // Übertrag aus Schritt 2 (über Hunderter)
+      }
+
+      // Ziffern von a extrahieren für farbige Hervorhebung
+      const einer    = a % 10;
+      const zehner   = Math.floor(a / 10) % 10;
+      const hunderter = Math.floor(a / 100);
+
+      // Aktive Stelle bestimmen: welche Ziffer gerade berechnet wird
+      // 0 = keine, 1 = Einer, 2 = Zehner, 3 = Hunderter
+      const aktiveStelle = visibleSteps; // 1:Einer, 2:Zehner, 3:Hunderter
+
+      /* ── Übertrag-Zeile ──────────────────────────────────────
+         Überträge stehen klein in rose-Farbe über den Ziffern    */
+      const ueZeile =
+        `<div class="flex justify-end items-end gap-1 mb-0 pr-0 min-h-[1.2rem]">
+          <!-- Hunderter-Übertrag (falls vorhanden) -->
+          <span class="w-7 text-center uebertrag">${ue[1] > 0 && visibleSteps >= 2 ? ue[1] : ''}</span>
+          <!-- Zehner-Übertrag (falls vorhanden) -->
+          <span class="w-7 text-center uebertrag">${ue[0] > 0 && visibleSteps >= 1 ? ue[0] : ''}</span>
+          <!-- Einer-Spalte hat keinen Übertrag-Platz (wird nach vorne getragen) -->
+          <span class="w-7 text-center uebertrag"></span>
+        </div>`;
+
+      /* ── Faktor-Zeile: die dreistellige Zahl ─────────────────
+         Aktive Stelle wird blau hervorgehoben                     */
+      const hStyle = aktiveStelle === 3 ? 'stelle-aktiv' : 'text-slate-100';
+      const zStyle = aktiveStelle === 2 ? 'stelle-aktiv' : 'text-slate-100';
+      const eStyle = aktiveStelle === 1 ? 'stelle-aktiv' : 'text-slate-100';
+
+      const faktorZeile =
+        `<div class="flex justify-end items-center gap-1">
+          <!-- Hunderter-Ziffer des Faktors -->
+          <span class="w-7 text-center ${hStyle}">${hunderter}</span>
+          <!-- Zehner-Ziffer des Faktors -->
+          <span class="w-7 text-center ${zStyle}">${zehner}</span>
+          <!-- Einer-Ziffer des Faktors -->
+          <span class="w-7 text-center ${eStyle}">${einer}</span>
+        </div>`;
+
+      /* ── Multiplikator-Zeile: "× b" ──────────────────────────
+         Zeigt das × und den einstelligen Faktor                   */
+      const multZeile =
+        `<div class="flex justify-end items-center gap-1">
+          <!-- × Symbol in smaragd -->
+          <span class="w-7 text-center text-emerald-400 font-bold">×</span>
+          <!-- Leerplatz für Hunderter-Spalte -->
+          <span class="w-7 text-center text-slate-500"></span>
+          <!-- Einstelliger Faktor rechtsbündig -->
+          <span class="w-7 text-center text-emerald-300 font-bold">${b}</span>
+        </div>`;
+
+      /* ── Trennlinie zwischen Aufgabe und Ergebnis ────────────── */
+      const linie =
+        `<div class="flex justify-end">
+          <!-- Trennlinie über volle Breite der Ziffern -->
+          <div class="border-t-2 border-slate-600 mt-1 mb-1" style="width: 7rem;"></div>
+        </div>`;
+
+      /* ── Ergebnis-Zeile ──────────────────────────────────────
+         Zeigt das bisher berechnete Ergebnis                      */
+      let ergebnisStr = '';
+
+      if (visibleSteps === 0) {
+        // Noch kein Schritt: nur Fragezeichen
+        ergebnisStr = '?';
+      } else if (visibleSteps < steps.length) {
+        // Teilweise berechnet: zeige bisheriges Ergebnis grau
+        ergebnisStr = steps[visibleSteps - 1].ergebnisBisher;
+      } else {
+        // Alles berechnet: zeige vollständiges Ergebnis in smaragd
+        ergebnisStr = steps[steps.length - 1].ergebnisBisher;
+      }
+
+      // Ergebnis-Ziffern formatieren
+      const ergebnisZiffernFarbe = visibleSteps >= steps.length
+        ? 'text-emerald-300 font-bold' // Fertig: smaragd
+        : 'text-slate-400';             // Noch nicht fertig: grau
+
+      const ergebnisZeile =
+        `<div class="flex justify-end items-center gap-1">
+          <!-- Ergebnis-Ziffern, rechtsbündig -->
+          <span class="${ergebnisZiffernFarbe} font-mono tracking-widest">${ergebnisStr}</span>
+        </div>`;
+
+      // Alle Zeilen zusammensetzen und ins DOM schreiben
+      container.innerHTML = ueZeile + faktorZeile + multZeile + linie + ergebnisZeile;
+    }
+
+    /* ── Nächsten Schritt des Algorithmus anzeigen ──────────────
+       Wird aufgerufen wenn "Schritt anzeigen →" geklickt wird     */
+    function showNextStep() {
+      // Wenn alle Schritte schon gezeigt: nichts tun
+      if (currentStep >= steps.length) return;
+
+      // Aktuellen Schritt aus dem Array holen
+      const s = steps[currentStep];
+      currentStep++; // Schritt-Zähler erhöhen
+
+      // Display mit neuem Schritt neu rendern (hebt aktive Stelle hervor)
+      renderMultDisplay(algA, algB, currentStep);
+
+      /* ── Erklärungs-Text für diesen Schritt aufbauen ─────────
+         Beschreibt genau was gerade berechnet wird               */
+      const erklBox = document.getElementById('schritt-erklarung');
+
+      // Übertrag-Beschreibung: entweder leer oder "+X (Übertrag)"
+      const ueTeil = s.uebertragEin > 0
+        ? `, + <span class="text-rose-300 font-bold">${s.uebertragEin}</span> (Übertrag)`
+        : '';
+
+      // Schreib-Beschreibung: was wird ins Ergebnis geschrieben
+      const schreibTeil = currentStep < steps.length
+        ? `→ schreibe <strong class="text-emerald-300">${s.schreibe}</strong>, merke <span class="text-rose-300 font-bold">${s.neuerUebertrag}</span> als Übertrag`
+        : `→ schreibe <strong class="text-emerald-300">${s.schreibe}</strong>`;
+
+      // Vollständiger Erklärungstext
+      erklBox.innerHTML =
+        `<div class="step-appear">
+          <!-- Schritt-Nummer-Badge -->
+          <span class="inline-block bg-emerald-400/20 text-emerald-300 text-xs font-bold px-2 py-0.5 rounded-full mb-2">
+            Schritt ${currentStep} von ${steps.length}: ${s.stelle}
+          </span>
+          <!-- Rechenweg-Formel -->
+          <div class="font-mono text-base mt-1">
+            ${s.multiplikator} × <strong class="text-yellow-300">${s.faktor}</strong> = ${s.produkt}${ueTeil} = <strong class="text-white">${s.gesamtProdukt}</strong>
+          </div>
+          <!-- Was schreiben, was merken -->
+          <div class="text-xs text-slate-400 mt-2">${schreibTeil}</div>
+        </div>`;
+
+      /* ── Button-Status nach dem letzten Schritt aktualisieren ── */
+      if (currentStep >= steps.length) {
+        // Alle Schritte gezeigt: Button deaktivieren und Fertig-Text zeigen
+        const btn = document.getElementById('btn-schritt');
+        btn.textContent = `✓ Fertig! ${algA} × ${algB} = ${algA * algB}`;
+        btn.disabled = true;
+        // Deaktivierter Stil: grauer Hintergrund
+        btn.className = 'flex-1 py-3 rounded-2xl font-semibold text-sm bg-slate-700 text-slate-400 cursor-not-allowed';
+      }
+    }
+
+    /* ── Alle Schritte auf einmal anzeigen ───────────────────────
+       Klickt sozusagen alle "Schritt anzeigen"-Aktionen durch     */
+    function alleSchritte() {
+      // Solange noch Schritte übrig: nächsten Schritt zeigen
+      while (currentStep < steps.length) {
+        showNextStep();
+      }
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       ABSCHNITT 2: HALBSCHRIFTLICHE MULTIPLIKATION
+       ════════════════════════════════════════════════════════════ */
+
+    /* ── Neue Halbschriftlich-Aufgabe generieren ──────────────── */
+    function newHalbschriftlich() {
+      // Dreistelliger Faktor: 100–499 (überschaubare Teilprodukte)
+      halbA = zufall(100, 499);
+      // Einstelliger Faktor: 2–9
+      halbB = zufall(2, 9);
+
+      // Zahl zerlegen: Hunderter, Zehner, Einer
+      const { h, z, e } = zerlegeZahl(halbA);
+
+      /* ── Hauptaufgaben-Text setzen ────────────────────────────
+         z.B. "243 × 7 = ?" über den Eingabefeldern              */
+      document.getElementById('halb-aufgabe').textContent =
+        `${halbA} × ${halbB} = ?`;
+
+      /* ── Teilaufgaben-Texte links der Eingabefelder setzen ───── */
+      // Hunderter: z.B. "200 × 7 ="
+      document.getElementById('halb-h-text').textContent = `${h} × ${halbB} =`;
+      // Zehner: z.B. "40 × 7 ="
+      document.getElementById('halb-z-text').textContent = `${z} × ${halbB} =`;
+      // Einer: z.B. "3 × 7 ="
+      document.getElementById('halb-e-text').textContent = `${e} × ${halbB} =`;
+
+      /* ── Alle Eingabefelder leeren und Stile zurücksetzen ─────── */
+      ['halb-h-input', 'halb-z-input', 'halb-e-input', 'halb-sum-input'].forEach(id => {
+        const el = document.getElementById(id);
+        el.value = '';                    // Eingabe löschen
+        el.className = 'halb-input';      // Basis-Stil wiederherstellen (kein richtig/falsch)
+        el.disabled = false;              // Feld wieder aktivieren
+      });
+
+      // Feedback-Text löschen
+      document.getElementById('halb-feedback').textContent = '';
+      document.getElementById('halb-feedback').className = '';
+
+      // Erstes Eingabefeld fokussieren
+      document.getElementById('halb-h-input').focus();
+    }
+
+    /* ── Halbschriftlich-Antworten prüfen ─────────────────────── */
+    function checkHalbschriftlich() {
+      // Zahl zerlegen: Hunderter, Zehner, Einer
+      const { h, z, e } = zerlegeZahl(halbA);
+
+      // Korrekte Teilprodukte berechnen
+      const sollH   = h * halbB;        // z.B. 200 × 7 = 1400
+      const sollZ   = z * halbB;        // z.B. 40 × 7 = 280
+      const sollE   = e * halbB;        // z.B. 3 × 7 = 21
+      const sollSum = halbA * halbB;    // z.B. 243 × 7 = 1701
+
+      // Benutzereingaben als Ganzzahlen lesen
+      const eingabeH   = parseInt(document.getElementById('halb-h-input').value, 10);
+      const eingabeZ   = parseInt(document.getElementById('halb-z-input').value, 10);
+      const eingabeE   = parseInt(document.getElementById('halb-e-input').value, 10);
+      const eingabeSum = parseInt(document.getElementById('halb-sum-input').value, 10);
+
+      // Jedes Feld einzeln prüfen und einfärben
+      let alleRichtig = true; // Annahme: alles richtig, wird widerlegt falls nötig
+
+      /* ── Prüffunktion für ein einzelnes Feld ─────────────────
+         Setzt grünen oder roten Rand je nach Korrektheit         */
+      function pruefeEingabe(id, eingabe, soll) {
+        const el = document.getElementById(id);
+        if (isNaN(eingabe)) {
+          // Leer oder keine Zahl: als falsch markieren
+          el.className = 'halb-input input-falsch';
+          alleRichtig = false;
+        } else if (eingabe === soll) {
+          // Richtig: smaragd-Rand
+          el.className = 'halb-input input-richtig';
+        } else {
+          // Falsch: rose-Rand
+          el.className = 'halb-input input-falsch';
+          alleRichtig = false;
+        }
+      }
+
+      // Alle vier Felder prüfen
+      pruefeEingabe('halb-h-input',   eingabeH,   sollH);
+      pruefeEingabe('halb-z-input',   eingabeZ,   sollZ);
+      pruefeEingabe('halb-e-input',   eingabeE,   sollE);
+      pruefeEingabe('halb-sum-input', eingabeSum, sollSum);
+
+      /* ── Feedback-Text und Punkte aktualisieren ──────────────── */
+      const feedbackEl = document.getElementById('halb-feedback');
+
+      if (alleRichtig) {
+        // Alle Felder richtig: Punkt vergeben und positives Feedback
+        halbScore++;
+        document.getElementById('halb-score').textContent = halbScore;
+
+        feedbackEl.textContent = `✓ Super! ${halbA} × ${halbB} = ${sollSum}`;
+        feedbackEl.className   = 'mt-3 text-center text-base font-semibold fade-in text-emerald-300';
+
+        // Nach 1.5 Sekunden automatisch neue Aufgabe laden
+        setTimeout(newHalbschriftlich, 1500);
+
+      } else {
+        // Mindestens ein Feld falsch: Hinweis anzeigen
+        feedbackEl.textContent = '✗ Nicht ganz – überprüfe die rot markierten Felder.';
+        feedbackEl.className   = 'mt-3 text-center text-base font-semibold fade-in text-rose-400';
+      }
+    }
+
+    /* ── Halbschriftlich: Feedback anzeigen ──────────────────────
+       Hilfsfunktion für Abschnitt 2 (einfacher Wrapper)          */
+    function showHalbFeedback(text, richtig) {
+      const el = document.getElementById('halb-feedback');
+      el.textContent = text;
+      el.className = `mt-3 text-center text-base font-semibold fade-in ${
+        richtig ? 'text-emerald-300' : 'text-rose-400'
+      }`;
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       ABSCHNITT 3: QUIZ
+       ════════════════════════════════════════════════════════════ */
+
+    /* ── Neue Quiz-Aufgabe generieren ─────────────────────────── */
+    function newMultiQuiz() {
+      // Quiz beendet wenn 10 Aufgaben durch → nicht weitergehen
+      if (quizNummer > 10) return;
+
+      // Dreistelliger Faktor: 100–999
+      quizA = zufall(100, 999);
+      // Einstelliger Faktor: 2–9
+      quizB = zufall(2, 9);
+
+      // Sperr-Flag zurücksetzen: neue Antwort möglich
+      quizGeprueft = false;
+
+      /* ── Aufgaben-Anzeige aktualisieren ──────────────────────── */
+      document.getElementById('quiz-aufgabe').textContent =
+        `${quizA} × ${quizB} = ?`;
+
+      /* ── Fortschrittsbalken aktualisieren ───────────────────── */
+      // Prozentuale Breite: (Aufgaben-Nr. - 1) / 10 × 100
+      const prozent = ((quizNummer - 1) / 10) * 100;
+      document.getElementById('quiz-progress').style.width = `${prozent}%`;
+
+      /* ── Aufgaben-Nummer anzeigen ───────────────────────────── */
+      document.getElementById('quiz-nr').textContent = quizNummer;
+
+      /* ── Eingabefeld leeren und fokussieren ─────────────────── */
+      const input = document.getElementById('quiz-input');
+      input.value = '';
+      input.className = 'quiz-input'; // Basis-Stil wiederherstellen
+      input.disabled = false;
+      input.focus();
+
+      /* ── Feedback löschen ───────────────────────────────────── */
+      const fb = document.getElementById('quiz-feedback');
+      fb.textContent = '';
+      fb.className   = 'text-center text-lg font-semibold min-h-[28px]';
+    }
+
+    /* ── Quiz-Antwort prüfen ──────────────────────────────────── */
+    function checkMultiQuiz() {
+      // Doppelklick verhindern: wenn schon geprüft, abbrechen
+      if (quizGeprueft) return;
+      quizGeprueft = true;
+
+      // Richtige Antwort berechnen
+      const richtigesErgebnis = quizA * quizB;
+
+      // Benutzereingabe lesen und als Ganzzahl interpretieren
+      const eingabe = parseInt(document.getElementById('quiz-input').value, 10);
+      const input   = document.getElementById('quiz-input');
+      const fb      = document.getElementById('quiz-feedback');
+
+      /* ── Leere Eingabe abfangen ──────────────────────────────── */
+      if (isNaN(eingabe)) {
+        fb.textContent = 'Bitte eine Zahl eingeben!';
+        fb.className   = 'text-center text-lg font-semibold fade-in text-yellow-300';
+        quizGeprueft = false; // Nochmal versuchen erlauben
+        return;
+      }
+
+      if (eingabe === richtigesErgebnis) {
+        /* ── Richtige Antwort ─────────────────────────────────── */
+        quizScore++; // Punkt vergeben
+        document.getElementById('quiz-score').textContent = quizScore;
+
+        // Eingabefeld grün einfärben
+        input.className = 'quiz-input input-richtig';
+
+        // Positives Feedback
+        fb.textContent = `✓ Richtig! ${quizA} × ${quizB} = ${richtigesErgebnis}`;
+        fb.className   = 'text-center text-lg font-semibold fade-in text-emerald-300';
+
+      } else {
+        /* ── Falsche Antwort ──────────────────────────────────── */
+        // Eingabefeld rot einfärben
+        input.className = 'quiz-input input-falsch';
+
+        // Negatives Feedback mit korrektem Ergebnis
+        fb.textContent = `✗ Falsch. Richtig: ${quizA} × ${quizB} = ${richtigesErgebnis}`;
+        fb.className   = 'text-center text-lg font-semibold fade-in text-rose-400';
+      }
+
+      /* ── Nach kurzer Pause: nächste Aufgabe oder Quiz-Ende ───── */
+      quizNummer++; // Aufgaben-Nummer erhöhen
+
+      if (quizNummer > 10) {
+        // 10 Aufgaben geschafft: Zusammenfassung nach 1.5 Sek.
+        setTimeout(finishQuiz, 1500);
+      } else {
+        // Noch Aufgaben übrig: nach 1.2 Sek. nächste laden
+        setTimeout(newMultiQuiz, 1200);
+      }
+    }
+
+    /* ── Quiz abschließen und Zusammenfassung zeigen ─────────── */
+    function finishQuiz() {
+      // Fortschrittsbalken auf 100% setzen
+      document.getElementById('quiz-progress').style.width = '100%';
+
+      // Haupt-Quiz-Bereich ausblenden
+      document.getElementById('quiz-main').classList.add('hidden');
+
+      // Zusammenfassungs-Container anzeigen
+      const summary = document.getElementById('quiz-summary');
+      summary.classList.remove('hidden');
+
+      /* ── Bewertung berechnen ─────────────────────────────────
+         Prozentzahl: quizScore von 10 möglichen Punkten        */
+      const prozent = Math.round((quizScore / 10) * 100);
+
+      // Emoji und Farbe je nach Ergebnis wählen
+      let emoji  = '🌟';
+      let farbe  = 'text-emerald-300';
+      let nachricht = 'Fantastisch! Du beherrschst das Multiplizieren!';
+
+      if (prozent < 50) {
+        emoji     = '💪';
+        farbe     = 'text-rose-300';
+        nachricht = 'Übe weiter – du schaffst das!';
+      } else if (prozent < 80) {
+        emoji     = '👍';
+        farbe     = 'text-yellow-300';
+        nachricht = 'Gut gemacht! Noch etwas üben und du bist perfekt!';
+      }
+
+      /* ── Zusammenfassungs-HTML aufbauen ──────────────────────
+         Zeigt Punktestand, Prozentzahl, Bewertung und Neustart  */
+      summary.innerHTML =
+        `<div class="pop-in text-center py-4">
+          <!-- Großes Emoji als visuelles Feedback -->
+          <div class="text-6xl mb-4">${emoji}</div>
+
+          <!-- Punktestand in groß -->
+          <div class="text-4xl font-bold ${farbe} mb-2">
+            ${quizScore} / 10
+          </div>
+
+          <!-- Prozentzahl -->
+          <div class="text-slate-400 text-sm mb-3">${prozent}% richtig</div>
+
+          <!-- Bewertungs-Nachricht -->
+          <p class="text-slate-300 text-base mb-6">${nachricht}</p>
+
+          <!-- Nochmal-spielen-Button -->
+          <button
+            onclick="restartQuiz()"
+            class="px-8 py-3 rounded-2xl font-semibold text-sm bg-emerald-400 text-slate-950 hover:bg-emerald-300 transition-colors active:scale-95">
+            Nochmal spielen →
+          </button>
+        </div>`;
+    }
+
+    /* ── Quiz neu starten ────────────────────────────────────────
+       Setzt alle Quiz-Variablen zurück und beginnt von vorne     */
+    function restartQuiz() {
+      // Alle Zähler zurücksetzen
+      quizScore  = 0;
+      quizNummer = 1;
+
+      // Punktestand-Anzeige zurücksetzen
+      document.getElementById('quiz-score').textContent = '0';
+
+      // Zusammenfassungs-Container verstecken
+      document.getElementById('quiz-summary').classList.add('hidden');
+
+      // Haupt-Quiz-Bereich wieder zeigen
+      document.getElementById('quiz-main').classList.remove('hidden');
+
+      // Erste neue Aufgabe laden
+      newMultiQuiz();
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       TASTATUR-STEUERUNG
+       ════════════════════════════════════════════════════════════ */
+
+    /* ── Enter-Taste prüft die aktuell aktive Eingabe ─────────── */
+    document.addEventListener('keydown', function(e) {
+      if (e.key !== 'Enter') return; // Nur Enter-Taste behandeln
+
+      const aktiv = document.activeElement; // Welches Element ist gerade fokussiert?
+
+      if (aktiv && aktiv.id === 'quiz-input') {
+        // Enter im Quiz-Eingabefeld: Quiz prüfen
+        checkMultiQuiz();
+
+      } else if (aktiv && (
+        aktiv.id === 'halb-h-input' ||
+        aktiv.id === 'halb-z-input' ||
+        aktiv.id === 'halb-e-input'
+      )) {
+        // Enter in Halbschriftlich-Feldern: zum nächsten Feld springen
+        const reihenfolge = ['halb-h-input', 'halb-z-input', 'halb-e-input', 'halb-sum-input'];
+        const aktuellIdx  = reihenfolge.indexOf(aktiv.id);
+        if (aktuellIdx < reihenfolge.length - 1) {
+          // Zum nächsten Feld wechseln
+          document.getElementById(reihenfolge[aktuellIdx + 1]).focus();
+        }
+
+      } else if (aktiv && aktiv.id === 'halb-sum-input') {
+        // Enter im letzten Halbschriftlich-Feld: direkt prüfen
+        checkHalbschriftlich();
+      }
+    });
+
+    /* ════════════════════════════════════════════════════════════
+       INITIALISIERUNG: Seite beim Laden vorbereiten
+       ════════════════════════════════════════════════════════════ */
+
+    /* ── Fußzeile: aktuelles Jahr eintragen ──────────────────── */
+    document.getElementById('footer-year').textContent = new Date().getFullYear();
+
+    /* ── Abschnitt 1: Erste Aufgabe für den Algorithmus ─────── */
+    neueSchriftlicheAufgabe();
+
+    /* ── Abschnitt 2: Erste Halbschriftlich-Aufgabe ─────────── */
+    newHalbschriftlich();
+
+    /* ── Abschnitt 3: Quiz starten ──────────────────────────── */
+    newMultiQuiz();
+
+  </script>
+
+  <!-- ── Top-Bar laden ────────────────────────────────────── -->
+  <!-- Lädt die gemeinsame Navigationsleiste dynamisch per fetch -->
+  <script>
+    // Basis-Pfad für i18n-Dateien setzen (zwei Ebenen nach oben)
+    window.__i18nBase = '../../';
+
+    // topbar.html laden und in den Container einfügen
+    fetch('../../topbar.html')
+      .then(r => r.text())
+      .then(html => {
+        // HTML der Top-Bar einfügen
+        document.getElementById('topbar-container').innerHTML = html;
+
+        // Globales Skript (Login, Sprache, Theme, etc.) nachladen
+        const s = document.createElement('script');
+        s.src = '../../script.js';
+        document.body.appendChild(s);
+      });
+  </script>
+
+</body>
+</html>
