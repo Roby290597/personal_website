@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wahrscheinlichkeit – Klasse 8 | MathAcademy</title>
+
+  <link rel="icon"             href="../../favicon.ico" />
+  <link rel="apple-touch-icon" href="../../apple-touch-icon.png" />
+  <link rel="manifest"         href="../../site.webmanifest" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../../assets/css/style.css?v=1.0" />
+
+  <style>
+    @keyframes fadeInUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes coinFlip { 0%{transform:rotateY(0)} 50%{transform:rotateY(90deg)} 100%{transform:rotateY(0)} }
+    .anim-fadein { animation: fadeInUp 0.35s ease both; }
+
+    /* ── Münze / Würfel Simulation ────────────────────────────
+       Die Münze dreht sich per CSS-Animation um die Y-Achse.
+       Das Würfel-SVG zeigt Augen.                             */
+    .muenze {
+      width: 72px; height: 72px; border-radius: 50%;
+      font-size: 2rem; font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+      border: 3px solid #334155;
+      transition: background-color 0.2s;
+      user-select: none;
+    }
+    .muenze.kopf   { background: rgba(52,211,153,0.2); color: #34d399; border-color: #34d399; }
+    .muenze.zahl   { background: rgba(248,113,113,0.15); color: #f87171; border-color: #f87171; }
+    .muenze.flip   { animation: coinFlip 0.4s ease; }
+
+    /* ── Baumdiagramm ─────────────────────────────────────────
+       SVG-Baumdiagramm für zwei Münzwürfe.
+       Knoten = Kreise, Kanten = Linien mit Wahrscheinlichkeits-
+       beschriftung.                                           */
+    #baum-svg text { font-size: 10px; fill: #94a3b8; }
+    .baum-kante    { stroke: #334155; stroke-width: 1.5; }
+    .baum-knoten   { fill: #1e293b; stroke: #334155; stroke-width: 1.5; }
+    .baum-knoten.erg-kk { stroke: #34d399; }
+    .baum-knoten.erg-kz { stroke: #60a5fa; }
+    .baum-knoten.erg-zk { stroke: #a78bfa; }
+    .baum-knoten.erg-zz { stroke: #f87171; }
+
+    /* ── Quiz ──────────────────────────────────────────────── */
+    .btn-answer:hover:not(:disabled) { filter: brightness(1.15); }
+    .btn-answer:disabled { opacity: 0.55; cursor: not-allowed; }
+    .btn-correct { background-color:#059669!important; border-color:#34d399!important; color:#fff!important; }
+    .btn-wrong   { background-color:#dc2626!important; border-color:#f87171!important; color:#fff!important; }
+
+    .sach-dot { width:10px; height:10px; border-radius:50%; background:#334155; transition:background-color 0.2s; }
+    .sach-dot.done    { background:#34d399; }
+    .sach-dot.current { background:#6ee7b7; box-shadow:0 0 0 3px rgba(52,211,153,0.25); }
+
+    .antwort-input:focus { outline:none; border-color:#34d399; box-shadow:0 0 0 3px rgba(52,211,153,0.2); }
+  </style>
+</head>
+
+<body class="bg-slate-950 text-slate-100 min-h-screen">
+  <div id="topbar-container"></div>
+
+  <main class="max-w-4xl mx-auto px-4 pb-16 pt-6">
+
+    <a href="/academy.html"
+       class="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-emerald-300 transition-colors mb-6">
+      ← Zurück zur Akademie
+    </a>
+
+    <div class="mb-10">
+      <span class="text-xs font-semibold uppercase tracking-widest text-emerald-400 mb-2 block">Klasse 8 · Vertiefung</span>
+      <h1 class="text-3xl sm:text-4xl font-bold mb-3">Wahrscheinlichkeit</h1>
+      <p class="text-slate-400 text-base max-w-xl">
+        Zufall, Wahrscheinlichkeit und Baumdiagramme – simuliere Experimente,
+        lies das Baumdiagramm und löse Quiz und Sachaufgaben.
+      </p>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════
+         ABSCHNITT 1A: SIMULATION – Münzwurf / Würfelwurf
+         Der Schüler wählt ein Zufallsexperiment und drückt
+         auf „Werfen". Das Ergebnis wird animiert und die
+         relative Häufigkeit nach n Würfen angezeigt.
+    ════════════════════════════════════════════════════ -->
+    <section class="mb-14" aria-labelledby="sim-title">
+      <div class="flex items-center gap-3 mb-6">
+        <span class="w-8 h-8 rounded-full bg-emerald-400 text-slate-950 text-sm font-bold flex items-center justify-center flex-shrink-0">1</span>
+        <h2 id="sim-title" class="text-xl font-semibold">Simulation &amp; Baumdiagramm</h2>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6">
+
+        <!-- Münzwurf-Simulation -->
+        <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+          <h3 class="font-semibold text-slate-200 mb-4">🪙 Münzwurf</h3>
+          <div class="flex flex-col items-center gap-4 mb-5">
+            <div id="muenze" class="muenze">?</div>
+            <button onclick="muenzeWerfen()"
+                    class="rounded-full bg-emerald-400 text-slate-950 font-semibold px-6 py-2.5 text-sm hover:bg-emerald-300 transition-colors">
+              Werfen!
+            </button>
+          </div>
+          <!-- Häufigkeits-Balken -->
+          <div class="space-y-2">
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-emerald-300 w-8">Kopf</span>
+              <div class="flex-1 h-3 rounded-full bg-slate-800 overflow-hidden">
+                <div id="balken-kopf" class="h-full rounded-full bg-emerald-400 transition-all duration-300" style="width:0%"></div>
+              </div>
+              <span id="hz-kopf" class="text-xs text-slate-400 w-12 text-right">–</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-red-400 w-8">Zahl</span>
+              <div class="flex-1 h-3 rounded-full bg-slate-800 overflow-hidden">
+                <div id="balken-zahl" class="h-full rounded-full bg-red-400 transition-all duration-300" style="width:0%"></div>
+              </div>
+              <span id="hz-zahl" class="text-xs text-slate-400 w-12 text-right">–</span>
+            </div>
+          </div>
+          <p class="text-xs text-slate-600 mt-3 text-center">
+            Würfe gesamt: <span id="muenz-n" class="text-slate-400">0</span>
+            · Theorie: je 50%
+          </p>
+        </div>
+
+        <!-- Würfelwurf-Simulation -->
+        <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+          <h3 class="font-semibold text-slate-200 mb-4">🎲 Würfelwurf</h3>
+          <div class="flex flex-col items-center gap-4 mb-5">
+            <!-- SVG-Würfel: zeigt die Augenzahl als Punkte -->
+            <svg id="wuerfel-svg" viewBox="0 0 80 80" class="w-20 h-20"
+                 aria-label="Würfel">
+              <rect x="2" y="2" width="76" height="76" rx="14"
+                    fill="#1e293b" stroke="#334155" stroke-width="2"/>
+              <!-- Augen werden per JS gezeichnet -->
+              <g id="wuerfel-augen"></g>
+            </svg>
+            <button onclick="wuerfelWerfen()"
+                    class="rounded-full bg-emerald-400 text-slate-950 font-semibold px-6 py-2.5 text-sm hover:bg-emerald-300 transition-colors">
+              Würfeln!
+            </button>
+          </div>
+          <!-- Häufigkeitsskala 1–6 -->
+          <div id="wuerfel-hz" class="grid grid-cols-6 gap-1">
+            <!-- per JS befüllt -->
+          </div>
+          <p class="text-xs text-slate-600 mt-3 text-center">
+            Würfe gesamt: <span id="wuerfel-n" class="text-slate-400">0</span>
+            · Theorie: je 1/6 ≈ 16,7%
+          </p>
+        </div>
+
+      </div>
+
+      <!-- Baumdiagramm: 2 Münzwürfe -->
+      <!--
+        Das Baumdiagramm zeigt alle Ergebnisse von 2 Münzwürfen.
+        Stufe 0: Wurzel (Start)
+        Stufe 1: K (Kopf) und Z (Zahl), je P = 1/2
+        Stufe 2: KK, KZ, ZK, ZZ, je P = 1/4
+        Die Wahrscheinlichkeit wird als Bruch auf den Kanten gezeigt.
+      -->
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+        <h3 class="font-semibold text-slate-200 mb-4">🌳 Baumdiagramm – Zwei Münzwürfe</h3>
+        <p class="text-slate-500 text-sm mb-4">
+          Die Wahrscheinlichkeit jedes Endzustands ergibt sich durch
+          <span class="text-slate-300 font-semibold">Multiplikation</span> der Kantenwahrscheinlichkeiten
+          (Pfadregel).
+        </p>
+        <svg id="baum-svg" viewBox="0 0 500 220" class="w-full"
+             aria-label="Baumdiagramm zwei Münzwürfe">
+
+          <!-- Wurzel -->
+          <circle class="baum-knoten" cx="60" cy="110" r="20"/>
+          <text x="60" y="114" text-anchor="middle" font-weight="bold" fill="#94a3b8">Start</text>
+
+          <!-- Stufe 1: K (oben) und Z (unten) -->
+          <!-- Kante Start → K -->
+          <line class="baum-kante" x1="80" y1="98" x2="190" y2="55"/>
+          <text x="125" y="68" text-anchor="middle" fill="#34d399">1/2</text>
+          <!-- Kante Start → Z -->
+          <line class="baum-kante" x1="80" y1="122" x2="190" y2="165"/>
+          <text x="125" y="155" text-anchor="middle" fill="#f87171">1/2</text>
+
+          <!-- Knoten K und Z -->
+          <circle class="baum-knoten" cx="210" cy="55"  r="18"/>
+          <text x="210" y="59" text-anchor="middle" font-weight="bold" fill="#34d399">K</text>
+          <circle class="baum-knoten" cx="210" cy="165" r="18"/>
+          <text x="210" y="169" text-anchor="middle" font-weight="bold" fill="#f87171">Z</text>
+
+          <!-- Stufe 2: KK, KZ, ZK, ZZ -->
+          <!-- K → KK -->
+          <line class="baum-kante" x1="228" y1="45" x2="340" y2="25"/>
+          <text x="280" y="28" text-anchor="middle" fill="#34d399">1/2</text>
+          <!-- K → KZ -->
+          <line class="baum-kante" x1="228" y1="64" x2="340" y2="85"/>
+          <text x="280" y="82" text-anchor="middle" fill="#f87171">1/2</text>
+          <!-- Z → ZK -->
+          <line class="baum-kante" x1="228" y1="155" x2="340" y2="135"/>
+          <text x="280" y="138" text-anchor="middle" fill="#34d399">1/2</text>
+          <!-- Z → ZZ -->
+          <line class="baum-kante" x1="228" y1="174" x2="340" y2="195"/>
+          <text x="280" y="197" text-anchor="middle" fill="#f87171">1/2</text>
+
+          <!-- Endknoten KK, KZ, ZK, ZZ -->
+          <circle class="baum-knoten erg-kk" cx="360" cy="25"  r="18"/>
+          <text x="360" y="29" text-anchor="middle" font-weight="bold" fill="#34d399">KK</text>
+          <circle class="baum-knoten erg-kz" cx="360" cy="85"  r="18"/>
+          <text x="360" y="89" text-anchor="middle" font-weight="bold" fill="#60a5fa">KZ</text>
+          <circle class="baum-knoten erg-zk" cx="360" cy="135" r="18"/>
+          <text x="360" y="139" text-anchor="middle" font-weight="bold" fill="#a78bfa">ZK</text>
+          <circle class="baum-knoten erg-zz" cx="360" cy="195" r="18"/>
+          <text x="360" y="199" text-anchor="middle" font-weight="bold" fill="#f87171">ZZ</text>
+
+          <!-- Wahrscheinlichkeiten der Endknoten -->
+          <text x="388" y="29"  fill="#34d399" font-weight="bold">= 1/4</text>
+          <text x="388" y="89"  fill="#60a5fa" font-weight="bold">= 1/4</text>
+          <text x="388" y="139" fill="#a78bfa" font-weight="bold">= 1/4</text>
+          <text x="388" y="199" fill="#f87171" font-weight="bold">= 1/4</text>
+
+        </svg>
+        <div class="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+          <div class="rounded-2xl bg-emerald-400/10 border border-emerald-400/20 p-3">
+            <p class="text-xs text-slate-500 mb-1">P(KK)</p>
+            <p class="font-bold text-emerald-300">1/4 = 25%</p>
+          </div>
+          <div class="rounded-2xl bg-blue-400/10 border border-blue-400/20 p-3">
+            <p class="text-xs text-slate-500 mb-1">P(KZ)</p>
+            <p class="font-bold text-blue-300">1/4 = 25%</p>
+          </div>
+          <div class="rounded-2xl bg-purple-400/10 border border-purple-400/20 p-3">
+            <p class="text-xs text-slate-500 mb-1">P(ZK)</p>
+            <p class="font-bold text-purple-300">1/4 = 25%</p>
+          </div>
+          <div class="rounded-2xl bg-red-400/10 border border-red-400/20 p-3">
+            <p class="text-xs text-slate-500 mb-1">P(ZZ)</p>
+            <p class="font-bold text-red-300">1/4 = 25%</p>
+          </div>
+        </div>
+        <p class="text-xs text-slate-500 mt-3 text-center">
+          P(mindestens 1 Kopf) = P(KK) + P(KZ) + P(ZK) = <span class="text-emerald-300 font-semibold">3/4 = 75%</span>
+        </p>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════
+         ABSCHNITT 2: QUIZ
+    ════════════════════════════════════════════════════ -->
+    <section class="mb-14" aria-labelledby="quiz-title">
+      <div class="flex items-center gap-3 mb-6">
+        <span class="w-8 h-8 rounded-full bg-emerald-400 text-slate-950 text-sm font-bold flex items-center justify-center flex-shrink-0">2</span>
+        <h2 id="quiz-title" class="text-xl font-semibold">Quiz – Wahrscheinlichkeit</h2>
+      </div>
+
+      <div class="flex gap-2 mb-5 flex-wrap">
+        <button id="qm-laplace"  onclick="setQuizModus('laplace')"  class="rounded-full px-4 py-1.5 text-xs font-semibold bg-emerald-400 text-slate-950">Laplace</button>
+        <button id="qm-additiv"  onclick="setQuizModus('additiv')"  class="rounded-full px-4 py-1.5 text-xs font-semibold bg-slate-700 text-slate-300 hover:bg-slate-600">Additionssatz</button>
+        <button id="qm-pfad"     onclick="setQuizModus('pfad')"     class="rounded-full px-4 py-1.5 text-xs font-semibold bg-slate-700 text-slate-300 hover:bg-slate-600">Pfadregel</button>
+        <button id="qm-gegen"    onclick="setQuizModus('gegen')"    class="rounded-full px-4 py-1.5 text-xs font-semibold bg-slate-700 text-slate-300 hover:bg-slate-600">Gegenereignis</button>
+      </div>
+
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+        <div class="flex justify-end mb-4">
+          <span class="text-sm font-semibold text-slate-500">Punkte:&nbsp;<span id="quiz-score" class="text-emerald-300">0 / 0</span></span>
+        </div>
+        <div id="quiz-karte" class="mb-6 text-center anim-fadein">
+          <p id="quiz-aufgabe" class="text-xl font-bold text-slate-100 mb-2 leading-relaxed"></p>
+          <p id="quiz-hinweis" class="text-sm text-slate-500"></p>
+        </div>
+        <div id="quiz-buttons" class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5"></div>
+        <p id="quiz-feedback" class="text-center text-base font-semibold min-h-[1.5em] mb-4" aria-live="polite"></p>
+        <div class="flex justify-center">
+          <button onclick="newQuizAufgabe()"
+                  class="rounded-full border border-slate-700 text-slate-300 font-semibold px-6 py-2.5 text-sm hover:border-emerald-400/50 transition-colors">
+            Neue Aufgabe
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════
+         ABSCHNITT 3: SACHAUFGABEN
+    ════════════════════════════════════════════════════ -->
+    <section class="mb-14" aria-labelledby="sach-title">
+      <div class="flex items-center gap-3 mb-6">
+        <span class="w-8 h-8 rounded-full bg-emerald-400 text-slate-950 text-sm font-bold flex items-center justify-center flex-shrink-0">3</span>
+        <h2 id="sach-title" class="text-xl font-semibold">Sachaufgaben</h2>
+      </div>
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+        <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
+          <div class="flex gap-2" id="sach-dots"></div>
+          <span class="text-sm font-semibold text-slate-500">Punkte:&nbsp;<span id="sach-score" class="text-emerald-300">0 / 0</span></span>
+        </div>
+        <div id="sach-karte" class="mb-5 anim-fadein">
+          <p id="sach-kontext" class="text-xs font-semibold uppercase tracking-widest text-emerald-400/70 mb-2"></p>
+          <p id="sach-frage"   class="text-lg font-semibold text-slate-200 mb-5 leading-relaxed"></p>
+          <div class="flex items-center gap-3 flex-wrap">
+            <input id="sach-input" type="text" placeholder="Deine Antwort (als Bruch z.B. 1/6 oder Dezimal)"
+                   class="antwort-input flex-1 min-w-40 rounded-2xl border border-slate-700 bg-slate-800 px-4 py-3 text-slate-100 text-base font-bold transition-colors"
+                   onkeydown="if(event.key==='Enter') checkSach()" />
+          </div>
+        </div>
+        <p id="sach-feedback" class="text-center text-base font-semibold min-h-[1.5em] mb-4" aria-live="polite"></p>
+        <div class="flex gap-3 justify-center">
+          <button id="sach-check-btn" onclick="checkSach()"
+                  class="rounded-full bg-emerald-400 text-slate-950 font-semibold px-6 py-2.5 text-sm hover:bg-emerald-300 transition-colors">Prüfen</button>
+          <button id="sach-next-btn"  onclick="nextSachAufgabe()"
+                  class="hidden rounded-full border border-slate-700 text-slate-300 font-semibold px-6 py-2.5 text-sm hover:border-emerald-400/50 transition-colors">Nächste Aufgabe →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- MERKHILFE -->
+    <section class="mb-10">
+      <h2 class="text-sm font-semibold text-slate-300 mb-4 uppercase tracking-wide">Merkhilfe</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-5">
+          <h3 class="font-semibold text-emerald-300 mb-3 text-sm">🎯 Laplace</h3>
+          <p class="font-mono text-slate-300 text-sm mb-2">P(A) = günstig / gesamt</p>
+          <p class="text-slate-500 text-xs">Nur wenn alle Ergebnisse gleich wahrscheinlich sind</p>
+        </div>
+        <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-5">
+          <h3 class="font-semibold text-emerald-300 mb-3 text-sm">➕ Additionssatz</h3>
+          <p class="font-mono text-slate-300 text-sm mb-1">P(A ∪ B) =</p>
+          <p class="font-mono text-slate-300 text-sm">P(A) + P(B) − P(A ∩ B)</p>
+          <p class="text-slate-500 text-xs mt-2">Bei disjunkten Ereignissen: P(A) + P(B)</p>
+        </div>
+        <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-5">
+          <h3 class="font-semibold text-emerald-300 mb-3 text-sm">✖️ Pfadregel</h3>
+          <p class="font-mono text-slate-300 text-sm mb-2">P(Pfad) = P₁ × P₂ × …</p>
+          <p class="text-slate-500 text-xs">Wahrscheinlichkeiten der Kanten multiplizieren</p>
+          <p class="font-mono text-slate-500 text-xs mt-1">P(Ā) = 1 − P(A)</p>
+        </div>
+      </div>
+    </section>
+
+    <footer class="py-6 text-center text-xs text-slate-500">© <span id="y"></span> Brandon Hank · Düsseldorf</footer>
+  </main>
+
+  <script>
+    window.__i18nBase = '../../';
+    fetch('../../topbar.html')
+      .then(r => r.text())
+      .then(html => {
+        document.getElementById('topbar-container').innerHTML = html;
+        const s = document.createElement('script');
+        s.src = '../../assets/js/script.js';
+        s.onload = init;
+        document.body.appendChild(s);
+      });
+
+    /* ════════════════════════════════════════════════════════════
+       ABSCHNITT 1 – SIMULATION
+    ════════════════════════════════════════════════════════════ */
+
+    let muenzKopf = 0, muenzZahl = 0;
+
+    /*
+     * muenzeWerfen()
+     * Simuliert einen Münzwurf und aktualisiert die relativen Häufigkeiten.
+     * Ergebnis: Math.random() < 0.5 → Kopf, sonst Zahl.
+     */
+    function muenzeWerfen() {
+      const istKopf = Math.random() < 0.5;
+      const el = document.getElementById('muenze');
+
+      /* Animation: entferne Klasse, füge nach kurzem Delay wieder hinzu */
+      el.classList.remove('flip', 'kopf', 'zahl');
+      void el.offsetWidth; /* Reflow erzwingen damit die Animation neu startet */
+      el.classList.add('flip', istKopf ? 'kopf' : 'zahl');
+      el.textContent = istKopf ? 'K' : 'Z';
+
+      if (istKopf) muenzKopf++; else muenzZahl++;
+      const n = muenzKopf + muenzZahl;
+
+      document.getElementById('muenz-n').textContent = n;
+
+      /* Relative Häufigkeiten als Prozent */
+      const pK = (muenzKopf / n * 100).toFixed(1);
+      const pZ = (muenzZahl / n * 100).toFixed(1);
+
+      document.getElementById('balken-kopf').style.width = `${pK}%`;
+      document.getElementById('balken-zahl').style.width = `${pZ}%`;
+      document.getElementById('hz-kopf').textContent     = `${pK}%`;
+      document.getElementById('hz-zahl').textContent     = `${pZ}%`;
+    }
+
+    /* Augenpositionen für Würfel (Koordinaten der Kreismittelpunkte) */
+    const AUGEN = {
+      1: [[40,40]],
+      2: [[20,20],[60,60]],
+      3: [[20,20],[40,40],[60,60]],
+      4: [[20,20],[60,20],[20,60],[60,60]],
+      5: [[20,20],[60,20],[40,40],[20,60],[60,60]],
+      6: [[20,20],[60,20],[20,40],[60,40],[20,60],[60,60]],
+    };
+
+    let wuerfelHz = [0,0,0,0,0,0]; /* Häufigkeit für Augenzahl 1–6 */
+
+    /*
+     * wuerfelWerfen()
+     * Simuliert einen Würfelwurf (1–6 gleichverteilt).
+     * Zeichnet die Augen als SVG-Kreise.
+     */
+    function wuerfelWerfen() {
+      const augenzahl = Math.floor(Math.random() * 6) + 1;
+      wuerfelHz[augenzahl - 1]++;
+
+      /* SVG-Augen zeichnen */
+      const augen = AUGEN[augenzahl]
+        .map(([x,y]) => `<circle cx="${x}" cy="${y}" r="6" fill="#34d399"/>`)
+        .join('');
+      document.getElementById('wuerfel-augen').innerHTML = augen;
+
+      /* Häufigkeitsbalken aktualisieren */
+      const n = wuerfelHz.reduce((s,v)=>s+v, 0);
+      document.getElementById('wuerfel-n').textContent = n;
+
+      const maxHz = Math.max(...wuerfelHz, 1);
+      document.getElementById('wuerfel-hz').innerHTML = wuerfelHz.map((h,i) => {
+        const pct  = (h / maxHz * 100).toFixed(0);
+        const hPct = n > 0 ? (h / n * 100).toFixed(1) : '0';
+        return `
+          <div class="flex flex-col items-center gap-1">
+            <span class="text-xs text-slate-500">${hPct}%</span>
+            <div class="w-full h-16 rounded bg-slate-800 flex flex-col-reverse overflow-hidden">
+              <div class="bg-emerald-400/70 rounded transition-all" style="height:${pct}%"></div>
+            </div>
+            <span class="text-xs font-bold text-slate-300">${i+1}</span>
+          </div>`;
+      }).join('');
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       ABSCHNITT 2 – QUIZ
+    ════════════════════════════════════════════════════════════ */
+
+    let quizModus='laplace', quizR=0, quizG=0;
+
+    function setQuizModus(m) {
+      quizModus = m;
+      ['laplace','additiv','pfad','gegen'].forEach(x => {
+        document.getElementById(`qm-${x}`).className =
+          `rounded-full px-4 py-1.5 text-xs font-semibold transition-colors ` +
+          (x === m ? 'bg-emerald-400 text-slate-950' : 'bg-slate-700 text-slate-300 hover:bg-slate-600');
+      });
+      newQuizAufgabe();
+    }
+
+    function rnd(a, b) { return Math.floor(Math.random() * (b-a+1)) + a; }
+
+    /* Kürze Bruch zu String "z/n" */
+    function ggT(a,b){return b===0?a:ggT(b,a%b);}
+    function bruchStr(z,n){const g=ggT(z,n);return `${z/g}/${n/g}`;}
+
+    function newQuizAufgabe() {
+      document.getElementById('quiz-feedback').textContent = '';
+
+      if (quizModus === 'laplace') {
+        /* Klassisches Laplace-Experiment: Würfel oder Urne */
+        const n   = rnd(4, 10); /* Kugeln gesamt */
+        const r   = rnd(1, n-1); /* rote Kugeln   */
+        const richtig = bruchStr(r, n);
+        const falsch  = [bruchStr(r+1,n), bruchStr(r-1<1?r+2:r-1,n), bruchStr(n-r,n)]
+          .filter(v => v !== richtig);
+        document.getElementById('quiz-aufgabe').textContent =
+          `In einer Urne sind ${n} Kugeln, davon ${r} rote. P(rot) = ?`;
+        document.getElementById('quiz-hinweis').textContent =
+          'P(A) = günstige Ergebnisse ÷ alle Ergebnisse';
+        renderQuizButtons([richtig,...falsch.slice(0,3)], richtig);
+
+      } else if (quizModus === 'additiv') {
+        /* P(A oder B) für disjunkte Ereignisse */
+        const pa = rnd(1,3), pb = rnd(1,3), n = pa + pb + rnd(1,4);
+        const richtig = bruchStr(pa+pb, n);
+        const falsch  = [bruchStr(pa,n), bruchStr(pb,n), bruchStr(pa+pb+1,n)].filter(v=>v!==richtig);
+        document.getElementById('quiz-aufgabe').textContent =
+          `P(A) = ${bruchStr(pa,n)}, P(B) = ${bruchStr(pb,n)}. A und B schließen sich aus. P(A oder B) = ?`;
+        document.getElementById('quiz-hinweis').textContent =
+          'Additionssatz (disjunkt): P(A ∪ B) = P(A) + P(B)';
+        renderQuizButtons([richtig,...falsch.slice(0,3)], richtig);
+
+      } else if (quizModus === 'pfad') {
+        /* Pfadregel: 2 unabhängige Würfe */
+        const outcomes = ['K','Z'];
+        const a1 = outcomes[rnd(0,1)], a2 = outcomes[rnd(0,1)];
+        const richtig = '1/4';
+        const falsch  = ['1/2','1/8','1/3'];
+        document.getElementById('quiz-aufgabe').textContent =
+          `Eine Münze wird 2× geworfen. P(${a1} dann ${a2}) = ?`;
+        document.getElementById('quiz-hinweis').textContent =
+          'Pfadregel: Kantenwahrscheinlichkeiten multiplizieren: 1/2 × 1/2';
+        renderQuizButtons([richtig,...falsch], richtig);
+
+      } else {
+        /* Gegenereignis: P(Ā) = 1 − P(A) */
+        const z = rnd(1,5), n = z + rnd(1,4);
+        const richtig = bruchStr(n-z, n);
+        const falsch  = [bruchStr(z,n), bruchStr(n-z+1,n), bruchStr(n-z-1<0?1:n-z-1,n)].filter(v=>v!==richtig);
+        document.getElementById('quiz-aufgabe').textContent =
+          `P(A) = ${bruchStr(z,n)}. Wie groß ist P(Ā)?`;
+        document.getElementById('quiz-hinweis').textContent =
+          'P(Ā) = 1 − P(A)';
+        renderQuizButtons([richtig,...falsch.slice(0,3)], richtig);
+      }
+    }
+
+    function renderQuizButtons(opts, richtig) {
+      for(let i=opts.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[opts[i],opts[j]]=[opts[j],opts[i]];}
+      document.getElementById('quiz-buttons').innerHTML = opts.map(v=>
+        `<button class="btn-answer rounded-2xl border border-slate-700 bg-slate-800 px-4 py-4
+                        text-lg font-bold text-slate-100 hover:border-emerald-400/50 transition-colors"
+                 data-val="${encodeURIComponent(v)}" data-richtig="${encodeURIComponent(richtig)}"
+                 onclick="checkQuiz(this)">${v}</button>`
+      ).join('');
+    }
+
+    function checkQuiz(btn) {
+      const g=decodeURIComponent(btn.dataset.val), r=decodeURIComponent(btn.dataset.richtig);
+      quizG++;
+      document.querySelectorAll('#quiz-buttons .btn-answer').forEach(b=>{
+        b.disabled=true;
+        const v=decodeURIComponent(b.dataset.val);
+        if(v===r) b.classList.add('btn-correct'); else if(v===g) b.classList.add('btn-wrong');
+      });
+      const fb=document.getElementById('quiz-feedback');
+      if(g===r){quizR++;fb.textContent='✓ Richtig!';fb.className='text-center text-base font-semibold min-h-[1.5em] mb-4 text-emerald-400';}
+      else{fb.textContent=`✗ Falsch. Richtig: ${r}`;fb.className='text-center text-base font-semibold min-h-[1.5em] mb-4 text-red-400';}
+      document.getElementById('quiz-score').textContent=`${quizR} / ${quizG}`;
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       SACHAUFGABEN
+    ════════════════════════════════════════════════════════════ */
+    const SACHAUFGABEN = [
+      { kontext:'🎲 Würfel', frage:'Ein fairer Würfel wird geworfen. Wie groß ist die Wahrscheinlichkeit, eine gerade Zahl zu würfeln?', antwort:'1/2', hinweis:'Günstige Ergebnisse: {2,4,6} = 3. P = 3/6 = 1/2' },
+      { kontext:'🃏 Karten', frage:'Aus einem Skat-Spiel (32 Karten) wird eine gezogen. Wie viele Asse gibt es? Wie groß ist P(Ass)?', antwort:'1/8', hinweis:'4 Asse in 32 Karten: P = 4/32 = 1/8' },
+      { kontext:'🌈 Urne',   frage:'Urne: 3 rote, 2 blaue, 5 grüne Kugeln. P(blau) = ?', antwort:'1/5', hinweis:'P(blau) = 2/10 = 1/5' },
+      { kontext:'🪙 Zwei Würfe', frage:'Eine Münze wird 2× geworfen. P(mindestens 1 Kopf) = ?', antwort:'3/4', hinweis:'P(KK)+P(KZ)+P(ZK) = 1/4+1/4+1/4 = 3/4. Oder: 1 − P(ZZ) = 1 − 1/4 = 3/4' },
+      { kontext:'🎯 Gegenereignis', frage:'Die Regenwahrscheinlichkeit morgen beträgt 30%. Wie groß ist P(kein Regen)?', antwort:'0,7', hinweis:'P(Ā) = 1 − 0,3 = 0,7' },
+    ];
+
+    let sachIdx=0, sachR=0, sachG=0;
+
+    function renderSachDots(){
+      document.getElementById('sach-dots').innerHTML=SACHAUFGABEN.map((_,i)=>{
+        let c='sach-dot'; if(i<sachIdx) c+=' done'; else if(i===sachIdx) c+=' current';
+        return `<span class="${c}"></span>`;
+      }).join('');
+    }
+
+    function showSachAufgabe(){
+      if(sachIdx>=SACHAUFGABEN.length){
+        document.getElementById('sach-karte').innerHTML=`<p class="text-center text-emerald-300 text-lg font-semibold py-6">🎉 Alle gelöst! ${sachR} von ${SACHAUFGABEN.length} richtig.</p>`;
+        document.getElementById('sach-check-btn').classList.add('hidden');
+        document.getElementById('sach-next-btn').classList.add('hidden');
+        return;
+      }
+      const a=SACHAUFGABEN[sachIdx];
+      document.getElementById('sach-kontext').textContent=a.kontext;
+      document.getElementById('sach-frage').textContent=a.frage;
+      document.getElementById('sach-input').value='';
+      document.getElementById('sach-input').disabled=false;
+      document.getElementById('sach-feedback').textContent='';
+      document.getElementById('sach-check-btn').classList.remove('hidden');
+      document.getElementById('sach-next-btn').classList.add('hidden');
+      const k=document.getElementById('sach-karte');
+      k.classList.remove('anim-fadein'); void k.offsetWidth; k.classList.add('anim-fadein');
+      renderSachDots();
+    }
+
+    function checkSach(){
+      const e=document.getElementById('sach-input').value.trim().replace(',','.');
+      sachG++;
+      document.getElementById('sach-input').disabled=true;
+      document.getElementById('sach-check-btn').classList.add('hidden');
+      document.getElementById('sach-next-btn').classList.remove('hidden');
+      const fb=document.getElementById('sach-feedback');
+      /* Akzeptiere Bruch oder Dezimal-Äquivalent */
+      const richtigRoh=SACHAUFGABEN[sachIdx].antwort;
+      const richtigDez=richtigRoh.includes('/')?eval(richtigRoh):parseFloat(richtigRoh);
+      const eingabeDez=e.includes('/')?eval(e):parseFloat(e);
+      const ok = e===richtigRoh || Math.abs(eingabeDez-richtigDez)<0.001;
+      if(ok){sachR++;fb.textContent='✓ Richtig!';fb.className='text-center text-base font-semibold min-h-[1.5em] mb-4 text-emerald-400';}
+      else{fb.textContent=`✗ Falsch. ${SACHAUFGABEN[sachIdx].hinweis}`;fb.className='text-center text-base font-semibold min-h-[1.5em] mb-4 text-red-400';}
+      document.getElementById('sach-score').textContent=`${sachR} / ${sachG}`;
+    }
+
+    function nextSachAufgabe(){sachIdx++;showSachAufgabe();}
+
+    function init(){
+      wuerfelWerfen(); /* Würfel einmal werfen damit das SVG initialisiert ist */
+      newQuizAufgabe();
+      showSachAufgabe();
+    }
+  </script>
+</body>
+</html>

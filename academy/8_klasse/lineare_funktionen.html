@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lineare Funktionen – Klasse 8 | MathAcademy</title>
+
+  <link rel="icon"             href="../../favicon.ico" />
+  <link rel="apple-touch-icon" href="../../apple-touch-icon.png" />
+  <link rel="manifest"         href="../../site.webmanifest" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../../assets/css/style.css?v=1.0" />
+
+  <style>
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .anim-fadein { animation: fadeInUp 0.35s ease both; }
+
+    /* ── Graph-Canvas ─────────────────────────────────────────
+       Der SVG-Graph zeigt das Koordinatensystem und die Gerade
+       f(x) = m·x + b, gesteuert von zwei Slidern (m und b).   */
+    #graph-svg { display: block; cursor: crosshair; }
+    .axis { stroke: #334155; stroke-width: 1.5; }
+    .grid-line { stroke: #1e293b; stroke-width: 1; }
+    .func-line { stroke: #34d399; stroke-width: 2.5; stroke-linecap: round; }
+    .point-dot { fill: #34d399; stroke: #0f172a; stroke-width: 2; }
+
+    /* ── Steigungsdreieck ─────────────────────────────────────
+       Zeigt das Δy-über-Δx-Dreieck direkt im Graphen.         */
+    .steig-h { stroke: #f87171; stroke-width: 1.5; stroke-dasharray: 5 3; }
+    .steig-v { stroke: #60a5fa; stroke-width: 1.5; stroke-dasharray: 5 3; }
+
+    /* ── Quiz ──────────────────────────────────────────────── */
+    .btn-answer:hover:not(:disabled) { filter: brightness(1.15); }
+    .btn-answer:disabled { opacity: 0.55; cursor: not-allowed; }
+    .btn-correct { background-color:#059669!important; border-color:#34d399!important; color:#fff!important; }
+    .btn-wrong   { background-color:#dc2626!important; border-color:#f87171!important; color:#fff!important; }
+
+    .sach-dot { width:10px; height:10px; border-radius:50%; background:#334155; transition:background-color 0.2s; }
+    .sach-dot.done    { background:#34d399; }
+    .sach-dot.current { background:#6ee7b7; box-shadow:0 0 0 3px rgba(52,211,153,0.25); }
+
+    .antwort-input:focus { outline:none; border-color:#34d399; box-shadow:0 0 0 3px rgba(52,211,153,0.2); }
+    input[type=range] { accent-color: #34d399; }
+  </style>
+</head>
+
+<body class="bg-slate-950 text-slate-100 min-h-screen">
+  <div id="topbar-container"></div>
+
+  <main class="max-w-4xl mx-auto px-4 pb-16 pt-6">
+
+    <a href="/academy.html"
+       class="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-emerald-300 transition-colors mb-6">
+      ← Zurück zur Akademie
+    </a>
+
+    <div class="mb-10">
+      <span class="text-xs font-semibold uppercase tracking-widest text-emerald-400 mb-2 block">Klasse 8 · Vertiefung</span>
+      <h1 class="text-3xl sm:text-4xl font-bold mb-3">Lineare Funktionen</h1>
+      <p class="text-slate-400 text-base max-w-xl">
+        f(x) = m·x + b – verstehe Steigung und y-Achsenabschnitt visuell,
+        lies Funktionswerte ab und löse Quiz und Sachaufgaben.
+      </p>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════
+         ABSCHNITT 1: INTERAKTIVER FUNKTIONSGRAPH
+         Zwei Slider steuern:
+           m = Steigung  (−5 bis +5, Schritte 0.5)
+           b = y-Achsenabschnitt (−8 bis +8)
+         Das SVG zeigt:
+           - Koordinatensystem mit Gitter (−10 bis +10)
+           - Die Gerade f(x) = m·x + b
+           - Das Steigungsdreieck (Δx = 1, Δy = m)
+           - Schnittpunkte mit Achsen
+    ════════════════════════════════════════════════════ -->
+    <section class="mb-14" aria-labelledby="graph-title">
+      <div class="flex items-center gap-3 mb-6">
+        <span class="w-8 h-8 rounded-full bg-emerald-400 text-slate-950 text-sm font-bold flex items-center justify-center flex-shrink-0">1</span>
+        <h2 id="graph-title" class="text-xl font-semibold">Interaktiver Funktionsgraph</h2>
+      </div>
+
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+
+        <!-- Gleichungsanzeige -->
+        <div class="text-center mb-5">
+          <p class="text-xs text-slate-500 uppercase tracking-wide mb-1">Funktion</p>
+          <p id="funk-gleichung" class="text-3xl font-bold font-mono text-emerald-300">f(x) = 1·x + 0</p>
+        </div>
+
+        <!-- SVG-Graph -->
+        <!--
+          viewBox: 0 0 480 360 → 48×36 Einheiten sichtbar
+          Koordinatenursprung bei (240, 180) = Mitte
+          1 Einheit = 24px (horizontal und vertikal)
+        -->
+        <svg id="graph-svg" viewBox="0 0 480 360" class="w-full rounded-2xl bg-slate-800/40 mb-5"
+             aria-label="Koordinatensystem mit linearer Funktion">
+
+          <!-- Gitter -->
+          <g id="gitter"></g>
+
+          <!-- Achsen -->
+          <line class="axis" x1="0"   y1="180" x2="480" y2="180"/> <!-- x-Achse -->
+          <line class="axis" x1="240" y1="0"   x2="240" y2="360"/> <!-- y-Achse -->
+
+          <!-- Achsenpfeile -->
+          <polygon points="480,180 470,175 470,185" fill="#334155"/>
+          <polygon points="240,0   235,10  245,10"  fill="#334155"/>
+
+          <!-- Achsenbeschriftungen -->
+          <text x="472" y="195" font-size="10" fill="#475569">x</text>
+          <text x="248" y="12"  font-size="10" fill="#475569">y</text>
+
+          <!-- Steigungsdreieck (Δx = 2 Einheiten) -->
+          <line id="steig-h" class="steig-h" x1="0" y1="0" x2="0" y2="0"/>
+          <line id="steig-v" class="steig-v" x1="0" y1="0" x2="0" y2="0"/>
+
+          <!-- Gerade f(x) = m·x + b -->
+          <line id="func-line" class="func-line" x1="0" y1="0" x2="0" y2="0"/>
+
+          <!-- Schnittpunkte -->
+          <circle id="nullstelle-dot" class="point-dot" r="5"/>
+          <circle id="ynull-dot"      class="point-dot" r="5" fill="#60a5fa"/>
+
+          <!-- Beschriftungen der Schnittpunkte -->
+          <text id="nullstelle-label" font-size="9" fill="#34d399"></text>
+          <text id="ynull-label"      font-size="9" fill="#60a5fa"></text>
+        </svg>
+
+        <!-- Slider m und b -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-5">
+          <div>
+            <div class="flex justify-between text-xs text-slate-500 mb-1">
+              <span>Steigung m</span>
+              <span id="m-label" class="text-emerald-300 font-bold">1</span>
+            </div>
+            <input id="slider-m" type="range" min="-5" max="5" value="1" step="0.5"
+                   class="w-full h-2 rounded-full cursor-pointer" oninput="updateGraph()" />
+          </div>
+          <div>
+            <div class="flex justify-between text-xs text-slate-500 mb-1">
+              <span>y-Achsenabschnitt b</span>
+              <span id="b-label" class="text-blue-300 font-bold">0</span>
+            </div>
+            <input id="slider-b" type="range" min="-8" max="8" value="0" step="1"
+                   class="w-full h-2 rounded-full cursor-pointer" oninput="updateGraph()" />
+          </div>
+        </div>
+
+        <!-- Info-Kacheln -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div class="rounded-2xl bg-slate-800/60 p-3 text-center">
+            <p class="text-xs text-slate-500 mb-1">Steigung m</p>
+            <p id="info-m" class="text-lg font-bold text-emerald-300">1</p>
+          </div>
+          <div class="rounded-2xl bg-slate-800/60 p-3 text-center">
+            <p class="text-xs text-slate-500 mb-1">y-Abschnitt b</p>
+            <p id="info-b" class="text-lg font-bold text-blue-300">0</p>
+          </div>
+          <div class="rounded-2xl bg-slate-800/60 p-3 text-center">
+            <p class="text-xs text-slate-500 mb-1">Nullstelle</p>
+            <p id="info-ns" class="text-lg font-bold text-slate-200">0</p>
+          </div>
+          <div class="rounded-2xl bg-slate-800/60 p-3 text-center">
+            <p class="text-xs text-slate-500 mb-1">Steigungstyp</p>
+            <p id="info-typ" class="text-sm font-bold text-slate-300">steigend</p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════
+         ABSCHNITT 2: QUIZ
+    ════════════════════════════════════════════════════ -->
+    <section class="mb-14" aria-labelledby="quiz-title">
+      <div class="flex items-center gap-3 mb-6">
+        <span class="w-8 h-8 rounded-full bg-emerald-400 text-slate-950 text-sm font-bold flex items-center justify-center flex-shrink-0">2</span>
+        <h2 id="quiz-title" class="text-xl font-semibold">Quiz – Lineare Funktionen</h2>
+      </div>
+
+      <div class="flex gap-2 mb-5 flex-wrap">
+        <button id="qm-ablesen"    onclick="setQuizModus('ablesen')"    class="rounded-full px-4 py-1.5 text-xs font-semibold bg-emerald-400 text-slate-950">Steigung ablesen</button>
+        <button id="qm-einsetzen"  onclick="setQuizModus('einsetzen')"  class="rounded-full px-4 py-1.5 text-xs font-semibold bg-slate-700 text-slate-300 hover:bg-slate-600">Einsetzen</button>
+        <button id="qm-nullstelle" onclick="setQuizModus('nullstelle')" class="rounded-full px-4 py-1.5 text-xs font-semibold bg-slate-700 text-slate-300 hover:bg-slate-600">Nullstelle</button>
+        <button id="qm-gleichung"  onclick="setQuizModus('gleichung')"  class="rounded-full px-4 py-1.5 text-xs font-semibold bg-slate-700 text-slate-300 hover:bg-slate-600">Gleichung</button>
+      </div>
+
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+        <div class="flex justify-end mb-4">
+          <span class="text-sm font-semibold text-slate-500">Punkte:&nbsp;<span id="quiz-score" class="text-emerald-300">0 / 0</span></span>
+        </div>
+        <div id="quiz-karte" class="mb-6 text-center anim-fadein">
+          <p id="quiz-aufgabe" class="text-xl font-bold text-slate-100 mb-2 font-mono"></p>
+          <p id="quiz-hinweis" class="text-sm text-slate-500"></p>
+        </div>
+        <div id="quiz-buttons" class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5"></div>
+        <p id="quiz-feedback" class="text-center text-base font-semibold min-h-[1.5em] mb-4" aria-live="polite"></p>
+        <div class="flex justify-center">
+          <button onclick="newQuizAufgabe()"
+                  class="rounded-full border border-slate-700 text-slate-300 font-semibold px-6 py-2.5 text-sm hover:border-emerald-400/50 transition-colors">
+            Neue Aufgabe
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════
+         ABSCHNITT 3: SACHAUFGABEN
+    ════════════════════════════════════════════════════ -->
+    <section class="mb-14" aria-labelledby="sach-title">
+      <div class="flex items-center gap-3 mb-6">
+        <span class="w-8 h-8 rounded-full bg-emerald-400 text-slate-950 text-sm font-bold flex items-center justify-center flex-shrink-0">3</span>
+        <h2 id="sach-title" class="text-xl font-semibold">Sachaufgaben</h2>
+      </div>
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+        <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
+          <div class="flex gap-2" id="sach-dots"></div>
+          <span class="text-sm font-semibold text-slate-500">Punkte:&nbsp;<span id="sach-score" class="text-emerald-300">0 / 0</span></span>
+        </div>
+        <div id="sach-karte" class="mb-5 anim-fadein">
+          <p id="sach-kontext" class="text-xs font-semibold uppercase tracking-widest text-emerald-400/70 mb-2"></p>
+          <p id="sach-frage"   class="text-lg font-semibold text-slate-200 mb-2 leading-relaxed"></p>
+          <p id="sach-funk"    class="font-mono text-sm text-emerald-300/70 mb-4"></p>
+          <div class="flex items-center gap-3 flex-wrap">
+            <input id="sach-input" type="text" inputmode="numeric" placeholder="Deine Antwort"
+                   class="antwort-input w-44 rounded-2xl border border-slate-700 bg-slate-800 px-4 py-3 text-slate-100 text-lg font-bold transition-colors"
+                   onkeydown="if(event.key==='Enter') checkSach()" />
+            <span id="sach-einheit" class="text-base font-semibold text-emerald-300"></span>
+          </div>
+        </div>
+        <p id="sach-feedback" class="text-center text-base font-semibold min-h-[1.5em] mb-4" aria-live="polite"></p>
+        <div class="flex gap-3 justify-center">
+          <button id="sach-check-btn" onclick="checkSach()"
+                  class="rounded-full bg-emerald-400 text-slate-950 font-semibold px-6 py-2.5 text-sm hover:bg-emerald-300 transition-colors">Prüfen</button>
+          <button id="sach-next-btn"  onclick="nextSachAufgabe()"
+                  class="hidden rounded-full border border-slate-700 text-slate-300 font-semibold px-6 py-2.5 text-sm hover:border-emerald-400/50 transition-colors">Nächste Aufgabe →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- MERKHILFE -->
+    <section class="mb-10">
+      <h2 class="text-sm font-semibold text-slate-300 mb-4 uppercase tracking-wide">Merkhilfe</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-5">
+          <h3 class="font-semibold text-emerald-300 mb-3 text-sm">📐 Geradengleichung</h3>
+          <p class="font-mono text-slate-200 text-lg mb-2">f(x) = m·x + b</p>
+          <ul class="text-slate-400 text-sm space-y-1">
+            <li><span class="text-emerald-300">m</span> = Steigung</li>
+            <li><span class="text-blue-300">b</span> = y-Achsenabschnitt</li>
+          </ul>
+        </div>
+        <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-5">
+          <h3 class="font-semibold text-emerald-300 mb-3 text-sm">📈 Steigung</h3>
+          <p class="font-mono text-slate-200 mb-2">m = Δy / Δx</p>
+          <ul class="text-slate-400 text-sm space-y-1">
+            <li>m &gt; 0 → steigend</li>
+            <li>m &lt; 0 → fallend</li>
+            <li>m = 0 → waagerecht</li>
+          </ul>
+        </div>
+        <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-5">
+          <h3 class="font-semibold text-emerald-300 mb-3 text-sm">✂️ Nullstelle</h3>
+          <p class="font-mono text-slate-200 mb-2">f(x₀) = 0</p>
+          <p class="font-mono text-xs text-slate-500">m·x₀ + b = 0</p>
+          <p class="font-mono text-xs text-slate-500">x₀ = −b / m</p>
+        </div>
+      </div>
+    </section>
+
+    <footer class="py-6 text-center text-xs text-slate-500">© <span id="y"></span> Brandon Hank · Düsseldorf</footer>
+  </main>
+
+  <script>
+    window.__i18nBase = '../../';
+    fetch('../../topbar.html')
+      .then(r => r.text())
+      .then(html => {
+        document.getElementById('topbar-container').innerHTML = html;
+        const s = document.createElement('script');
+        s.src = '../../assets/js/script.js';
+        s.onload = init;
+        document.body.appendChild(s);
+      });
+
+    /* ════════════════════════════════════════════════════════════
+       ABSCHNITT 1 – FUNKTIONSGRAPH
+    ════════════════════════════════════════════════════════════ */
+
+    /*
+     * SVG-Koordinatensystem:
+     *   viewBox 0 0 480 360
+     *   Ursprung: (OX, OY) = (240, 180)
+     *   1 Einheit = PX = 24 Pixel
+     *   Sichtbarer Bereich: x ∈ [−10, +10], y ∈ [−7.5, +7.5]
+     */
+    const OX = 240, OY = 180, PX = 24;
+
+    /* Rechnerische Koordinate → SVG-Pixel */
+    function toSVG(rx, ry) {
+      return { x: OX + rx * PX, y: OY - ry * PX };
+    }
+
+    /*
+     * buildGitter()
+     * Zeichnet ein leichtes Hintergrund-Gitter (alle 1 Einheit).
+     * Wird einmal beim Start aufgerufen.
+     */
+    function buildGitter() {
+      const g = document.getElementById('gitter');
+      let html = '';
+      for (let i = -10; i <= 10; i++) {
+        const x = OX + i * PX;
+        const y = OY - i * PX;
+        html += `<line class="grid-line" x1="${x}" y1="0"   x2="${x}" y2="360"/>`;
+        html += `<line class="grid-line" x1="0"   y1="${y}" x2="480" y2="${y}"/>`;
+        /* Beschriftung alle 2 Einheiten, nicht bei 0 */
+        if (i !== 0 && i % 2 === 0) {
+          html += `<text x="${x-3}" y="${OY+12}" font-size="8" fill="#475569" text-anchor="middle">${i}</text>`;
+          html += `<text x="${OX+4}" y="${y+3}"  font-size="8" fill="#475569">${i}</text>`;
+        }
+      }
+      g.innerHTML = html;
+    }
+
+    /*
+     * updateGraph()
+     * Liest m und b von den Slidern und zeichnet die Gerade neu.
+     *
+     * Geradengleichung: f(x) = m·x + b
+     * Nullstelle:       x₀ = −b / m   (nur wenn m ≠ 0)
+     *
+     * Für die SVG-Linie werden die Schnittpunkte mit dem
+     * sichtbaren Bereich berechnet: x ∈ [−10, +10].
+     */
+    function updateGraph() {
+      const m = parseFloat(document.getElementById('slider-m').value);
+      const b = parseFloat(document.getElementById('slider-b').value);
+
+      document.getElementById('m-label').textContent = m;
+      document.getElementById('b-label').textContent = b;
+
+      /* Gleichungstext */
+      const mStr = m === 1 ? '' : m === -1 ? '−' : m;
+      const bStr = b === 0 ? '' : b > 0 ? ` + ${b}` : ` − ${Math.abs(b)}`;
+      document.getElementById('funk-gleichung').textContent = `f(x) = ${mStr}x${bStr}`;
+
+      /* Endpunkte der Linie (x = −10 und x = +10) */
+      const p1 = toSVG(-10, m * -10 + b);
+      const p2 = toSVG( 10, m *  10 + b);
+      const line = document.getElementById('func-line');
+      line.setAttribute('x1', p1.x); line.setAttribute('y1', p1.y);
+      line.setAttribute('x2', p2.x); line.setAttribute('y2', p2.y);
+
+      /* Nullstelle: x₀ = −b/m */
+      const nsDot   = document.getElementById('nullstelle-dot');
+      const nsLabel = document.getElementById('nullstelle-label');
+      if (m !== 0) {
+        const x0  = -b / m;
+        const ns  = toSVG(x0, 0);
+        nsDot.setAttribute('cx', ns.x);
+        nsDot.setAttribute('cy', ns.y);
+        nsDot.setAttribute('r', '5');
+        nsLabel.setAttribute('x', ns.x + 6);
+        nsLabel.setAttribute('y', ns.y - 7);
+        nsLabel.textContent = `x₀=${parseFloat(x0.toFixed(2))}`;
+        document.getElementById('info-ns').textContent = parseFloat(x0.toFixed(2));
+      } else {
+        nsDot.setAttribute('r', '0');
+        nsLabel.textContent = '';
+        document.getElementById('info-ns').textContent = '–';
+      }
+
+      /* y-Achsenabschnitt (0, b) */
+      const yNullPt = toSVG(0, b);
+      const ynDot   = document.getElementById('ynull-dot');
+      ynDot.setAttribute('cx', yNullPt.x);
+      ynDot.setAttribute('cy', yNullPt.y);
+      document.getElementById('ynull-label').setAttribute('x', yNullPt.x + 6);
+      document.getElementById('ynull-label').setAttribute('y', yNullPt.y - 7);
+      document.getElementById('ynull-label').textContent = `b=${b}`;
+
+      /* Steigungsdreieck: Δx = 2, Δy = 2m  (bei x = 0) */
+      const tx1 = toSVG(0, b), tx2 = toSVG(2, b), tx3 = toSVG(2, m * 2 + b);
+      document.getElementById('steig-h').setAttribute('x1', tx1.x);
+      document.getElementById('steig-h').setAttribute('y1', tx1.y);
+      document.getElementById('steig-h').setAttribute('x2', tx2.x);
+      document.getElementById('steig-h').setAttribute('y2', tx2.y);
+      document.getElementById('steig-v').setAttribute('x1', tx2.x);
+      document.getElementById('steig-v').setAttribute('y1', tx2.y);
+      document.getElementById('steig-v').setAttribute('x2', tx3.x);
+      document.getElementById('steig-v').setAttribute('y2', tx3.y);
+
+      /* Info-Kacheln */
+      document.getElementById('info-m').textContent = m;
+      document.getElementById('info-b').textContent = b;
+      document.getElementById('info-typ').textContent =
+        m > 0 ? '↗ steigend' : m < 0 ? '↘ fallend' : '→ konstant';
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       ABSCHNITT 2 – QUIZ
+    ════════════════════════════════════════════════════════════ */
+
+    let quizModus = 'ablesen', quizR = 0, quizG = 0;
+
+    function setQuizModus(m) {
+      quizModus = m;
+      ['ablesen','einsetzen','nullstelle','gleichung'].forEach(x => {
+        document.getElementById(`qm-${x}`).className =
+          `rounded-full px-4 py-1.5 text-xs font-semibold transition-colors ` +
+          (x === m ? 'bg-emerald-400 text-slate-950' : 'bg-slate-700 text-slate-300 hover:bg-slate-600');
+      });
+      newQuizAufgabe();
+    }
+
+    function rnd(a, b) { return Math.floor(Math.random() * (b - a + 1)) + a; }
+
+    function newQuizAufgabe() {
+      document.getElementById('quiz-feedback').textContent = '';
+      const m = rnd(-4, 4), b = rnd(-5, 5);
+      const fStr = (mm, bb) => {
+        const ms = mm === 1 ? '' : mm === -1 ? '−' : mm;
+        const bs = bb === 0 ? '' : bb > 0 ? ` + ${bb}` : ` − ${Math.abs(bb)}`;
+        return `${ms}x${bs}`;
+      };
+
+      if (quizModus === 'ablesen') {
+        /* Steigung ablesen */
+        const richtig = String(m);
+        const falsch  = [m+1, m-1, -m].filter(v => v !== m).map(String);
+        document.getElementById('quiz-aufgabe').textContent = `f(x) = ${fStr(m, b)}  →  m = ?`;
+        document.getElementById('quiz-hinweis').textContent = 'Steigung m = Koeffizient vor x';
+        renderQuizButtons([richtig,...falsch.slice(0,3)], richtig);
+
+      } else if (quizModus === 'einsetzen') {
+        /* f(x₀) berechnen */
+        const x0 = rnd(-3, 3);
+        const fx  = m * x0 + b;
+        const richtig = String(fx);
+        const falsch  = [fx+1, fx-1, fx+m].filter(v => v !== fx).map(String);
+        document.getElementById('quiz-aufgabe').textContent = `f(x) = ${fStr(m, b)},  f(${x0}) = ?`;
+        document.getElementById('quiz-hinweis').textContent = `Setze x = ${x0} ein`;
+        renderQuizButtons([richtig,...falsch.slice(0,3)], richtig);
+
+      } else if (quizModus === 'nullstelle') {
+        /* Nullstelle berechnen: x₀ = −b/m */
+        if (m === 0) { newQuizAufgabe(); return; }
+        const x0     = parseFloat((-b / m).toFixed(1));
+        const richtig = String(x0);
+        const falsch  = [x0+1, x0-1, b/m].filter(v => v !== x0).map(String);
+        document.getElementById('quiz-aufgabe').textContent = `f(x) = ${fStr(m, b)},  Nullstelle x₀ = ?`;
+        document.getElementById('quiz-hinweis').textContent = 'x₀ = −b / m';
+        renderQuizButtons([richtig,...falsch.slice(0,3)], richtig);
+
+      } else {
+        /* Geradengleichung aus m und b aufstellen (umgekehrt: welches m?) */
+        const richtig = `f(x) = ${fStr(m, b)}`;
+        const falsch  = [
+          `f(x) = ${fStr(m+1, b)}`,
+          `f(x) = ${fStr(m, b+1)}`,
+          `f(x) = ${fStr(-m, b)}`,
+        ].filter(v => v !== richtig);
+        document.getElementById('quiz-aufgabe').textContent =
+          `Steigung m = ${m}, y-Abschnitt b = ${b}. Welche Gleichung?`;
+        document.getElementById('quiz-hinweis').textContent = 'f(x) = m·x + b';
+        renderQuizButtons([richtig,...falsch.slice(0,3)], richtig);
+      }
+    }
+
+    function renderQuizButtons(opts, richtig) {
+      for(let i=opts.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[opts[i],opts[j]]=[opts[j],opts[i]];}
+      document.getElementById('quiz-buttons').innerHTML = opts.map(v =>
+        `<button class="btn-answer rounded-2xl border border-slate-700 bg-slate-800 px-3 py-4
+                        text-base font-bold text-slate-100 hover:border-emerald-400/50 transition-colors font-mono"
+                 data-val="${encodeURIComponent(v)}" data-richtig="${encodeURIComponent(richtig)}"
+                 onclick="checkQuiz(this)">${v}</button>`
+      ).join('');
+    }
+
+    function checkQuiz(btn) {
+      const g = decodeURIComponent(btn.dataset.val);
+      const r = decodeURIComponent(btn.dataset.richtig);
+      quizG++;
+      document.querySelectorAll('#quiz-buttons .btn-answer').forEach(b => {
+        b.disabled = true;
+        const v = decodeURIComponent(b.dataset.val);
+        if (v === r) b.classList.add('btn-correct'); else if (v === g) b.classList.add('btn-wrong');
+      });
+      const fb = document.getElementById('quiz-feedback');
+      if (g === r) { quizR++; fb.textContent='✓ Richtig!'; fb.className='text-center text-base font-semibold min-h-[1.5em] mb-4 text-emerald-400'; }
+      else          { fb.textContent=`✗ Falsch. Richtig: ${r}`; fb.className='text-center text-base font-semibold min-h-[1.5em] mb-4 text-red-400'; }
+      document.getElementById('quiz-score').textContent = `${quizR} / ${quizG}`;
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       SACHAUFGABEN
+    ════════════════════════════════════════════════════════════ */
+    const SACHAUFGABEN = [
+      { kontext:'🚗 Taxifahrt',    frage:'Ein Taxi kostet 2 € Grundgebühr plus 1,50 € pro km. Welche Gesamtkosten entstehen nach 8 km? f(x) = 1,5·x + 2', funk:'f(8) = 1,5·8 + 2', antwort:'14', einheit:'€',   hinweis:'f(8) = 12 + 2 = 14 €' },
+      { kontext:'📱 Handyvertrag', frage:'Ein Tarif kostet monatlich 10 € Grundgebühr + 0,05 € pro Minute. Bei 200 Minuten: f(200) = ?', funk:'f(x) = 0,05·x + 10', antwort:'20', einheit:'€', hinweis:'f(200) = 10 + 10 = 20 €' },
+      { kontext:'🌡️ Celsius → Fahrenheit', frage:'Die Formel lautet F(C) = 1,8·C + 32. Welche Fahrenheit-Temperatur entspricht 20 °C?', funk:'F(C) = 1,8·C + 32', antwort:'68', einheit:'°F', hinweis:'F(20) = 36 + 32 = 68 °F' },
+      { kontext:'📐 Nullstelle',   frage:'f(x) = 3x − 9. Bei welchem x-Wert schneidet die Gerade die x-Achse?', funk:'f(x) = 3x − 9,  f(x₀) = 0', antwort:'3', einheit:'', hinweis:'3x − 9 = 0 → x = 3' },
+      { kontext:'📊 Zwei Geraden', frage:'f(x) = 2x + 1 und g(x) = −x + 7. Bei welchem x haben beide Funktionen denselben Wert? (Schnittpunkt)', funk:'2x + 1 = −x + 7', antwort:'2', einheit:'', hinweis:'2x + 1 = −x + 7 → 3x = 6 → x = 2' },
+    ];
+
+    let sachIdx=0, sachR=0, sachG=0;
+
+    function renderSachDots() {
+      document.getElementById('sach-dots').innerHTML =
+        SACHAUFGABEN.map((_,i)=>{
+          let c='sach-dot'; if(i<sachIdx) c+=' done'; else if(i===sachIdx) c+=' current';
+          return `<span class="${c}"></span>`;
+        }).join('');
+    }
+
+    function showSachAufgabe() {
+      if(sachIdx>=SACHAUFGABEN.length){
+        document.getElementById('sach-karte').innerHTML=`<p class="text-center text-emerald-300 text-lg font-semibold py-6">🎉 Alle gelöst! ${sachR} von ${SACHAUFGABEN.length} richtig.</p>`;
+        document.getElementById('sach-check-btn').classList.add('hidden');
+        document.getElementById('sach-next-btn').classList.add('hidden');
+        return;
+      }
+      const a=SACHAUFGABEN[sachIdx];
+      document.getElementById('sach-kontext').textContent=a.kontext;
+      document.getElementById('sach-frage').textContent=a.frage;
+      document.getElementById('sach-funk').textContent=a.funk;
+      document.getElementById('sach-einheit').textContent=a.einheit;
+      document.getElementById('sach-input').value='';
+      document.getElementById('sach-input').disabled=false;
+      document.getElementById('sach-feedback').textContent='';
+      document.getElementById('sach-check-btn').classList.remove('hidden');
+      document.getElementById('sach-next-btn').classList.add('hidden');
+      const k=document.getElementById('sach-karte');
+      k.classList.remove('anim-fadein'); void k.offsetWidth; k.classList.add('anim-fadein');
+      renderSachDots();
+    }
+
+    function checkSach() {
+      const e=document.getElementById('sach-input').value.trim();
+      sachG++;
+      document.getElementById('sach-input').disabled=true;
+      document.getElementById('sach-check-btn').classList.add('hidden');
+      document.getElementById('sach-next-btn').classList.remove('hidden');
+      const fb=document.getElementById('sach-feedback');
+      if(e===SACHAUFGABEN[sachIdx].antwort){ sachR++; fb.textContent='✓ Richtig!'; fb.className='text-center text-base font-semibold min-h-[1.5em] mb-4 text-emerald-400'; }
+      else { fb.textContent=`✗ Falsch. ${SACHAUFGABEN[sachIdx].hinweis}`; fb.className='text-center text-base font-semibold min-h-[1.5em] mb-4 text-red-400'; }
+      document.getElementById('sach-score').textContent=`${sachR} / ${sachG}`;
+    }
+
+    function nextSachAufgabe() { sachIdx++; showSachAufgabe(); }
+
+    function init() {
+      buildGitter();
+      updateGraph();
+      newQuizAufgabe();
+      showSachAufgabe();
+    }
+  </script>
+</body>
+</html>
