@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dezimalzahlen – Klasse 6 | MathAcademy</title>
+
+  <link rel="icon"             href="../../favicon.ico" />
+  <link rel="apple-touch-icon" href="../../apple-touch-icon.png" />
+  <link rel="manifest"         href="../../site.webmanifest" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../../assets/css/style.css?v=1.0" />
+
+  <style>
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0);    }
+    }
+    @keyframes shake {
+      0%,100% { transform: translateX(0);    }
+      20%      { transform: translateX(-8px); }
+      40%      { transform: translateX( 8px); }
+      60%      { transform: translateX(-5px); }
+      80%      { transform: translateX( 5px); }
+    }
+    .anim-fadein { animation: fadeInUp 0.35s ease both; }
+    .anim-shake  { animation: shake   0.4s  ease;      }
+
+    /* ── Stellenwert-Zellen im Umrechner ───────────────────────
+       Jede Stelle (Zehner, Einer, Zehntel, …) bekommt
+       eine eigene Zelle mit farblichem Hintergrund.          */
+    .sv-zelle {
+      min-width: 2.8rem;
+      text-align: center;
+      padding: 0.5rem 0.4rem;
+      border-radius: 8px;
+      font-variant-numeric: tabular-nums;
+      font-weight: 700;
+    }
+    /* Stellen vor dem Komma: blauer Ton */
+    .sv-vor  { background: rgba(59,130,246,0.15); color: #93c5fd; }
+    /* Stellen nach dem Komma: grüner Ton */
+    .sv-nach { background: rgba(52,211,153,0.15); color: #6ee7b7; }
+    /* Das Komma selbst: neutral */
+    .sv-komma { color: #f1f5f9; font-size: 1.5rem; padding: 0 0.2rem; }
+    /* Beschriftung unter der Zelle (z.B. "Zehntel") */
+    .sv-label { font-size: 0.6rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; }
+
+    /* ── Quiz ──────────────────────────────────────────────── */
+    .btn-answer:hover:not(:disabled) { filter: brightness(1.15); }
+    .btn-answer:disabled { opacity: 0.55; cursor: not-allowed; }
+    .btn-correct { background-color:#059669!important; border-color:#34d399!important; color:#fff!important; }
+    .btn-wrong   { background-color:#dc2626!important; border-color:#f87171!important; color:#fff!important; }
+
+    /* ── Sachaufgaben-Dots ─────────────────────────────────── */
+    .sach-dot { width:10px; height:10px; border-radius:50%; background-color:#334155; transition:background-color 0.2s; }
+    .sach-dot.done    { background-color:#34d399; }
+    .sach-dot.current { background-color:#6ee7b7; box-shadow:0 0 0 3px rgba(52,211,153,0.25); }
+
+    /* ── Eingabefelder ─────────────────────────────────────── */
+    .antwort-input:focus { outline:none; border-color:#34d399; box-shadow:0 0 0 3px rgba(52,211,153,0.2); }
+
+    /* ── Tab ───────────────────────────────────────────────── */
+    .tab-active { color:#34d399!important; border-bottom-color:#34d399!important; }
+  </style>
+</head>
+
+<body class="bg-slate-950 text-slate-100 min-h-screen">
+  <div id="topbar-container"></div>
+
+  <main class="max-w-4xl mx-auto px-4 pb-16 pt-6">
+
+    <a href="/academy.html"
+       class="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-emerald-300 transition-colors mb-6">
+      ← Zurück zur Akademie
+    </a>
+
+    <div class="mb-10">
+      <span class="text-xs font-semibold uppercase tracking-widest text-emerald-400 mb-2 block">Klasse 6 · Aufbau</span>
+      <h1 class="text-3xl sm:text-4xl font-bold mb-3">Dezimalzahlen</h1>
+      <p class="text-slate-400 text-base max-w-xl">
+        Mit dem Komma rechnen, Brüche in Dezimalzahlen umwandeln und umgekehrt –
+        mit dem interaktiven Stellenwert-Umrechner, Quiz und Sachaufgaben.
+      </p>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════
+         ABSCHNITT 1: STELLENWERT-UMRECHNER
+         Ziel: Schüler geben eine Dezimalzahl ein und sehen
+               sofort die Stellenwert-Tafel sowie die
+               Umrechnung in einen Bruch.
+    ════════════════════════════════════════════════════ -->
+    <section class="mb-14" aria-labelledby="umr-title">
+      <div class="flex items-center gap-3 mb-6">
+        <span class="w-8 h-8 rounded-full bg-emerald-400 text-slate-950 text-sm font-bold flex items-center justify-center flex-shrink-0">1</span>
+        <h2 id="umr-title" class="text-xl font-semibold">Stellenwert-Umrechner</h2>
+      </div>
+      <p class="text-slate-400 text-sm mb-5">
+        Gib eine Dezimalzahl ein – sieh die Stellen farbig aufgeteilt und den entsprechenden Bruch.
+      </p>
+
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+
+        <!-- Tab-Leiste: Dezimal → Bruch / Bruch → Dezimal -->
+        <div class="flex gap-1 mb-6 border-b border-slate-800" role="tablist">
+          <button id="tab-dez" onclick="switchTab('dez')"
+                  class="tab-active px-5 py-2.5 text-sm font-semibold border-b-2 border-transparent text-slate-400 transition-colors"
+                  role="tab" aria-selected="true">Dezimal → Bruch</button>
+          <button id="tab-bruch" onclick="switchTab('bruch')"
+                  class="px-5 py-2.5 text-sm font-semibold border-b-2 border-transparent text-slate-400 transition-colors"
+                  role="tab" aria-selected="false">Bruch → Dezimal</button>
+        </div>
+
+        <!-- Panel: Dezimal → Bruch -->
+        <div id="panel-dez">
+          <div class="flex flex-wrap gap-3 items-center mb-6">
+            <input id="dez-input" type="text" inputmode="decimal" value="3,75"
+                   placeholder="z.B. 3,75"
+                   class="antwort-input w-40 rounded-2xl border border-slate-700 bg-slate-800
+                          px-4 py-3 text-slate-100 text-xl font-semibold transition-colors"
+                   oninput="updateDez()" />
+            <span class="text-slate-500 text-sm">Komma oder Punkt als Trennzeichen</span>
+          </div>
+
+          <!-- Stellenwert-Tafel -->
+          <!--
+            Die Zellen werden durch renderStellenTafel() erzeugt.
+            Blaue Zellen = Vorkomma-Stellen, grüne = Nachkomma-Stellen.
+          -->
+          <div id="sv-tafel" class="flex flex-wrap items-end gap-2 mb-6 overflow-x-auto pb-2">
+            <!-- dynamisch befüllt -->
+          </div>
+
+          <!-- Ergebnis-Box: Dezimal als Bruch -->
+          <div class="rounded-2xl border border-slate-700/50 bg-slate-800/40 p-4 space-y-2">
+            <div class="flex items-center gap-4 flex-wrap">
+              <span class="text-slate-500 text-sm w-32">Als Bruch:</span>
+              <span id="dez-als-bruch" class="text-xl font-bold text-slate-100"></span>
+            </div>
+            <div class="flex items-center gap-4 flex-wrap">
+              <span class="text-slate-500 text-sm w-32">Gekürzt:</span>
+              <span id="dez-gekuerzt"  class="text-xl font-bold text-emerald-300"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel: Bruch → Dezimal (anfangs versteckt) -->
+        <div id="panel-bruch" class="hidden">
+          <div class="flex flex-wrap gap-3 items-center mb-6">
+            <!-- Zähler-Eingabe -->
+            <input id="bruch-z" type="number" min="1" max="999" value="3"
+                   class="antwort-input w-24 rounded-2xl border border-slate-700 bg-slate-800
+                          px-4 py-3 text-slate-100 text-xl font-semibold text-center transition-colors"
+                   oninput="updateBruch()" />
+            <span class="text-2xl font-bold text-slate-400">/</span>
+            <!-- Nenner-Eingabe -->
+            <input id="bruch-n" type="number" min="1" max="999" value="8"
+                   class="antwort-input w-24 rounded-2xl border border-slate-700 bg-slate-800
+                          px-4 py-3 text-slate-100 text-xl font-semibold text-center transition-colors"
+                   oninput="updateBruch()" />
+          </div>
+          <div class="rounded-2xl border border-slate-700/50 bg-slate-800/40 p-4 space-y-2">
+            <div class="flex items-center gap-4">
+              <span class="text-slate-500 text-sm w-32">Dezimalzahl:</span>
+              <span id="bruch-als-dez" class="text-2xl font-bold text-emerald-300"></span>
+            </div>
+            <div class="flex items-center gap-4">
+              <span class="text-slate-500 text-sm w-32">Typ:</span>
+              <span id="bruch-typ"     class="text-sm font-medium text-slate-300"></span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════
+         ABSCHNITT 2: QUIZ
+    ════════════════════════════════════════════════════ -->
+    <section class="mb-14" aria-labelledby="quiz-title">
+      <div class="flex items-center gap-3 mb-6">
+        <span class="w-8 h-8 rounded-full bg-emerald-400 text-slate-950 text-sm font-bold flex items-center justify-center flex-shrink-0">2</span>
+        <h2 id="quiz-title" class="text-xl font-semibold">Quiz – Dezimalzahlen</h2>
+      </div>
+
+      <div class="flex gap-2 mb-5">
+        <button id="qm-stellen"  onclick="setQuizModus('stellen')"
+                class="rounded-full px-4 py-1.5 text-xs font-semibold bg-emerald-400 text-slate-950 transition-colors">Stelle ablesen</button>
+        <button id="qm-umwandeln" onclick="setQuizModus('umwandeln')"
+                class="rounded-full px-4 py-1.5 text-xs font-semibold bg-slate-700 text-slate-300 hover:bg-slate-600 transition-colors">Umwandeln</button>
+        <button id="qm-ordnen" onclick="setQuizModus('ordnen')"
+                class="rounded-full px-4 py-1.5 text-xs font-semibold bg-slate-700 text-slate-300 hover:bg-slate-600 transition-colors">Ordnen</button>
+      </div>
+
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+        <div class="flex justify-end mb-4">
+          <span class="text-sm font-semibold text-slate-500">Punkte:&nbsp;<span id="quiz-score" class="text-emerald-300">0 / 0</span></span>
+        </div>
+        <div id="quiz-karte" class="mb-6 text-center anim-fadein">
+          <p id="quiz-aufgabe" class="text-2xl font-bold text-slate-100 mb-2 leading-relaxed"></p>
+          <p id="quiz-hinweis" class="text-sm text-slate-500"></p>
+        </div>
+        <div id="quiz-buttons" class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5"></div>
+        <p id="quiz-feedback" class="text-center text-base font-semibold min-h-[1.5em] mb-4" aria-live="polite"></p>
+        <div class="flex justify-center">
+          <button onclick="newQuizAufgabe()"
+                  class="rounded-full border border-slate-700 text-slate-300 font-semibold px-6 py-2.5 text-sm hover:border-emerald-400/50 transition-colors">
+            Neue Aufgabe
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════
+         ABSCHNITT 3: SACHAUFGABEN
+    ════════════════════════════════════════════════════ -->
+    <section class="mb-14" aria-labelledby="sach-title">
+      <div class="flex items-center gap-3 mb-6">
+        <span class="w-8 h-8 rounded-full bg-emerald-400 text-slate-950 text-sm font-bold flex items-center justify-center flex-shrink-0">3</span>
+        <h2 id="sach-title" class="text-xl font-semibold">Sachaufgaben</h2>
+      </div>
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+        <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
+          <div class="flex gap-2" id="sach-dots"></div>
+          <span class="text-sm font-semibold text-slate-500">Punkte:&nbsp;<span id="sach-score" class="text-emerald-300">0 / 0</span></span>
+        </div>
+        <div id="sach-karte" class="mb-5 anim-fadein">
+          <p id="sach-kontext" class="text-xs font-semibold uppercase tracking-widest text-emerald-400/70 mb-2"></p>
+          <p id="sach-frage"   class="text-lg font-semibold text-slate-200 mb-5 leading-relaxed"></p>
+          <div class="flex items-center gap-3 flex-wrap">
+            <input id="sach-input" type="text" inputmode="decimal" placeholder="Deine Antwort"
+                   class="antwort-input w-44 rounded-2xl border border-slate-700 bg-slate-800 px-4 py-3 text-slate-100 text-lg font-bold transition-colors"
+                   onkeydown="if(event.key==='Enter') checkSach()" />
+            <span id="sach-einheit" class="text-base font-semibold text-emerald-300"></span>
+          </div>
+        </div>
+        <p id="sach-feedback" class="text-center text-base font-semibold min-h-[1.5em] mb-4" aria-live="polite"></p>
+        <div class="flex gap-3 justify-center flex-wrap">
+          <button id="sach-check-btn" onclick="checkSach()"
+                  class="rounded-full bg-emerald-400 text-slate-950 font-semibold px-6 py-2.5 text-sm hover:bg-emerald-300 transition-colors">Prüfen</button>
+          <button id="sach-next-btn"  onclick="nextSachAufgabe()"
+                  class="hidden rounded-full border border-slate-700 text-slate-300 font-semibold px-6 py-2.5 text-sm hover:border-emerald-400/50 transition-colors">Nächste Aufgabe →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- MERKHILFE -->
+    <section aria-labelledby="theorie-title" class="mb-10">
+      <h2 id="theorie-title" class="text-sm font-semibold text-slate-300 mb-4 uppercase tracking-wide">Merkhilfe – Dezimalzahlen</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-5">
+          <h3 class="font-semibold text-emerald-300 mb-3 text-sm">🔢 Stellen</h3>
+          <ul class="text-slate-400 text-sm space-y-1 leading-relaxed">
+            <li><span class="text-blue-300 font-medium">Z E</span> <span class="text-slate-500">,</span> <span class="text-emerald-300 font-medium">t h th</span></li>
+            <li class="text-xs text-slate-500">Z=Zehner E=Einer t=Zehntel h=Hundertstel th=Tausendstel</li>
+            <li class="pt-1 text-xs text-slate-500 border-t border-slate-700/50">3,75 → 3 Einer, 7 Zehntel, 5 Hundertstel</li>
+          </ul>
+        </div>
+        <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-5">
+          <h3 class="font-semibold text-emerald-300 mb-3 text-sm">↔️ Umwandeln</h3>
+          <ul class="text-slate-400 text-sm space-y-2 leading-relaxed">
+            <li>Dez → Bruch: <span class="text-slate-200 font-medium">0,3 = 3/10</span></li>
+            <li>Dez → Bruch: <span class="text-slate-200 font-medium">0,75 = 75/100 = 3/4</span></li>
+            <li>Bruch → Dez: <span class="text-slate-200 font-medium">1/4 = 0,25</span></li>
+          </ul>
+        </div>
+        <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-5">
+          <h3 class="font-semibold text-emerald-300 mb-3 text-sm">➕ Rechnen</h3>
+          <ul class="text-slate-400 text-sm space-y-2 leading-relaxed">
+            <li>Kommas <span class="text-slate-200 font-medium">untereinander</span> schreiben</li>
+            <li>Gleiche Stelle an gleiche Stelle</li>
+            <li class="text-xs text-slate-500 pt-1 border-t border-slate-700/50">2,3 + 1,45 = 3,75</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <footer class="py-6 text-center text-xs text-slate-500">© <span id="y"></span> Brandon Hank · Düsseldorf</footer>
+  </main>
+
+  <script>
+    window.__i18nBase = '../../';
+    fetch('../../topbar.html')
+      .then(r => r.text())
+      .then(html => {
+        document.getElementById('topbar-container').innerHTML = html;
+        const s = document.createElement('script');
+        s.src = '../../assets/js/script.js';
+        s.onload = init;
+        document.body.appendChild(s);
+      });
+
+    /* ── Hilfsfunktionen ───────────────────────────────────────── */
+    function ggT(a, b) { return b === 0 ? a : ggT(b, a % b); }
+    function kuerze(z, n) { const g = ggT(z, n); return [z/g, n/g]; }
+
+    /* ════════════════════════════════════════════════════════════
+       ABSCHNITT 1 – UMRECHNER
+    ════════════════════════════════════════════════════════════ */
+
+    let aktivTab = 'dez'; /* 'dez' oder 'bruch' */
+
+    /*
+     * switchTab(tab) – Wechselt zwischen den zwei Umrechner-Modi
+     */
+    function switchTab(tab) {
+      aktivTab = tab;
+      document.getElementById('panel-dez').classList.toggle('hidden', tab !== 'dez');
+      document.getElementById('panel-bruch').classList.toggle('hidden', tab !== 'bruch');
+      document.getElementById('tab-dez').classList.toggle('tab-active', tab === 'dez');
+      document.getElementById('tab-bruch').classList.toggle('tab-active', tab === 'bruch');
+      if (tab === 'dez') updateDez(); else updateBruch();
+    }
+
+    /*
+     * Stellennamen für Vorkomma- und Nachkommastellen.
+     * Index 0 = direktes Komma-Nachbar (Zehntel / Einer).
+     */
+    const NACH_NAMEN = ['Zehntel','Hundertstel','Tausendstel','Zehntausendstel'];
+    const VOR_NAMEN  = ['Einer','Zehner','Hunderter','Tausender','Zehntausender'];
+
+    /*
+     * updateDez()
+     * Liest die Eingabe, baut die Stellenwert-Tafel und berechnet den Bruch.
+     */
+    function updateDez() {
+      /* Komma und Punkt beide akzeptieren */
+      const raw = document.getElementById('dez-input').value.replace(',', '.');
+      const num = parseFloat(raw);
+      if (isNaN(num)) return;
+
+      /* Ganzzahl- und Nachkommateil trennen */
+      const teile   = raw.replace('-','').split('.');
+      const vorStr  = teile[0] || '0';
+      const nachStr = teile[1] || '';
+
+      renderStellenTafel(vorStr, nachStr);
+
+      /* ── Bruch berechnen ──────────────────────────────────── */
+      /*
+       * Strategie: Dezimalzahl × 10^(Anzahl Nachkommastellen) → ganzzahliger Zähler
+       * Beispiel: 3,75 × 100 = 375 → 375/100 → kürzen → 3/4
+       *           Der Vorkomma-Anteil (3) wird separat berechnet.
+       */
+      const nachLen = nachStr.length;
+      const nenner  = Math.pow(10, nachLen);
+      const zaehler = Math.round(num * nenner); /* round() vermeidet Fließkomma-Fehler */
+
+      const [kz, kn] = kuerze(Math.abs(zaehler), nenner);
+      document.getElementById('dez-als-bruch').textContent =
+        nachLen === 0 ? `${zaehler} (ganze Zahl)` : `${zaehler} / ${nenner}`;
+      document.getElementById('dez-gekuerzt').textContent =
+        kz === Math.abs(zaehler) && kn === nenner
+          ? 'bereits vollständig gekürzt'
+          : `${kz} / ${kn}`;
+    }
+
+    /*
+     * renderStellenTafel(vorStr, nachStr)
+     * Baut die farbige Stellenwert-Tafel aus einzelnen Ziffern.
+     *
+     * @param vorStr   Ziffern vor dem Komma als String (z.B. "3")
+     * @param nachStr  Ziffern nach dem Komma als String (z.B. "75")
+     */
+    function renderStellenTafel(vorStr, nachStr) {
+      let html = '';
+
+      /* Vorkommastellen (von links nach rechts = höchste zuerst) */
+      [...vorStr].forEach((z, i) => {
+        const stelleIdx = vorStr.length - 1 - i; /* 0 = Einer */
+        const name      = VOR_NAMEN[stelleIdx] || `10^${stelleIdx}`;
+        html += `
+          <div class="flex flex-col items-center gap-1">
+            <div class="sv-zelle sv-vor text-2xl">${z}</div>
+            <div class="sv-label">${name}</div>
+          </div>`;
+      });
+
+      /* Komma-Symbol */
+      html += `<div class="sv-komma self-center">,</div>`;
+
+      /* Nachkommastellen */
+      if (nachStr.length === 0) {
+        html += `<div class="text-slate-600 text-sm self-center">–</div>`;
+      } else {
+        [...nachStr].forEach((z, i) => {
+          const name = NACH_NAMEN[i] || `10^-${i+1}`;
+          html += `
+            <div class="flex flex-col items-center gap-1">
+              <div class="sv-zelle sv-nach text-2xl">${z}</div>
+              <div class="sv-label">${name}</div>
+            </div>`;
+        });
+      }
+
+      document.getElementById('sv-tafel').innerHTML = html;
+    }
+
+    /*
+     * updateBruch()
+     * Wandelt einen eingegebenen Bruch in eine Dezimalzahl um
+     * und bestimmt ob er endlich oder periodisch ist.
+     */
+    function updateBruch() {
+      const z = parseInt(document.getElementById('bruch-z').value);
+      const n = parseInt(document.getElementById('bruch-n').value);
+      if (isNaN(z) || isNaN(n) || n === 0) return;
+
+      const dez = z / n;
+
+      /* Auf 6 Dezimalstellen runden und Komma als deutsches Trennzeichen */
+      document.getElementById('bruch-als-dez').textContent =
+        dez.toFixed(6).replace('.', ',').replace(/0+$/, '').replace(/,$/, '');
+
+      /*
+       * Periodenprüfung:
+       * Ein Bruch z/n (vollständig gekürzt) ist genau dann endlich,
+       * wenn n nach dem Kürzen nur die Primfaktoren 2 und 5 enthält.
+       */
+      const [, kn] = [z, n].reduce((_, __, i, a) => {
+        const g = ggT(a[0], a[1]); return [a[0]/g, a[1]/g];
+      }, [z, n]);
+
+      /* Alle Faktoren 2 und 5 aus kn herausteilen */
+      let rest = kn;
+      while (rest % 2 === 0) rest /= 2;
+      while (rest % 5 === 0) rest /= 5;
+
+      document.getElementById('bruch-typ').textContent =
+        rest === 1 ? '✓ Endlicher Dezimalbruch' : '∞ Periodischer Dezimalbruch';
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       ABSCHNITT 2 – QUIZ
+    ════════════════════════════════════════════════════════════ */
+
+    let quizModus = 'stellen', quizRichtig = 0, quizGesamt = 0;
+
+    function setQuizModus(m) {
+      quizModus = m;
+      ['stellen','umwandeln','ordnen'].forEach(x => {
+        document.getElementById(`qm-${x}`).className =
+          `rounded-full px-4 py-1.5 text-xs font-semibold transition-colors ` +
+          (x === m ? 'bg-emerald-400 text-slate-950' : 'bg-slate-700 text-slate-300 hover:bg-slate-600');
+      });
+      newQuizAufgabe();
+    }
+
+    function newQuizAufgabe() {
+      document.getElementById('quiz-feedback').textContent = '';
+
+      /* Zufällige Dezimalzahl mit 1–3 Nachkommastellen */
+      const nachLen = Math.floor(Math.random() * 3) + 1;
+      const zahl    = parseFloat((Math.random() * 99 + 1).toFixed(nachLen));
+      const dezStr  = zahl.toFixed(nachLen).replace('.', ',');
+
+      if (quizModus === 'stellen') {
+        /* Welche Ziffer steht auf der X-Stelle? */
+        const stellen = ['Zehntel','Hundertstel','Tausendstel'];
+        const idx     = Math.floor(Math.random() * Math.min(nachLen, stellen.length));
+        const name    = stellen[idx];
+        const nachStr = zahl.toFixed(nachLen).split('.')[1];
+        const richtig = nachStr[idx];
+
+        document.getElementById('quiz-aufgabe').textContent =
+          `Welche Ziffer steht auf der ${name}-Stelle von ${dezStr}?`;
+        document.getElementById('quiz-hinweis').textContent =
+          'Zähle die Stellen nach dem Komma: 1. Zehntel, 2. Hundertstel, …';
+
+        const opts = new Set([richtig]);
+        while (opts.size < 4) opts.add(String(Math.floor(Math.random()*10)));
+        renderQuizButtons([...opts], richtig);
+
+      } else if (quizModus === 'umwandeln') {
+        /* Dezimalzahl → Bruch (nur 1 Nachkommastelle für Klasse 6) */
+        const z1 = Math.floor(Math.random() * 9) + 1;
+        const wahl = [
+          { label:`${z1}/10`,  wert: z1/10  },
+          { label:`${z1}/100`, wert: z1/100 },
+          { label:`${z1+1}/10`,wert:(z1+1)/10},
+          { label:`${z1}/5`,   wert: z1/5   },
+        ];
+        const richtigesObjekt = wahl[0];
+        const dezAnzeige = (z1/10).toFixed(1).replace('.',',');
+
+        document.getElementById('quiz-aufgabe').textContent =
+          `Welcher Bruch entspricht ${dezAnzeige}?`;
+        document.getElementById('quiz-hinweis').textContent =
+          '1 Nachkommastelle = Zehntel (÷10)';
+
+        /* Optionen mischen */
+        for (let i = wahl.length-1; i>0; i--) {
+          const j = Math.floor(Math.random()*(i+1));
+          [wahl[i],wahl[j]]=[wahl[j],wahl[i]];
+        }
+        renderQuizButtons(wahl.map(w=>w.label), richtigesObjekt.label);
+
+      } else {
+        /* Ordnen: Welche Zahl ist am größten? */
+        const zahlen = Array.from({length:4}, () =>
+          parseFloat((Math.random()*9+1).toFixed(2)));
+        const richtig = Math.max(...zahlen).toFixed(2).replace('.',',');
+        const opts    = zahlen.map(z => z.toFixed(2).replace('.',','));
+
+        document.getElementById('quiz-aufgabe').textContent =
+          `Welche Dezimalzahl ist am größten?`;
+        document.getElementById('quiz-hinweis').textContent =
+          'Vergleiche zuerst die Vorkommastellen, dann die Nachkommastellen.';
+
+        renderQuizButtons(opts, richtig);
+      }
+    }
+
+    function renderQuizButtons(opts, richtig) {
+      for (let i = opts.length-1; i>0; i--) {
+        const j = Math.floor(Math.random()*(i+1));
+        [opts[i],opts[j]]=[opts[j],opts[i]];
+      }
+      document.getElementById('quiz-buttons').innerHTML = opts.map(v =>
+        `<button class="btn-answer rounded-2xl border border-slate-700 bg-slate-800 px-4 py-4
+                        text-xl font-bold text-slate-100 hover:border-emerald-400/50 transition-colors"
+                 onclick="checkQuiz('${v}','${richtig}')">${v}</button>`
+      ).join('');
+    }
+
+    function checkQuiz(gewählt, richtig) {
+      quizGesamt++;
+      document.querySelectorAll('#quiz-buttons .btn-answer').forEach(btn => {
+        btn.disabled = true;
+        const m = btn.getAttribute('onclick').match(/checkQuiz\('([^']+)'/);
+        if (!m) return;
+        if (m[1] === richtig)      btn.classList.add('btn-correct');
+        else if (m[1] === gewählt) btn.classList.add('btn-wrong');
+      });
+      const fb = document.getElementById('quiz-feedback');
+      if (gewählt === richtig) {
+        quizRichtig++;
+        fb.textContent = '✓ Richtig!';
+        fb.className   = 'text-center text-base font-semibold min-h-[1.5em] mb-4 text-emerald-400';
+      } else {
+        fb.textContent = `✗ Leider falsch. Richtig: ${richtig}`;
+        fb.className   = 'text-center text-base font-semibold min-h-[1.5em] mb-4 text-red-400';
+      }
+      document.getElementById('quiz-score').textContent = `${quizRichtig} / ${quizGesamt}`;
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       SACHAUFGABEN
+    ════════════════════════════════════════════════════════════ */
+    const SACHAUFGABEN = [
+      { kontext:'🛒 Einkaufen', frage:'Ein Stift kostet 1,35 € und ein Heft 0,90 €. Was kosten beide zusammen?', antwort:'2,25', einheit:'€', hinweis:'1,35 + 0,90 = 2,25 €' },
+      { kontext:'📏 Messen',   frage:'Ein Tisch ist 1,8 m lang. Schreibe die Länge als Bruch (Zähler/Nenner, vollständig gekürzt).', antwort:'9/5', einheit:'m', hinweis:'1,8 = 18/10 → kürzen ÷ 2 = 9/5' },
+      { kontext:'🌡️ Temperatur', frage:'Am Morgen waren es −3,5 °C, mittags +8,2 °C. Um wie viel Grad ist die Temperatur gestiegen?', antwort:'11,7', einheit:'°C', hinweis:'8,2 − (−3,5) = 8,2 + 3,5 = 11,7 °C' },
+      { kontext:'🏃 Sport',    frage:'Lena läuft 2,4 km, Tom läuft 1,75 km. Wie viel km laufen beide zusammen?', antwort:'4,15', einheit:'km', hinweis:'2,4 + 1,75 → Kommas untereinander: 4,15 km' },
+      { kontext:'💰 Sparen',   frage:'Von 10 € gibt Max 3,60 € aus. Wie viel hat er noch übrig?', antwort:'6,40', einheit:'€', hinweis:'10,00 − 3,60 = 6,40 €' },
+    ];
+
+    let sachIdx=0, sachRichtig=0, sachGesamt=0;
+
+    function renderSachDots() {
+      document.getElementById('sach-dots').innerHTML =
+        SACHAUFGABEN.map((_,i)=>{
+          let c='sach-dot';
+          if(i<sachIdx) c+=' done'; else if(i===sachIdx) c+=' current';
+          return `<span class="${c}"></span>`;
+        }).join('');
+    }
+
+    function showSachAufgabe() {
+      if (sachIdx >= SACHAUFGABEN.length) {
+        document.getElementById('sach-karte').innerHTML =
+          `<p class="text-center text-emerald-300 text-lg font-semibold py-6">🎉 Alle gelöst! ${sachRichtig} von ${SACHAUFGABEN.length} richtig.</p>`;
+        document.getElementById('sach-check-btn').classList.add('hidden');
+        document.getElementById('sach-next-btn').classList.add('hidden');
+        return;
+      }
+      const a = SACHAUFGABEN[sachIdx];
+      document.getElementById('sach-kontext').textContent  = a.kontext;
+      document.getElementById('sach-frage').textContent    = a.frage;
+      document.getElementById('sach-einheit').textContent  = a.einheit;
+      document.getElementById('sach-input').value          = '';
+      document.getElementById('sach-input').disabled       = false;
+      document.getElementById('sach-feedback').textContent = '';
+      document.getElementById('sach-check-btn').classList.remove('hidden');
+      document.getElementById('sach-next-btn').classList.add('hidden');
+      const k=document.getElementById('sach-karte');
+      k.classList.remove('anim-fadein'); void k.offsetWidth; k.classList.add('anim-fadein');
+      renderSachDots();
+    }
+
+    function checkSach() {
+      /* Komma und Punkt beide akzeptieren */
+      const eingabe = document.getElementById('sach-input').value.trim().replace('.',',');
+      const richtig = SACHAUFGABEN[sachIdx].antwort;
+      sachGesamt++;
+      document.getElementById('sach-input').disabled = true;
+      document.getElementById('sach-check-btn').classList.add('hidden');
+      document.getElementById('sach-next-btn').classList.remove('hidden');
+      const fb = document.getElementById('sach-feedback');
+      if (eingabe === richtig) {
+        sachRichtig++;
+        fb.textContent = '✓ Richtig!';
+        fb.className   = 'text-center text-base font-semibold min-h-[1.5em] mb-4 text-emerald-400';
+      } else {
+        fb.textContent = `✗ Leider falsch. ${SACHAUFGABEN[sachIdx].hinweis}`;
+        fb.className   = 'text-center text-base font-semibold min-h-[1.5em] mb-4 text-red-400';
+      }
+      document.getElementById('sach-score').textContent = `${sachRichtig} / ${sachGesamt}`;
+    }
+
+    function nextSachAufgabe() { sachIdx++; showSachAufgabe(); }
+
+    function init() {
+      updateDez();
+      newQuizAufgabe();
+      showSachAufgabe();
+    }
+  </script>
+</body>
+</html>

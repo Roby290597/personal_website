@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Brüche verstehen – Klasse 6 | MathAcademy</title>
+
+  <link rel="icon"             href="../../favicon.ico" />
+  <link rel="apple-touch-icon" href="../../apple-touch-icon.png" />
+  <link rel="manifest"         href="../../site.webmanifest" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../../assets/css/style.css?v=1.0" />
+
+  <style>
+    /* ── Animationen ───────────────────────────────────────────── */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0);    }
+    }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0);     }
+      20%       { transform: translateX(-8px); }
+      40%       { transform: translateX( 8px); }
+      60%       { transform: translateX(-5px); }
+      80%       { transform: translateX( 5px); }
+    }
+    .anim-fadein { animation: fadeInUp 0.35s ease both; }
+    .anim-shake  { animation: shake   0.4s  ease;      }
+
+    /* ── Bruch-Darstellung ─────────────────────────────────────── */
+    /*
+     * Ein Bruch wird als vertikaler Stack dargestellt:
+     *   Zähler
+     *   ─────
+     *   Nenner
+     * inline-flex + flex-col ermöglicht diese Anordnung.
+     */
+    .bruch {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      font-weight: 700;
+      line-height: 1.1;
+      margin: 0 0.3rem;
+    }
+    /* Der Bruchstrich als oberer Rahmen des Nenners */
+    .bruch .nenner {
+      border-top: 2px solid currentColor;
+      padding-top: 2px;
+    }
+
+    /* ── SVG-Tortendiagramm ────────────────────────────────────── */
+    /*
+     * Das SVG zeigt den Bruch als Torte:
+     * grüne Sektoren = Zähler, graue Sektoren = Rest.
+     * transition für weiche Übergänge beim Slider-Bewegen.
+     */
+    .sektor-aktiv  { fill: #34d399; transition: d 0.2s; } /* emerald-400 */
+    .sektor-inaktiv{ fill: #1e293b; transition: d 0.2s; } /* slate-800   */
+
+    /* ── Quiz ──────────────────────────────────────────────────── */
+    .btn-answer:hover:not(:disabled) { filter: brightness(1.15); }
+    .btn-answer:disabled { opacity: 0.55; cursor: not-allowed; }
+    .btn-correct { background-color: #059669 !important; border-color: #34d399 !important; color: #fff !important; }
+    .btn-wrong   { background-color: #dc2626 !important; border-color: #f87171 !important; color: #fff !important; }
+
+    /* ── Sachaufgaben-Dots ─────────────────────────────────────── */
+    .sach-dot { width:10px; height:10px; border-radius:50%; background-color:#334155; transition:background-color 0.2s; }
+    .sach-dot.done    { background-color: #34d399; }
+    .sach-dot.current { background-color: #6ee7b7; box-shadow: 0 0 0 3px rgba(52,211,153,0.25); }
+
+    /* ── Eingabefelder ─────────────────────────────────────────── */
+    .antwort-input:focus { outline:none; border-color:#34d399; box-shadow:0 0 0 3px rgba(52,211,153,0.2); }
+
+    /* ── Slider ────────────────────────────────────────────────── */
+    input[type=range] { accent-color: #34d399; }
+  </style>
+</head>
+
+<body class="bg-slate-950 text-slate-100 min-h-screen">
+  <div id="topbar-container"></div>
+
+  <main class="max-w-4xl mx-auto px-4 pb-16 pt-6">
+
+    <a href="/academy.html"
+       class="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-emerald-300 transition-colors mb-6">
+      ← Zurück zur Akademie
+    </a>
+
+    <div class="mb-10">
+      <span class="text-xs font-semibold uppercase tracking-widest text-emerald-400 mb-2 block">Klasse 6 · Aufbau</span>
+      <h1 class="text-3xl sm:text-4xl font-bold mb-3">Brüche verstehen</h1>
+      <p class="text-slate-400 text-base max-w-xl">
+        Brüche kürzen, erweitern und vergleichen – mit dem interaktiven
+        Bruch-Visualisierer, einem Quiz und Sachaufgaben.
+      </p>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════
+         ABSCHNITT 1: BRUCH-VISUALISIERER
+         Ziel: Schüler stellen Zähler und Nenner per Slider
+               ein und sehen den Bruch als Torte und als
+               gekürzten Bruch.
+    ════════════════════════════════════════════════════ -->
+    <section class="mb-14" aria-labelledby="vis-title">
+      <div class="flex items-center gap-3 mb-6">
+        <span class="w-8 h-8 rounded-full bg-emerald-400 text-slate-950 text-sm font-bold flex items-center justify-center flex-shrink-0">1</span>
+        <h2 id="vis-title" class="text-xl font-semibold">Bruch-Visualisierer</h2>
+      </div>
+      <p class="text-slate-400 text-sm mb-5">
+        Stelle Zähler und Nenner ein – sieh den Bruch als Torte, als Dezimalzahl und in gekürzter Form.
+      </p>
+
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 items-center">
+
+          <!-- Linke Spalte: Slider + Infos -->
+          <div class="space-y-6">
+
+            <!-- Zähler-Slider -->
+            <div>
+              <label class="flex justify-between text-sm font-medium text-slate-300 mb-2">
+                <span>Zähler (z)</span>
+                <span id="label-z" class="text-emerald-300 font-bold">3</span>
+              </label>
+              <input id="slider-z" type="range" min="1" max="12" value="3"
+                     class="w-full h-2 rounded-full bg-slate-700 appearance-none cursor-pointer"
+                     oninput="updateVis()" />
+            </div>
+
+            <!-- Nenner-Slider -->
+            <div>
+              <label class="flex justify-between text-sm font-medium text-slate-300 mb-2">
+                <span>Nenner (n)</span>
+                <span id="label-n" class="text-emerald-300 font-bold">4</span>
+              </label>
+              <input id="slider-n" type="range" min="1" max="12" value="4"
+                     class="w-full h-2 rounded-full bg-slate-700 appearance-none cursor-pointer"
+                     oninput="updateVis()" />
+            </div>
+
+            <!-- Info-Box: Bruch, Dezimal, gekürzt -->
+            <div class="rounded-2xl border border-slate-700/50 bg-slate-800/40 p-4 space-y-3">
+              <!-- Großer Bruch als z/n Darstellung -->
+              <div class="flex items-center gap-4">
+                <span class="text-slate-500 text-sm w-20">Bruch:</span>
+                <span id="info-bruch" class="text-2xl font-bold text-slate-100"></span>
+              </div>
+              <!-- Dezimalwert mit 4 Nachkommastellen -->
+              <div class="flex items-center gap-4">
+                <span class="text-slate-500 text-sm w-20">Dezimal:</span>
+                <span id="info-dez" class="text-lg font-semibold text-emerald-300"></span>
+              </div>
+              <!-- Gekürzter Bruch (falls kürzbar) -->
+              <div class="flex items-center gap-4">
+                <span class="text-slate-500 text-sm w-20">Gekürzt:</span>
+                <span id="info-gekuerzt" class="text-lg font-semibold text-slate-200"></span>
+              </div>
+              <!-- Bruchtyp: echter / unechter / ganzer -->
+              <div class="flex items-center gap-4">
+                <span class="text-slate-500 text-sm w-20">Typ:</span>
+                <span id="info-typ" class="text-sm font-medium text-slate-300"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Rechte Spalte: Tortendiagramm als SVG -->
+          <!--
+            Das Tortendiagramm wird durch drawTorte() gezeichnet.
+            Jeder Sektor entspricht einem Teil (1/n) der Torte.
+            Sektoren bis Zähler = grün, Rest = grau.
+          -->
+          <div class="flex flex-col items-center gap-3">
+            <svg id="torte-svg" viewBox="0 0 200 200"
+                 xmlns="http://www.w3.org/2000/svg"
+                 class="w-48 h-48" aria-label="Bruch als Tortendiagramm">
+              <g id="torte-g"></g>
+            </svg>
+            <p class="text-xs text-slate-500">Grün = Zähler · Grau = Rest</p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════
+         ABSCHNITT 2: QUIZ
+    ════════════════════════════════════════════════════ -->
+    <section class="mb-14" aria-labelledby="quiz-title">
+      <div class="flex items-center gap-3 mb-6">
+        <span class="w-8 h-8 rounded-full bg-emerald-400 text-slate-950 text-sm font-bold flex items-center justify-center flex-shrink-0">2</span>
+        <h2 id="quiz-title" class="text-xl font-semibold">Quiz – Brüche kürzen &amp; vergleichen</h2>
+      </div>
+
+      <!-- Quiz-Modus Buttons -->
+      <div class="flex gap-2 mb-5">
+        <button id="qm-kuerzen"  onclick="setQuizModus('kuerzen')"
+                class="rounded-full px-4 py-1.5 text-xs font-semibold bg-emerald-400 text-slate-950 transition-colors">Kürzen</button>
+        <button id="qm-erweitern" onclick="setQuizModus('erweitern')"
+                class="rounded-full px-4 py-1.5 text-xs font-semibold bg-slate-700 text-slate-300 hover:bg-slate-600 transition-colors">Erweitern</button>
+        <button id="qm-vergleich" onclick="setQuizModus('vergleich')"
+                class="rounded-full px-4 py-1.5 text-xs font-semibold bg-slate-700 text-slate-300 hover:bg-slate-600 transition-colors">Vergleichen</button>
+      </div>
+
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+        <div class="flex justify-end mb-4">
+          <span class="text-sm font-semibold text-slate-500">Punkte:&nbsp;<span id="quiz-score" class="text-emerald-300">0 / 0</span></span>
+        </div>
+
+        <div id="quiz-karte" class="mb-6 text-center anim-fadein">
+          <p id="quiz-aufgabe" class="text-2xl font-bold text-slate-100 mb-2 leading-relaxed"></p>
+          <p id="quiz-hinweis" class="text-sm text-slate-500"></p>
+        </div>
+
+        <div id="quiz-buttons" class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5"></div>
+
+        <p id="quiz-feedback" class="text-center text-base font-semibold min-h-[1.5em] mb-4" aria-live="polite"></p>
+
+        <div class="flex justify-center">
+          <button onclick="newQuizAufgabe()"
+                  class="rounded-full border border-slate-700 text-slate-300 font-semibold px-6 py-2.5 text-sm hover:border-emerald-400/50 transition-colors">
+            Neue Aufgabe
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════
+         ABSCHNITT 3: SACHAUFGABEN
+    ════════════════════════════════════════════════════ -->
+    <section class="mb-14" aria-labelledby="sach-title">
+      <div class="flex items-center gap-3 mb-6">
+        <span class="w-8 h-8 rounded-full bg-emerald-400 text-slate-950 text-sm font-bold flex items-center justify-center flex-shrink-0">3</span>
+        <h2 id="sach-title" class="text-xl font-semibold">Sachaufgaben</h2>
+      </div>
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+        <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
+          <div class="flex gap-2 items-center" id="sach-dots"></div>
+          <span class="text-sm font-semibold text-slate-500">Punkte:&nbsp;<span id="sach-score" class="text-emerald-300">0 / 0</span></span>
+        </div>
+        <div id="sach-karte" class="mb-5 anim-fadein">
+          <p id="sach-kontext" class="text-xs font-semibold uppercase tracking-widest text-emerald-400/70 mb-2"></p>
+          <p id="sach-frage"   class="text-lg font-semibold text-slate-200 mb-5 leading-relaxed"></p>
+          <div class="flex items-center gap-3 flex-wrap">
+            <input id="sach-input" type="text" inputmode="decimal" placeholder="Zähler/Nenner oder Zahl"
+                   class="antwort-input w-44 rounded-2xl border border-slate-700 bg-slate-800 px-4 py-3 text-slate-100 text-lg font-bold transition-colors"
+                   onkeydown="if(event.key==='Enter') checkSach()" />
+            <span id="sach-einheit" class="text-base font-semibold text-emerald-300"></span>
+          </div>
+        </div>
+        <p id="sach-feedback" class="text-center text-base font-semibold min-h-[1.5em] mb-4" aria-live="polite"></p>
+        <div class="flex gap-3 justify-center flex-wrap">
+          <button id="sach-check-btn" onclick="checkSach()"
+                  class="rounded-full bg-emerald-400 text-slate-950 font-semibold px-6 py-2.5 text-sm hover:bg-emerald-300 transition-colors">Prüfen</button>
+          <button id="sach-next-btn"  onclick="nextSachAufgabe()"
+                  class="hidden rounded-full border border-slate-700 text-slate-300 font-semibold px-6 py-2.5 text-sm hover:border-emerald-400/50 transition-colors">Nächste Aufgabe →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════
+         MERKHILFE
+    ════════════════════════════════════════════════════ -->
+    <section aria-labelledby="theorie-title" class="mb-10">
+      <h2 id="theorie-title" class="text-sm font-semibold text-slate-300 mb-4 uppercase tracking-wide">Merkhilfe – Brüche</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-5">
+          <h3 class="font-semibold text-emerald-300 mb-3 text-sm">✂️ Kürzen</h3>
+          <p class="text-slate-400 text-sm leading-relaxed">
+            Zähler und Nenner durch ihren <span class="text-slate-200 font-medium">ggT</span> teilen.<br>
+            <span class="text-xs text-slate-500">6/8 ÷ 2 = <span class="text-emerald-300">3/4</span></span>
+          </p>
+        </div>
+        <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-5">
+          <h3 class="font-semibold text-emerald-300 mb-3 text-sm">✖️ Erweitern</h3>
+          <p class="text-slate-400 text-sm leading-relaxed">
+            Zähler und Nenner mit derselben Zahl <span class="text-slate-200 font-medium">multiplizieren</span>.<br>
+            <span class="text-xs text-slate-500">3/4 × 3 = <span class="text-emerald-300">9/12</span></span>
+          </p>
+        </div>
+        <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-5">
+          <h3 class="font-semibold text-emerald-300 mb-3 text-sm">⚖️ Vergleichen</h3>
+          <p class="text-slate-400 text-sm leading-relaxed">
+            Auf <span class="text-slate-200 font-medium">gleichen Nenner</span> bringen (kgV), dann Zähler vergleichen.<br>
+            <span class="text-xs text-slate-500">1/3 vs 1/4 → 4/12 vs 3/12 → <span class="text-emerald-300">1/3 &gt; 1/4</span></span>
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <footer class="py-6 text-center text-xs text-slate-500">© <span id="y"></span> Brandon Hank · Düsseldorf</footer>
+  </main>
+
+  <script>
+    window.__i18nBase = '../../';
+    fetch('../../topbar.html')
+      .then(r => r.text())
+      .then(html => {
+        document.getElementById('topbar-container').innerHTML = html;
+        const s = document.createElement('script');
+        s.src = '../../assets/js/script.js';
+        s.onload = init;
+        document.body.appendChild(s);
+      });
+
+    /* ══════════════════════════════════════════════════════════
+       HILFSFUNKTIONEN – Zahlentheorie
+    ══════════════════════════════════════════════════════════ */
+
+    /*
+     * ggT(a, b) – Größter gemeinsamer Teiler (Euklidischer Algorithmus)
+     * Wird zum Kürzen von Brüchen verwendet.
+     * Beispiel: ggT(6, 8) = 2
+     */
+    function ggT(a, b) { return b === 0 ? a : ggT(b, a % b); }
+
+    /*
+     * kgV(a, b) – Kleinstes gemeinsames Vielfaches
+     * Wird zum Vergleichen von Brüchen (gemeinsamer Nenner) verwendet.
+     * Formel: kgV = a * b / ggT(a, b)
+     */
+    function kgV(a, b) { return (a * b) / ggT(a, b); }
+
+    /*
+     * kuerze(z, n) – Gibt gekürzten Bruch als [z, n] zurück
+     */
+    function kuerze(z, n) {
+      const g = ggT(z, n);
+      return [z / g, n / g];
+    }
+
+    /* ══════════════════════════════════════════════════════════
+       ABSCHNITT 1 – VISUALISIERER
+    ══════════════════════════════════════════════════════════ */
+
+    /*
+     * updateVis()
+     * Liest Slider-Werte, berechnet alle Infos und zeichnet die Torte neu.
+     */
+    function updateVis() {
+      const z = parseInt(document.getElementById('slider-z').value);
+      const n = parseInt(document.getElementById('slider-n').value);
+
+      document.getElementById('label-z').textContent = z;
+      document.getElementById('label-n').textContent = n;
+
+      /* ── Bruch anzeigen ────────────────────────────────────── */
+      document.getElementById('info-bruch').innerHTML =
+        `<span class="bruch"><span>${z}</span><span class="nenner">${n}</span></span>`;
+
+      /* ── Dezimalwert ────────────────────────────────────────── */
+      document.getElementById('info-dez').textContent =
+        (z / n).toFixed(4).replace('.', ',');
+
+      /* ── Gekürzter Bruch ────────────────────────────────────── */
+      const [kz, kn] = kuerze(z, n);
+      document.getElementById('info-gekuerzt').innerHTML =
+        kz === z && kn === n
+          ? '<span class="text-slate-500">bereits vollständig gekürzt</span>'
+          : `<span class="bruch"><span>${kz}</span><span class="nenner">${kn}</span></span>`;
+
+      /* ── Bruchtyp ────────────────────────────────────────────── */
+      const typ = z < n ? 'Echter Bruch (z &lt; n)'
+                : z === n ? 'Ganzer (z = n = 1)'
+                : `Unechter Bruch (z &gt; n) = ${Math.floor(z/n)} Rest ${z%n}/${n}`;
+      document.getElementById('info-typ').innerHTML = typ;
+
+      drawTorte(z, n);
+    }
+
+    /*
+     * drawTorte(z, n)
+     * Zeichnet ein Tortendiagramm mit n gleich großen Sektoren.
+     * Die ersten z Sektoren werden grün eingefärbt.
+     *
+     * SVG-Kreissektor-Formel:
+     *   Mittelpunkt: (100, 100), Radius: 85
+     *   Winkel pro Sektor: 360° / n
+     *   Startwinkel: -90° (Torte beginnt oben)
+     *
+     *   Endpunkt eines Sektors auf dem Kreis:
+     *     x = cx + r * cos(winkel)
+     *     y = cy + r * sin(winkel)
+     *
+     *   SVG "arc" Befehl:
+     *     A rx ry x-rotation large-arc-flag sweep-flag x y
+     *     large-arc-flag = 1 wenn Sektor > 180°, sonst 0
+     *
+     * @param z  Zähler
+     * @param n  Nenner
+     */
+    function drawTorte(z, n) {
+      const cx = 100, cy = 100, r = 85;
+      const g  = document.getElementById('torte-g');
+      let html = '';
+
+      /* Wenn n = 1: ganzer Kreis → Sonderfall (Arc-Befehl funktioniert nicht für 360°) */
+      if (n === 1) {
+        html = `<circle cx="${cx}" cy="${cy}" r="${r}"
+                        class="${z >= 1 ? 'sektor-aktiv' : 'sektor-inaktiv'}" />`;
+        g.innerHTML = html;
+        return;
+      }
+
+      const winkelProSektor = (2 * Math.PI) / n;
+      const startOffset     = -Math.PI / 2; /* -90° → oben beginnen */
+
+      for (let i = 0; i < n; i++) {
+        const startWinkel = startOffset + i * winkelProSektor;
+        const endWinkel   = startOffset + (i + 1) * winkelProSektor;
+
+        /* Endpunkte auf dem Kreisrand */
+        const x1 = cx + r * Math.cos(startWinkel);
+        const y1 = cy + r * Math.sin(startWinkel);
+        const x2 = cx + r * Math.cos(endWinkel);
+        const y2 = cy + r * Math.sin(endWinkel);
+
+        /* large-arc-flag: 1 wenn Sektor-Winkel > 180° */
+        const largeArc = winkelProSektor > Math.PI ? 1 : 0;
+
+        /* SVG Path: Linie zur Kreiskante, Bogen, zurück zum Mittelpunkt */
+        const d = `M ${cx},${cy} L ${x1},${y1} A ${r},${r} 0 ${largeArc} 1 ${x2},${y2} Z`;
+
+        const cls = i < z ? 'sektor-aktiv' : 'sektor-inaktiv';
+        /* Kleiner Spalt zwischen Sektoren durch stroke */
+        html += `<path d="${d}" class="${cls}" stroke="#020617" stroke-width="1.5" />`;
+      }
+
+      g.innerHTML = html;
+    }
+
+    /* ══════════════════════════════════════════════════════════
+       ABSCHNITT 2 – QUIZ
+    ══════════════════════════════════════════════════════════ */
+
+    let quizModus   = 'kuerzen'; /* 'kuerzen' | 'erweitern' | 'vergleich' */
+    let quizRichtig = 0;
+    let quizGesamt  = 0;
+    let quizAktuell = {};
+
+    /*
+     * setQuizModus(modus) – Wechselt den Modus und lädt neue Aufgabe
+     */
+    function setQuizModus(modus) {
+      quizModus = modus;
+      ['kuerzen','erweitern','vergleich'].forEach(m => {
+        const btn = document.getElementById(`qm-${m}`);
+        btn.className = `rounded-full px-4 py-1.5 text-xs font-semibold transition-colors ` +
+          (m === modus ? 'bg-emerald-400 text-slate-950' : 'bg-slate-700 text-slate-300 hover:bg-slate-600');
+      });
+      newQuizAufgabe();
+    }
+
+    /*
+     * newQuizAufgabe() – Erzeugt eine neue Aufgabe je nach Modus
+     */
+    function newQuizAufgabe() {
+      document.getElementById('quiz-feedback').textContent = '';
+
+      if (quizModus === 'kuerzen') {
+        /* Zufälligen Bruch erzeugen der sich kürzen lässt */
+        const faktor = Math.floor(Math.random() * 4) + 2; /* 2–5 */
+        const kz     = Math.floor(Math.random() * 5) + 1;
+        const kn     = Math.floor(Math.random() * 5) + 2;
+        const z      = kz * faktor;
+        const n      = kn * faktor;
+        quizAktuell  = { z, n, richtig: `${kz}/${kn}` };
+
+        document.getElementById('quiz-aufgabe').innerHTML =
+          `Kürze: <span class="bruch"><span>${z}</span><span class="nenner">${n}</span></span>`;
+        document.getElementById('quiz-hinweis').textContent = 'Gib den vollständig gekürzten Bruch an.';
+
+        /* 4 Optionen: richtig + 3 falsche */
+        const opts = [`${kz}/${kn}`, `${kz+1}/${kn}`, `${kz}/${kn+1}`, `${z}/${n-faktor}`];
+        renderQuizButtons(opts, `${kz}/${kn}`);
+
+      } else if (quizModus === 'erweitern') {
+        /* Bruch erweitern mit zufälligem Faktor */
+        const z      = Math.floor(Math.random() * 5) + 1;
+        const n      = Math.floor(Math.random() * 5) + 2;
+        const f      = Math.floor(Math.random() * 4) + 2; /* Faktor 2–5 */
+        quizAktuell  = { z, n, f, richtig: `${z*f}/${n*f}` };
+
+        document.getElementById('quiz-aufgabe').innerHTML =
+          `Erweitere mit ${f}: <span class="bruch"><span>${z}</span><span class="nenner">${n}</span></span>`;
+        document.getElementById('quiz-hinweis').textContent =
+          `Multipliziere Zähler und Nenner mit ${f}.`;
+
+        const opts = [`${z*f}/${n*f}`, `${z+f}/${n+f}`, `${z*f}/${n}`, `${z}/${n*f}`];
+        renderQuizButtons(opts, `${z*f}/${n*f}`);
+
+      } else {
+        /* Vergleich: Welcher Bruch ist größer? */
+        const n1 = Math.floor(Math.random() * 6) + 2;
+        const n2 = Math.floor(Math.random() * 6) + 2;
+        const z1 = Math.floor(Math.random() * (n1-1)) + 1;
+        const z2 = Math.floor(Math.random() * (n2-1)) + 1;
+        const richtig = (z1/n1) > (z2/n2) ? `${z1}/${n1}` : `${z2}/${n2}`;
+        quizAktuell  = { richtig };
+
+        document.getElementById('quiz-aufgabe').innerHTML =
+          `Welcher Bruch ist größer?&nbsp;&nbsp;` +
+          `<span class="bruch text-2xl"><span>${z1}</span><span class="nenner">${n1}</span></span>` +
+          `&nbsp;oder&nbsp;` +
+          `<span class="bruch text-2xl"><span>${z2}</span><span class="nenner">${n2}</span></span>`;
+        document.getElementById('quiz-hinweis').textContent =
+          'Tipp: Auf gleichen Nenner bringen und Zähler vergleichen.';
+
+        renderQuizButtons([`${z1}/${n1}`, `${z2}/${n2}`], richtig);
+      }
+    }
+
+    /*
+     * renderQuizButtons(optionen, richtig)
+     * Baut Antwort-Buttons. optionen wird gemischt.
+     */
+    function renderQuizButtons(optionen, richtig) {
+      /* Fisher-Yates mischen */
+      for (let i = optionen.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [optionen[i], optionen[j]] = [optionen[j], optionen[i]];
+      }
+      document.getElementById('quiz-buttons').innerHTML = optionen.map(v => {
+        /* Bruch-Darstellung für den Button (z/n → HTML bruch) */
+        const parts = v.split('/');
+        const label = parts.length === 2
+          ? `<span class="bruch text-xl"><span>${parts[0]}</span><span class="nenner">${parts[1]}</span></span>`
+          : v;
+        return `<button class="btn-answer rounded-2xl border border-slate-700 bg-slate-800 px-4 py-5
+                                text-slate-100 hover:border-emerald-400/50 transition-colors"
+                         onclick="checkQuiz('${v}','${richtig}')">${label}</button>`;
+      }).join('');
+    }
+
+    function checkQuiz(gewählt, richtig) {
+      quizGesamt++;
+      document.querySelectorAll('#quiz-buttons .btn-answer').forEach(btn => {
+        btn.disabled = true;
+        /* data aus onclick extrahieren */
+        const onclickStr = btn.getAttribute('onclick');
+        const match = onclickStr.match(/checkQuiz\('([^']+)'/);
+        if (!match) return;
+        const wert = match[1];
+        if (wert === richtig)      btn.classList.add('btn-correct');
+        else if (wert === gewählt) btn.classList.add('btn-wrong');
+      });
+      const fb = document.getElementById('quiz-feedback');
+      if (gewählt === richtig) {
+        quizRichtig++;
+        fb.textContent = '✓ Richtig!';
+        fb.className   = 'text-center text-base font-semibold min-h-[1.5em] mb-4 text-emerald-400';
+      } else {
+        fb.textContent = `✗ Leider falsch. Richtig: ${richtig}`;
+        fb.className   = 'text-center text-base font-semibold min-h-[1.5em] mb-4 text-red-400';
+      }
+      document.getElementById('quiz-score').textContent = `${quizRichtig} / ${quizGesamt}`;
+    }
+
+    /* ══════════════════════════════════════════════════════════
+       SACHAUFGABEN
+    ══════════════════════════════════════════════════════════ */
+    const SACHAUFGABEN = [
+      { kontext:'🍕 Pizza', frage:'Eine Pizza wird in 8 gleiche Stücke geteilt. Tom isst 4 Stücke. Welchen gekürzten Bruch hat er gegessen?', antwort:'1/2', einheit:'', hinweis:'4/8 ÷ ggT(4,8)=4 → 1/2' },
+      { kontext:'🏫 Klasse', frage:'In einer Klasse von 30 Schülern sind 18 Mädchen. Welcher vollständig gekürzte Bruch beschreibt den Mädchenanteil?', antwort:'3/5', einheit:'', hinweis:'18/30 ÷ 6 = 3/5' },
+      { kontext:'💧 Flasche', frage:'Eine 3/4 volle Flasche wird auf eine 9/12 volle Flasche aufgefüllt. Sind die Füllmengen gleich? Antworte 1 (ja) oder 0 (nein).', antwort:'1', einheit:'', hinweis:'3/4 = 9/12 → ja, sie sind gleich (1)' },
+      { kontext:'📏 Messen', frage:'Ein Streifen ist 6/10 m lang. Kürze den Bruch vollständig und gib den Zähler ein.', antwort:'3', einheit:'/ 5 m', hinweis:'6/10 ÷ 2 = 3/5 → Zähler ist 3' },
+      { kontext:'🎂 Kuchen', frage:'Ein Kuchen wird in 12 Stücke geteilt. Lea isst 3 Stücke. Welcher Bruch (gekürzt) bleibt übrig?', antwort:'3/4', einheit:'', hinweis:'Übrig: 9/12 ÷ 3 = 3/4' },
+    ];
+
+    let sachIdx = 0, sachRichtig = 0, sachGesamt = 0;
+
+    function renderSachDots() {
+      document.getElementById('sach-dots').innerHTML =
+        SACHAUFGABEN.map((_,i) => {
+          let c = 'sach-dot';
+          if (i < sachIdx) c += ' done';
+          else if (i === sachIdx) c += ' current';
+          return `<span class="${c}"></span>`;
+        }).join('');
+    }
+
+    function showSachAufgabe() {
+      if (sachIdx >= SACHAUFGABEN.length) {
+        document.getElementById('sach-karte').innerHTML =
+          `<p class="text-center text-emerald-300 text-lg font-semibold py-6">🎉 Alle gelöst! ${sachRichtig} von ${SACHAUFGABEN.length} richtig.</p>`;
+        document.getElementById('sach-check-btn').classList.add('hidden');
+        document.getElementById('sach-next-btn').classList.add('hidden');
+        return;
+      }
+      const a = SACHAUFGABEN[sachIdx];
+      document.getElementById('sach-kontext').textContent  = a.kontext;
+      document.getElementById('sach-frage').textContent    = a.frage;
+      document.getElementById('sach-einheit').textContent  = a.einheit;
+      document.getElementById('sach-input').value          = '';
+      document.getElementById('sach-input').disabled       = false;
+      document.getElementById('sach-feedback').textContent = '';
+      document.getElementById('sach-check-btn').classList.remove('hidden');
+      document.getElementById('sach-next-btn').classList.add('hidden');
+      const k = document.getElementById('sach-karte');
+      k.classList.remove('anim-fadein'); void k.offsetWidth; k.classList.add('anim-fadein');
+      renderSachDots();
+    }
+
+    function checkSach() {
+      const eingabe = document.getElementById('sach-input').value.trim();
+      sachGesamt++;
+      document.getElementById('sach-input').disabled = true;
+      document.getElementById('sach-check-btn').classList.add('hidden');
+      document.getElementById('sach-next-btn').classList.remove('hidden');
+      const fb = document.getElementById('sach-feedback');
+      if (eingabe === SACHAUFGABEN[sachIdx].antwort) {
+        sachRichtig++;
+        fb.textContent = '✓ Richtig!';
+        fb.className   = 'text-center text-base font-semibold min-h-[1.5em] mb-4 text-emerald-400';
+      } else {
+        fb.textContent = `✗ Leider falsch. ${SACHAUFGABEN[sachIdx].hinweis}`;
+        fb.className   = 'text-center text-base font-semibold min-h-[1.5em] mb-4 text-red-400';
+      }
+      document.getElementById('sach-score').textContent = `${sachRichtig} / ${sachGesamt}`;
+    }
+
+    function nextSachAufgabe() { sachIdx++; showSachAufgabe(); }
+
+    function init() {
+      updateVis();
+      newQuizAufgabe();
+      showSachAufgabe();
+    }
+  </script>
+</body>
+</html>

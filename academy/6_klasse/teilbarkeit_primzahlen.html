@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Teilbarkeit &amp; Primzahlen – Klasse 6 | MathAcademy</title>
+
+  <link rel="icon"             href="../../favicon.ico" />
+  <link rel="apple-touch-icon" href="../../apple-touch-icon.png" />
+  <link rel="manifest"         href="../../site.webmanifest" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../../assets/css/style.css?v=1.0" />
+
+  <style>
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0);    }
+    }
+    .anim-fadein { animation: fadeInUp 0.35s ease both; }
+
+    /* ── Sieb des Eratosthenes – Zahlen-Grid ───────────────────
+       Jede Zahl 1–100 bekommt eine kleine quadratische Kachel.
+       Die Farbe zeigt den Zustand: durchgestrichen / Primzahl /
+       aktuell markiert.                                        */
+    .sieb-zahl {
+      width: 2rem; height: 2rem;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 6px;
+      font-size: 0.7rem; font-weight: 600;
+      cursor: default;
+      transition: background-color 0.3s, color 0.3s, opacity 0.3s;
+      border: 1px solid #1e293b;  /* slate-800 */
+    }
+    /* Noch nicht bearbeitet: neutral grau */
+    .sieb-zahl.unbearbeitet { background: #1e293b; color: #94a3b8; }
+    /* Durchgestrichen = keine Primzahl */
+    .sieb-zahl.gestrichen   { background: #0f172a; color: #334155; text-decoration: line-through; }
+    /* Primzahl = grün */
+    .sieb-zahl.prim         { background: rgba(52,211,153,0.2); color: #34d399; border-color: #34d399; }
+    /* Aktuell hervorgehobene Primzahl im Animations-Schritt */
+    .sieb-zahl.aktiv        { background: #34d399; color: #0f172a; border-color: #6ee7b7; }
+    /* Die 1 ist weder prim noch zusammengesetzt – besonderer Stil */
+    .sieb-zahl.eins         { background: #1e293b; color: #475569; }
+
+    /* ── Quiz ──────────────────────────────────────────────── */
+    .btn-answer:hover:not(:disabled) { filter: brightness(1.15); }
+    .btn-answer:disabled { opacity: 0.55; cursor: not-allowed; }
+    .btn-correct { background-color:#059669!important; border-color:#34d399!important; color:#fff!important; }
+    .btn-wrong   { background-color:#dc2626!important; border-color:#f87171!important; color:#fff!important; }
+
+    /* ── Sachaufgaben-Dots ─────────────────────────────────── */
+    .sach-dot { width:10px; height:10px; border-radius:50%; background:#334155; transition:background-color 0.2s; }
+    .sach-dot.done    { background:#34d399; }
+    .sach-dot.current { background:#6ee7b7; box-shadow:0 0 0 3px rgba(52,211,153,0.25); }
+
+    .antwort-input:focus { outline:none; border-color:#34d399; box-shadow:0 0 0 3px rgba(52,211,153,0.2); }
+  </style>
+</head>
+
+<body class="bg-slate-950 text-slate-100 min-h-screen">
+  <div id="topbar-container"></div>
+
+  <main class="max-w-4xl mx-auto px-4 pb-16 pt-6">
+
+    <a href="/academy.html"
+       class="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-emerald-300 transition-colors mb-6">
+      ← Zurück zur Akademie
+    </a>
+
+    <div class="mb-10">
+      <span class="text-xs font-semibold uppercase tracking-widest text-emerald-400 mb-2 block">Klasse 6 · Aufbau</span>
+      <h1 class="text-3xl sm:text-4xl font-bold mb-3">Teilbarkeit &amp; Primzahlen</h1>
+      <p class="text-slate-400 text-base max-w-xl">
+        Entdecke Primzahlen mit dem Sieb des Eratosthenes, finde Teiler und
+        berechne ggT und kgV – interaktiv, mit Quiz und Sachaufgaben.
+      </p>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════
+         ABSCHNITT 1: SIEB DES ERATOSTHENES
+         Funktionsprinzip:
+           1. Alle Zahlen 2–100 beginnen als "unbearbeitet"
+           2. Die kleinste ungestrichene Zahl ist eine Primzahl
+           3. Alle Vielfachen dieser Primzahl werden gestrichen
+           4. Wiederholen bis √100 = 10 erreicht
+         Der Schüler steuert das mit dem "Nächster Schritt"-Button.
+    ════════════════════════════════════════════════════ -->
+    <section class="mb-14" aria-labelledby="sieb-title">
+      <div class="flex items-center gap-3 mb-6">
+        <span class="w-8 h-8 rounded-full bg-emerald-400 text-slate-950 text-sm font-bold flex items-center justify-center flex-shrink-0">1</span>
+        <h2 id="sieb-title" class="text-xl font-semibold">Sieb des Eratosthenes</h2>
+      </div>
+      <p class="text-slate-400 text-sm mb-5">
+        Klicke auf „Nächster Schritt" um zu sehen wie das Sieb Primzahlen von zusammengesetzten Zahlen trennt.
+        Grün = Primzahl · Durchgestrichen = kein Prim.
+      </p>
+
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+
+        <!-- Status-Zeile: aktuell bearbeitete Primzahl -->
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+          <p id="sieb-status" class="text-sm text-slate-400 font-medium">
+            Drücke „Start" um das Sieb zu beginnen.
+          </p>
+          <div class="flex gap-2">
+            <button onclick="siebStart()"
+                    class="rounded-full bg-emerald-400 text-slate-950 font-semibold px-5 py-2 text-sm hover:bg-emerald-300 transition-colors">
+              Start / Reset
+            </button>
+            <button id="sieb-step-btn" onclick="siebSchritt()" disabled
+                    class="rounded-full border border-slate-700 text-slate-300 font-semibold px-5 py-2 text-sm
+                           hover:border-emerald-400/50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+              Nächster Schritt
+            </button>
+          </div>
+        </div>
+
+        <!-- Zahlen-Grid 1–100 -->
+        <!--
+          Das Grid hat 10 Spalten (grid-cols-10) damit die Zeilen
+          genau die Zehner widerspiegeln (Zeile 1 = 1–10, usw.).
+          Jede Zelle bekommt per JS die passende CSS-Klasse.
+        -->
+        <div id="sieb-grid"
+             class="grid grid-cols-10 gap-1"
+             aria-label="Zahlen 1 bis 100">
+          <!-- 100 Kacheln werden durch siebInit() erzeugt -->
+        </div>
+
+        <!-- Gefundene Primzahlen als Liste -->
+        <div class="mt-5">
+          <p class="text-xs text-slate-500 uppercase tracking-wide mb-2">Gefundene Primzahlen:</p>
+          <p id="sieb-primlist" class="text-emerald-300 font-semibold text-sm leading-relaxed">–</p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════
+         ABSCHNITT 2: QUIZ
+    ════════════════════════════════════════════════════ -->
+    <section class="mb-14" aria-labelledby="quiz-title">
+      <div class="flex items-center gap-3 mb-6">
+        <span class="w-8 h-8 rounded-full bg-emerald-400 text-slate-950 text-sm font-bold flex items-center justify-center flex-shrink-0">2</span>
+        <h2 id="quiz-title" class="text-xl font-semibold">Quiz – Teilbarkeit, ggT &amp; kgV</h2>
+      </div>
+
+      <div class="flex gap-2 mb-5">
+        <button id="qm-prim"     onclick="setQuizModus('prim')"
+                class="rounded-full px-4 py-1.5 text-xs font-semibold bg-emerald-400 text-slate-950 transition-colors">Primzahl?</button>
+        <button id="qm-teiler"   onclick="setQuizModus('teiler')"
+                class="rounded-full px-4 py-1.5 text-xs font-semibold bg-slate-700 text-slate-300 hover:bg-slate-600 transition-colors">Teiler</button>
+        <button id="qm-ggt"      onclick="setQuizModus('ggt')"
+                class="rounded-full px-4 py-1.5 text-xs font-semibold bg-slate-700 text-slate-300 hover:bg-slate-600 transition-colors">ggT</button>
+        <button id="qm-kgv"      onclick="setQuizModus('kgv')"
+                class="rounded-full px-4 py-1.5 text-xs font-semibold bg-slate-700 text-slate-300 hover:bg-slate-600 transition-colors">kgV</button>
+      </div>
+
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+        <div class="flex justify-end mb-4">
+          <span class="text-sm font-semibold text-slate-500">Punkte:&nbsp;<span id="quiz-score" class="text-emerald-300">0 / 0</span></span>
+        </div>
+        <div id="quiz-karte" class="mb-6 text-center anim-fadein">
+          <p id="quiz-aufgabe" class="text-2xl font-bold text-slate-100 mb-2 leading-relaxed"></p>
+          <p id="quiz-hinweis" class="text-sm text-slate-500"></p>
+        </div>
+        <div id="quiz-buttons" class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5"></div>
+        <p id="quiz-feedback" class="text-center text-base font-semibold min-h-[1.5em] mb-4" aria-live="polite"></p>
+        <div class="flex justify-center">
+          <button onclick="newQuizAufgabe()"
+                  class="rounded-full border border-slate-700 text-slate-300 font-semibold px-6 py-2.5 text-sm hover:border-emerald-400/50 transition-colors">
+            Neue Aufgabe
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════
+         ABSCHNITT 3: SACHAUFGABEN
+    ════════════════════════════════════════════════════ -->
+    <section class="mb-14" aria-labelledby="sach-title">
+      <div class="flex items-center gap-3 mb-6">
+        <span class="w-8 h-8 rounded-full bg-emerald-400 text-slate-950 text-sm font-bold flex items-center justify-center flex-shrink-0">3</span>
+        <h2 id="sach-title" class="text-xl font-semibold">Sachaufgaben</h2>
+      </div>
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+        <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
+          <div class="flex gap-2" id="sach-dots"></div>
+          <span class="text-sm font-semibold text-slate-500">Punkte:&nbsp;<span id="sach-score" class="text-emerald-300">0 / 0</span></span>
+        </div>
+        <div id="sach-karte" class="mb-5 anim-fadein">
+          <p id="sach-kontext" class="text-xs font-semibold uppercase tracking-widest text-emerald-400/70 mb-2"></p>
+          <p id="sach-frage"   class="text-lg font-semibold text-slate-200 mb-5 leading-relaxed"></p>
+          <div class="flex items-center gap-3 flex-wrap">
+            <input id="sach-input" type="text" inputmode="numeric" placeholder="Deine Antwort"
+                   class="antwort-input w-44 rounded-2xl border border-slate-700 bg-slate-800 px-4 py-3 text-slate-100 text-lg font-bold transition-colors"
+                   onkeydown="if(event.key==='Enter') checkSach()" />
+            <span id="sach-einheit" class="text-base font-semibold text-emerald-300"></span>
+          </div>
+        </div>
+        <p id="sach-feedback" class="text-center text-base font-semibold min-h-[1.5em] mb-4" aria-live="polite"></p>
+        <div class="flex gap-3 justify-center flex-wrap">
+          <button id="sach-check-btn" onclick="checkSach()"
+                  class="rounded-full bg-emerald-400 text-slate-950 font-semibold px-6 py-2.5 text-sm hover:bg-emerald-300 transition-colors">Prüfen</button>
+          <button id="sach-next-btn"  onclick="nextSachAufgabe()"
+                  class="hidden rounded-full border border-slate-700 text-slate-300 font-semibold px-6 py-2.5 text-sm hover:border-emerald-400/50 transition-colors">Nächste Aufgabe →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- MERKHILFE -->
+    <section aria-labelledby="theorie-title" class="mb-10">
+      <h2 id="theorie-title" class="text-sm font-semibold text-slate-300 mb-4 uppercase tracking-wide">Merkhilfe</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-5">
+          <h3 class="font-semibold text-emerald-300 mb-3 text-sm">🔢 Teilbarkeitsregeln</h3>
+          <ul class="text-slate-400 text-sm space-y-1 leading-relaxed">
+            <li><span class="text-slate-200 font-medium">÷2</span>: letzte Ziffer gerade</li>
+            <li><span class="text-slate-200 font-medium">÷3</span>: Quersumme durch 3</li>
+            <li><span class="text-slate-200 font-medium">÷5</span>: endet auf 0 oder 5</li>
+            <li><span class="text-slate-200 font-medium">÷10</span>: endet auf 0</li>
+          </ul>
+        </div>
+        <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-5">
+          <h3 class="font-semibold text-emerald-300 mb-3 text-sm">📐 ggT &amp; kgV</h3>
+          <ul class="text-slate-400 text-sm space-y-2 leading-relaxed">
+            <li><span class="text-slate-200 font-medium">ggT</span>: größter Teiler den beide teilen</li>
+            <li><span class="text-slate-200 font-medium">kgV</span>: kleinstes Vielfaches beider</li>
+            <li class="text-xs text-slate-500 pt-1 border-t border-slate-700/50">kgV(a,b) = a×b ÷ ggT(a,b)</li>
+          </ul>
+        </div>
+        <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-5">
+          <h3 class="font-semibold text-emerald-300 mb-3 text-sm">⭐ Primzahlen bis 20</h3>
+          <p class="text-emerald-300 font-semibold text-sm">2, 3, 5, 7, 11, 13, 17, 19</p>
+          <p class="text-slate-500 text-xs mt-2">2 ist die einzige gerade Primzahl</p>
+        </div>
+      </div>
+    </section>
+
+    <footer class="py-6 text-center text-xs text-slate-500">© <span id="y"></span> Brandon Hank · Düsseldorf</footer>
+  </main>
+
+  <script>
+    window.__i18nBase = '../../';
+    fetch('../../topbar.html')
+      .then(r => r.text())
+      .then(html => {
+        document.getElementById('topbar-container').innerHTML = html;
+        const s = document.createElement('script');
+        s.src = '../../assets/js/script.js';
+        s.onload = init;
+        document.body.appendChild(s);
+      });
+
+    /* ── Hilfsfunktionen ───────────────────────────────────────── */
+    function ggT(a, b) { return b === 0 ? a : ggT(b, a % b); }
+    function kgV(a, b) { return (a * b) / ggT(a, b); }
+
+    /*
+     * istPrim(n) – Prüft ob n eine Primzahl ist.
+     * Algorithmus: Testteiler von 2 bis √n.
+     * Eine Primzahl ist > 1 und hat keine Teiler außer 1 und sich selbst.
+     */
+    function istPrim(n) {
+      if (n < 2) return false;
+      for (let i = 2; i <= Math.sqrt(n); i++) {
+        if (n % i === 0) return false;
+      }
+      return true;
+    }
+
+    /*
+     * teilerVon(n) – Gibt alle Teiler von n als Array zurück.
+     * Beispiel: teilerVon(12) → [1, 2, 3, 4, 6, 12]
+     */
+    function teilerVon(n) {
+      const t = [];
+      for (let i = 1; i <= n; i++) {
+        if (n % i === 0) t.push(i);
+      }
+      return t;
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       ABSCHNITT 1 – SIEB DES ERATOSTHENES
+    ════════════════════════════════════════════════════════════ */
+
+    /*
+     * Zustand des Siebs:
+     *   siebZustand[i] = 'unbearbeitet' | 'prim' | 'gestrichen' | 'aktiv' | 'eins'
+     *   siebAktuellePrim: die Primzahl deren Vielfache gerade gestrichen werden
+     *   siebFertig: true wenn keine weiteren Schritte möglich
+     */
+    let siebZustand = [];
+    let siebAktuellePrim = 2;
+    let siebFertig = false;
+
+    /*
+     * siebInit() – Setzt das Sieb zurück und zeichnet das Grid neu.
+     * Alle Zahlen 1–100 beginnen als 'unbearbeitet', außer 1 = 'eins'.
+     */
+    function siebInit() {
+      siebZustand    = new Array(101).fill('unbearbeitet');
+      siebZustand[0] = 'gestrichen'; /* Index 0 nicht genutzt */
+      siebZustand[1] = 'eins';       /* 1 ist keine Primzahl  */
+      siebAktuellePrim = 2;
+      siebFertig       = false;
+
+      /* Grid aufbauen: 100 Kacheln mit id="z-{n}" */
+      const grid = document.getElementById('sieb-grid');
+      let html = '';
+      for (let i = 1; i <= 100; i++) {
+        html += `<div id="z-${i}" class="sieb-zahl ${siebZustand[i]}">${i}</div>`;
+      }
+      grid.innerHTML = html;
+
+      document.getElementById('sieb-primlist').textContent = '–';
+      document.getElementById('sieb-status').textContent   =
+        'Grid initialisiert. Drücke „Nächster Schritt".';
+      document.getElementById('sieb-step-btn').disabled    = false;
+    }
+
+    /*
+     * siebSchritt() – Führt einen Sieb-Schritt aus:
+     *   1. Markiere siebAktuellePrim als Primzahl (grün)
+     *   2. Streiche alle Vielfachen dieser Primzahl
+     *   3. Suche die nächste ungestrichene Zahl als neue Primzahl
+     *
+     * Ein "Schritt" entspricht dem Verarbeiten einer Primzahl.
+     */
+    function siebSchritt() {
+      if (siebFertig) return;
+
+      /* Aktuell gefundene Primzahl grün markieren */
+      siebZustand[siebAktuellePrim] = 'prim';
+      document.getElementById(`z-${siebAktuellePrim}`).className = 'sieb-zahl prim';
+
+      /* Alle echten Vielfachen (2p, 3p, …) streichen */
+      for (let v = siebAktuellePrim * 2; v <= 100; v += siebAktuellePrim) {
+        if (siebZustand[v] === 'unbearbeitet') {
+          siebZustand[v] = 'gestrichen';
+          document.getElementById(`z-${v}`).className = 'sieb-zahl gestrichen';
+        }
+      }
+
+      /* Gefundene Primzahlen auflisten */
+      const prims = [];
+      for (let i = 2; i <= 100; i++) {
+        if (siebZustand[i] === 'prim') prims.push(i);
+      }
+      document.getElementById('sieb-primlist').textContent = prims.join(', ');
+
+      /* Nächste ungestrichene Zahl finden */
+      let naechste = -1;
+      for (let i = siebAktuellePrim + 1; i <= 100; i++) {
+        if (siebZustand[i] === 'unbearbeitet') { naechste = i; break; }
+      }
+
+      if (naechste === -1 || naechste > 10) {
+        /*
+         * Fertig: Alle verbleibenden 'unbearbeitet'-Zahlen sind Primzahlen
+         * (sie hatten keinen Teiler ≤ √100 = 10).
+         */
+        for (let i = 2; i <= 100; i++) {
+          if (siebZustand[i] === 'unbearbeitet') {
+            siebZustand[i] = 'prim';
+            document.getElementById(`z-${i}`).className = 'sieb-zahl prim';
+          }
+        }
+        /* Primzahlen-Liste final aktualisieren */
+        const allPrims = [];
+        for (let i = 2; i <= 100; i++) {
+          if (siebZustand[i] === 'prim') allPrims.push(i);
+        }
+        document.getElementById('sieb-primlist').textContent = allPrims.join(', ');
+        document.getElementById('sieb-status').textContent   =
+          `✓ Fertig! ${allPrims.length} Primzahlen zwischen 1 und 100 gefunden.`;
+        document.getElementById('sieb-step-btn').disabled    = true;
+        siebFertig = true;
+      } else {
+        siebAktuellePrim = naechste;
+        document.getElementById('sieb-status').textContent =
+          `Schritt: Streiche alle Vielfachen von ${siebAktuellePrim} …`;
+      }
+    }
+
+    function siebStart() { siebInit(); }
+
+    /* ════════════════════════════════════════════════════════════
+       ABSCHNITT 2 – QUIZ
+    ════════════════════════════════════════════════════════════ */
+
+    let quizModus = 'prim', quizRichtig = 0, quizGesamt = 0;
+
+    function setQuizModus(m) {
+      quizModus = m;
+      ['prim','teiler','ggt','kgv'].forEach(x => {
+        document.getElementById(`qm-${x}`).className =
+          `rounded-full px-4 py-1.5 text-xs font-semibold transition-colors ` +
+          (x === m ? 'bg-emerald-400 text-slate-950' : 'bg-slate-700 text-slate-300 hover:bg-slate-600');
+      });
+      newQuizAufgabe();
+    }
+
+    function newQuizAufgabe() {
+      document.getElementById('quiz-feedback').textContent = '';
+
+      if (quizModus === 'prim') {
+        /* Ist diese Zahl eine Primzahl? – Ja/Nein */
+        const zahl    = Math.floor(Math.random() * 48) + 2; /* 2–49 */
+        const richtig = istPrim(zahl) ? 'Ja' : 'Nein';
+        document.getElementById('quiz-aufgabe').textContent = `Ist ${zahl} eine Primzahl?`;
+        document.getElementById('quiz-hinweis').textContent =
+          'Eine Primzahl hat genau 2 Teiler: 1 und sich selbst.';
+        renderQuizButtons(['Ja','Nein'], richtig);
+
+      } else if (quizModus === 'teiler') {
+        /* Wie viele Teiler hat die Zahl? */
+        const zahl    = Math.floor(Math.random() * 20) + 4; /* 4–23 */
+        const teiler  = teilerVon(zahl);
+        const richtig = String(teiler.length);
+        const falsch  = [richtig-1, richtig+1, richtig+2]
+          .filter(v => v > 0 && v !== parseInt(richtig))
+          .map(String);
+        document.getElementById('quiz-aufgabe').textContent =
+          `Wie viele Teiler hat die Zahl ${zahl}?`;
+        document.getElementById('quiz-hinweis').textContent =
+          `Teiler von ${zahl}: ${teiler.join(', ')}`;
+        renderQuizButtons([richtig, ...falsch.slice(0,3)], richtig);
+
+      } else if (quizModus === 'ggt') {
+        const a = Math.floor(Math.random() * 18) + 2;
+        const b = Math.floor(Math.random() * 18) + 2;
+        const richtig = String(ggT(a, b));
+        const falsch  = [ggT(a,b)+1, ggT(a,b)-1, Math.min(a,b)].filter(v=>v>0&&v!==ggT(a,b)).map(String);
+        document.getElementById('quiz-aufgabe').textContent = `ggT(${a}, ${b}) = ?`;
+        document.getElementById('quiz-hinweis').textContent =
+          'ggT = größter gemeinsamer Teiler beider Zahlen.';
+        renderQuizButtons([richtig,...falsch.slice(0,3)], richtig);
+
+      } else {
+        const a = Math.floor(Math.random() * 8) + 2;
+        const b = Math.floor(Math.random() * 8) + 2;
+        const richtig = String(kgV(a, b));
+        const falsch  = [kgV(a,b)+a, kgV(a,b)+b, a*b].filter(v=>v!==kgV(a,b)).map(String);
+        document.getElementById('quiz-aufgabe').textContent = `kgV(${a}, ${b}) = ?`;
+        document.getElementById('quiz-hinweis').textContent =
+          'kgV = kleinstes gemeinsames Vielfaches.';
+        renderQuizButtons([richtig,...falsch.slice(0,3)], richtig);
+      }
+    }
+
+    function renderQuizButtons(opts, richtig) {
+      for (let i=opts.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[opts[i],opts[j]]=[opts[j],opts[i]];}
+      document.getElementById('quiz-buttons').innerHTML = opts.map(v =>
+        `<button class="btn-answer rounded-2xl border border-slate-700 bg-slate-800 px-4 py-4
+                        text-xl font-bold text-slate-100 hover:border-emerald-400/50 transition-colors"
+                 onclick="checkQuiz('${v}','${richtig}')">${v}</button>`
+      ).join('');
+    }
+
+    function checkQuiz(gewählt, richtig) {
+      quizGesamt++;
+      document.querySelectorAll('#quiz-buttons .btn-answer').forEach(btn => {
+        btn.disabled = true;
+        const m = btn.getAttribute('onclick').match(/checkQuiz\('([^']+)'/);
+        if (!m) return;
+        if (m[1] === richtig)      btn.classList.add('btn-correct');
+        else if (m[1] === gewählt) btn.classList.add('btn-wrong');
+      });
+      const fb = document.getElementById('quiz-feedback');
+      if (gewählt === richtig) {
+        quizRichtig++;
+        fb.textContent = '✓ Richtig!';
+        fb.className   = 'text-center text-base font-semibold min-h-[1.5em] mb-4 text-emerald-400';
+      } else {
+        fb.textContent = `✗ Leider falsch. Richtig: ${richtig}`;
+        fb.className   = 'text-center text-base font-semibold min-h-[1.5em] mb-4 text-red-400';
+      }
+      document.getElementById('quiz-score').textContent = `${quizRichtig} / ${quizGesamt}`;
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       SACHAUFGABEN
+    ════════════════════════════════════════════════════════════ */
+    const SACHAUFGABEN = [
+      { kontext:'🎪 Veranstaltung', frage:'24 Kinder und 36 Erwachsene sollen in gleich große Gruppen aufgeteilt werden, ohne jemanden zu trennen. Wie groß ist die größtmögliche Gruppe?', antwort:'12', einheit:'Personen', hinweis:'ggT(24, 36) = 12 → Gruppen mit je 12 Personen' },
+      { kontext:'🚌 Busfahrplan',   frage:'Bus A fährt alle 12 Minuten, Bus B alle 8 Minuten. Wann fahren sie das erste Mal gleichzeitig ab? (in Minuten nach Start)', antwort:'24', einheit:'Minuten', hinweis:'kgV(12, 8) = 24 Minuten' },
+      { kontext:'📦 Pakete',        frage:'Sind 315 Pakete durch 3 teilbar? Schreibe 1 für ja, 0 für nein.', antwort:'1', einheit:'', hinweis:'Quersumme: 3+1+5 = 9 → durch 3 teilbar → ja (1)' },
+      { kontext:'🔢 Zahlenrätsel',  frage:'Ich bin eine zweistellige Primzahl. Meine Quersumme ist 8. Wer bin ich?', antwort:'17', einheit:'', hinweis:'Quersumme 8: 17 (1+7=8) – und 17 ist eine Primzahl!' },
+      { kontext:'🍫 Schokoriegel',  frage:'30 Schokoriegel sollen gleichmäßig auf so viele Kinder wie möglich verteilt werden. Wie viele Kinder können es maximal sein, wenn jedes Kind mehr als 1 Riegel bekommt?', antwort:'10', einheit:'Kinder', hinweis:'Teiler von 30: 1,2,3,5,6,10,15,30 → 10 Kinder (je 3 Riegel)' },
+    ];
+
+    let sachIdx=0, sachRichtig=0, sachGesamt=0;
+
+    function renderSachDots() {
+      document.getElementById('sach-dots').innerHTML =
+        SACHAUFGABEN.map((_,i)=>{
+          let c='sach-dot';
+          if(i<sachIdx) c+=' done'; else if(i===sachIdx) c+=' current';
+          return `<span class="${c}"></span>`;
+        }).join('');
+    }
+
+    function showSachAufgabe() {
+      if (sachIdx >= SACHAUFGABEN.length) {
+        document.getElementById('sach-karte').innerHTML =
+          `<p class="text-center text-emerald-300 text-lg font-semibold py-6">🎉 Alle gelöst! ${sachRichtig} von ${SACHAUFGABEN.length} richtig.</p>`;
+        document.getElementById('sach-check-btn').classList.add('hidden');
+        document.getElementById('sach-next-btn').classList.add('hidden');
+        return;
+      }
+      const a = SACHAUFGABEN[sachIdx];
+      document.getElementById('sach-kontext').textContent  = a.kontext;
+      document.getElementById('sach-frage').textContent    = a.frage;
+      document.getElementById('sach-einheit').textContent  = a.einheit;
+      document.getElementById('sach-input').value          = '';
+      document.getElementById('sach-input').disabled       = false;
+      document.getElementById('sach-feedback').textContent = '';
+      document.getElementById('sach-check-btn').classList.remove('hidden');
+      document.getElementById('sach-next-btn').classList.add('hidden');
+      const k=document.getElementById('sach-karte');
+      k.classList.remove('anim-fadein'); void k.offsetWidth; k.classList.add('anim-fadein');
+      renderSachDots();
+    }
+
+    function checkSach() {
+      const eingabe = document.getElementById('sach-input').value.trim();
+      sachGesamt++;
+      document.getElementById('sach-input').disabled = true;
+      document.getElementById('sach-check-btn').classList.add('hidden');
+      document.getElementById('sach-next-btn').classList.remove('hidden');
+      const fb = document.getElementById('sach-feedback');
+      if (eingabe === SACHAUFGABEN[sachIdx].antwort) {
+        sachRichtig++;
+        fb.textContent = '✓ Richtig!';
+        fb.className   = 'text-center text-base font-semibold min-h-[1.5em] mb-4 text-emerald-400';
+      } else {
+        fb.textContent = `✗ Leider falsch. ${SACHAUFGABEN[sachIdx].hinweis}`;
+        fb.className   = 'text-center text-base font-semibold min-h-[1.5em] mb-4 text-red-400';
+      }
+      document.getElementById('sach-score').textContent = `${sachRichtig} / ${sachGesamt}`;
+    }
+
+    function nextSachAufgabe() { sachIdx++; showSachAufgabe(); }
+
+    function init() {
+      siebInit();
+      newQuizAufgabe();
+      showSachAufgabe();
+    }
+  </script>
+</body>
+</html>
