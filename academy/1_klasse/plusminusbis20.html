@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="de">
 
 <head>
@@ -11,15 +11,15 @@
   <meta name="description" content="Lerne Addition und Subtraktion bis 20 – mit Punkte-Visualisierung, Zahlenstrahl und Quiz." />
 
   <!-- Favicon und App-Icons -->
-  <link rel="icon" href="../favicon.ico">
-  <link rel="manifest" href="../site.webmanifest">
-  <link rel="apple-touch-icon" href="../apple-touch-icon.png">
+  <link rel="icon" href="../../favicon.ico">
+  <link rel="manifest" href="../../site.webmanifest">
+  <link rel="apple-touch-icon" href="../../apple-touch-icon.png">
 
   <!-- Tailwind CSS über CDN für Utility-Klassen -->
   <script src="https://cdn.tailwindcss.com"></script>
 
   <!-- Globale Theme-Variablen und Light/Dark-Mode-Stile -->
-  <link rel="stylesheet" href="../style.css?v=1.0">
+  <link rel="stylesheet" href="../../assets/css/style.css?v=1.0">
 
   <style>
     /* ── Eingabefeld-Stil ────────────────────────────────────── */
@@ -793,18 +793,19 @@
   <!-- ── Top-Bar laden ─────────────────────────────────────── -->
   <!-- Lädt die gemeinsame Navigationsleiste aus topbar.html   -->
   <script>
-    window.__i18nBase = '../'; // Basis-Pfad für i18n-Dateien setzen
-    fetch('../topbar.html')
+    window.__i18nBase = '../../'; // Basis-Pfad für i18n-Dateien setzen
+    fetch('../../topbar.html')
       .then(res => res.text())
       .then(html => {
         // HTML der Top-Bar in den Container einfügen
         document.getElementById('topbar-container').innerHTML = html;
         // Globales Script nachladen (Login, Sprache, Theme, etc.)
         const s = document.createElement('script');
-        s.src = '../script.js';
+        s.src = '../../assets/js/script.js';
         document.body.appendChild(s);
       });
   </script>
 
 </body>
 </html>
+

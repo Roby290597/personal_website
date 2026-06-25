@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="de">
 <head>
   <!-- Zeichensatz und Viewport für mobile Geräte -->
@@ -10,7 +10,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
 
   <!-- Eigene Stylesheet-Datei für Theme-Variablen und globale Stile -->
-  <link rel="stylesheet" href="../style.css?v=1.0" />
+  <link rel="stylesheet" href="../../assets/css/style.css?v=1.0" />
 
   <style>
     /* ── Animationen ──────────────────────────────────────────── */
@@ -544,10 +544,10 @@
   <script>
     // i18n-Basis-Pfad damit script.js die Sprachdateien findet
     // "../" → eine Ebene nach oben aus klasse-1/ heraus
-    window.__i18nBase = '../';
+    window.__i18nBase = '../../';
 
     // Topbar dynamisch aus topbar.html laden und einfügen
-    fetch('../topbar.html')
+    fetch('../../topbar.html')
       .then(res => res.text())  // Antwort als Text-String lesen
       .then(html => {
         // HTML der Topbar in den Container einfügen
@@ -556,7 +556,7 @@
         // Haupt-Skript nachträglich laden – erst NACH dem Einfügen der Topbar,
         // damit script.js die darin enthaltenen DOM-Elemente findet
         const s = document.createElement('script');  // neues <script>-Element erstellen
-        s.src = '../script.js';                       // Pfad zur Hauptskript-Datei
+        s.src = '../../assets/js/script.js';                       // Pfad zur Hauptskript-Datei
         document.body.appendChild(s);                 // ans Ende des <body> hängen
       });
   </script>
@@ -989,3 +989,4 @@
 
 </body>
 </html>
+

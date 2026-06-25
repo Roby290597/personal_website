@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="de">
 <head>
   <!-- Zeichenkodierung: UTF-8 damit Umlaute (ä, ö, ü) korrekt angezeigt werden -->
@@ -10,17 +10,17 @@
   <title>Zahlen bis 20 – Mathe-Akademie</title>
 
   <!-- Favicon: kleines Symbol im Browser-Tab, ein Ordner höher -->
-  <link rel="icon" href="../favicon.ico" />
+  <link rel="icon" href="../../favicon.ico" />
   <!-- Apple Touch Icon: Symbol für iPhone-Homescreen -->
-  <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
+  <link rel="apple-touch-icon" href="../../apple-touch-icon.png" />
   <!-- Web-App-Manifest: Metadaten für „Auf Startseite hinzufügen" -->
-  <link rel="manifest" href="../site.webmanifest" />
+  <link rel="manifest" href="../../site.webmanifest" />
 
   <!-- Tailwind CSS via CDN: Ermöglicht alle Utility-Klassen direkt im HTML -->
   <script src="https://cdn.tailwindcss.com"></script>
 
   <!-- Eigenes Stylesheet (eine Ebene höher), mit Version um Browser-Cache zu umgehen -->
-  <link rel="stylesheet" href="../style.css?v=1.0" />
+  <link rel="stylesheet" href="../../assets/css/style.css?v=1.0" />
 
   <style>
     /*
@@ -1218,7 +1218,7 @@
     Topbar laden:
     1. window.__i18nBase wird gesetzt BEVOR der Topbar-Fetch läuft,
        damit script.js weiß, wo die i18n-Sprachdateien liegen (eine Ebene höher).
-    2. fetch('../topbar.html') holt den Topbar-HTML-Code vom Server.
+    2. fetch('../../topbar.html') holt den Topbar-HTML-Code vom Server.
     3. Nach erfolgreichem Laden wird script.js dynamisch als <script>-Tag eingefügt.
 
     Warum dynamisch? → script.js benötigt die Topbar-Elemente im DOM.
@@ -1227,10 +1227,10 @@
   <script>
     // __i18nBase: Pfad-Präfix für Sprachdateien (lang-de.json, lang-en.json)
     // Muss GESETZT sein bevor script.js läuft, sonst findet script.js die Dateien nicht
-    window.__i18nBase = '../';
+    window.__i18nBase = '../../';
 
     // fetch() → sendet eine HTTP-Anfrage und gibt ein Promise zurück
-    fetch('../topbar.html')
+    fetch('../../topbar.html')
       .then(function(res) {
         // .text() → liest die Antwort als Text (HTML ist ja Text)
         return res.text();
@@ -1242,7 +1242,7 @@
         // Jetzt script.js dynamisch laden
         // createElement('script') → erzeugt ein neues <script>-Element
         const s = document.createElement('script');
-        s.src = '../script.js'; // Pfad zu script.js (eine Ebene höher)
+        s.src = '../../assets/js/script.js'; // Pfad zu script.js (eine Ebene höher)
         // appendChild → fügt das <script>-Element zum <body> hinzu
         // → der Browser lädt und führt script.js sofort aus
         document.body.appendChild(s);
@@ -1250,3 +1250,4 @@
   </script>
 </body>
 </html>
+

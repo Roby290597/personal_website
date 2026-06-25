@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="de">
 
 <head>
@@ -10,7 +10,7 @@
   <title>Brandon Hank | Medien</title>
   <meta name="description" content="Zeichnungen & Gemälde von Brandon Hank – zum Leben erweckt mit GenAI." />
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="style.css?v=1.0">
+  <link rel="stylesheet" href="assets/css/style.css?v=1.0">
   <style>
     /* ── Medien-Galerie ─────────────────────────────────────── */
     .work-media {
@@ -136,7 +136,7 @@
       .then(html => {
         document.getElementById('topbar-container').innerHTML = html;
         const s = document.createElement('script');
-        s.src = 'script.js';
+        s.src = 'assets/js/script.js';
         document.body.appendChild(s);
         initMedia();
       });
@@ -315,3 +315,4 @@
 </body>
 
 </html>
+
