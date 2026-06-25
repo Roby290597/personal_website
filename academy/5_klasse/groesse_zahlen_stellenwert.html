@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Große Zahlen &amp; Stellenwert – Klasse 5 | MathAcademy</title>
+
+  <link rel="icon"             href="../../favicon.ico" />
+  <link rel="apple-touch-icon" href="../../apple-touch-icon.png" />
+  <link rel="manifest"         href="../../site.webmanifest" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../../assets/css/style.css?v=1.0" />
+
+  <style>
+    /* ── Animationen ───────────────────────────────────────────── */
+
+    /* Karte gleitet beim Erscheinen sanft von unten herein */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Kurzes Wackeln bei falscher Antwort – visuelles Fehler-Feedback */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%       { transform: translateX(-8px); }
+      40%       { transform: translateX(8px); }
+      60%       { transform: translateX(-5px); }
+      80%       { transform: translateX(5px); }
+    }
+
+    /* Klasse, die per JS kurz hinzugefügt und dann wieder entfernt wird */
+    .anim-fadein { animation: fadeInUp 0.35s ease both; }
+    .anim-shake  { animation: shake   0.4s  ease;      }
+
+    /* ── Stellenwert-Tafel ─────────────────────────────────────── */
+
+    /*
+     * Jede Zelle in der Stellenwert-Tafel bekommt diesen Grundstil.
+     * Die Zellen zeigen die einzelnen Stellen einer Zahl (Einer, Zehner, …).
+     */
+    .sv-cell {
+      min-width: 2.5rem;          /* Mindestbreite damit einstellige Zahlen nicht gequetscht werden */
+      text-align: center;
+      font-variant-numeric: tabular-nums; /* Alle Ziffern gleich breit → kein Layout-Sprung */
+      transition: background-color 0.2s, color 0.2s;
+    }
+
+    /* Hervorgehobene Stelle wenn der Nutzer drüber fährt oder sie anklickt */
+    .sv-cell.aktiv {
+      background-color: rgba(52, 211, 153, 0.20); /* emerald, dezent */
+      color: #6ee7b7;                              /* emerald-300 */
+      border-radius: 6px;
+    }
+
+    /* ── Quiz-Buttons ──────────────────────────────────────────── */
+
+    /* Sanftes Aufhellen beim Hover, solange der Button nicht deaktiviert ist */
+    .btn-answer:hover:not(:disabled) { filter: brightness(1.15); }
+
+    /* Deaktivierter Zustand nach einer Antwort */
+    .btn-answer:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    /* Richtige Antwort → grün */
+    .btn-correct {
+      background-color: #059669 !important;
+      border-color:     #34d399 !important;
+      color: #fff !important;
+    }
+
+    /* Falsche Antwort → rot */
+    .btn-wrong {
+      background-color: #dc2626 !important;
+      border-color:     #f87171 !important;
+      color: #fff !important;
+    }
+
+    /* ── Sachaufgaben-Fortschrittspunkte ──────────────────────── */
+
+    /* Kleiner runder Punkt – grau = noch nicht beantwortet */
+    .sach-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background-color: #334155;          /* slate-700 */
+      transition: background-color 0.2s;
+    }
+    /* Grün = erledigt */
+    .sach-dot.done    { background-color: #34d399; }
+    /* Hellgrün + Leuchtring = aktuelle Aufgabe */
+    .sach-dot.current {
+      background-color: #6ee7b7;
+      box-shadow: 0 0 0 3px rgba(52,211,153,0.25);
+    }
+
+    /* ── Eingabefelder ─────────────────────────────────────────── */
+
+    /* Einheitlicher grüner Fokus-Ring für alle Antwort-Eingaben */
+    .antwort-input:focus {
+      outline: none;
+      border-color: #34d399;
+      box-shadow: 0 0 0 3px rgba(52,211,153,0.2);
+    }
+  </style>
+</head>
+
+<body class="bg-slate-950 text-slate-100 min-h-screen">
+
+  <!-- Topbar-Container: per JS mit topbar.html befüllt (enthält Navigation) -->
+  <div id="topbar-container"></div>
+
+  <!-- ══════════════════════════════════════════════════════
+       HAUPT-INHALT
+  ══════════════════════════════════════════════════════ -->
+  <main class="max-w-4xl mx-auto px-4 pb-16 pt-6">
+
+    <!-- ── Zurück-Link ── -->
+    <a href="/academy.html"
+       class="inline-flex items-center gap-2 text-sm text-slate-400
+              hover:text-emerald-300 transition-colors mb-6">
+      ← Zurück zur Akademie
+    </a>
+
+    <!-- ── Seiten-Header ── -->
+    <div class="mb-10">
+      <span class="text-xs font-semibold uppercase tracking-widest text-emerald-400 mb-2 block">
+        Klasse 5 · Aufbau
+      </span>
+      <h1 class="text-3xl sm:text-4xl font-bold text-slate-100 mb-3">
+        Große Zahlen &amp; Stellenwert
+      </h1>
+      <p class="text-slate-400 text-base max-w-xl">
+        Lerne Zahlen bis in die Milliarden zu lesen, zu schreiben und ihre
+        Stellenwerte zu bestimmen – mit der interaktiven Stellenwert-Tafel,
+        einem Quiz und Sachaufgaben aus dem Alltag.
+      </p>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════
+         ABSCHNITT 1: STELLENWERT-TAFEL
+         Ziel: Schüler geben eine Zahl ein und sehen sofort,
+               welche Ziffer auf welcher Stelle steht.
+    ════════════════════════════════════════════════════ -->
+    <section class="mb-14" aria-labelledby="sv-title">
+
+      <div class="flex items-center gap-3 mb-6">
+        <!-- Runde Schritt-Nummer als Badge -->
+        <span class="w-8 h-8 rounded-full bg-emerald-400 text-slate-950 text-sm font-bold
+                     flex items-center justify-center flex-shrink-0">1</span>
+        <h2 id="sv-title" class="text-xl font-semibold text-slate-100">
+          Interaktive Stellenwert-Tafel
+        </h2>
+      </div>
+
+      <p class="text-slate-400 text-sm mb-5">
+        Gib eine Zahl ein (bis 999.999.999) – die Tafel zerlegt sie sofort in ihre Stellen.
+        Klicke auf eine Spalte, um den Stellenwert zu lesen.
+      </p>
+
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+
+        <!-- Eingabe-Zeile -->
+        <div class="flex flex-wrap gap-3 items-center mb-6">
+          <input
+            id="sv-input"
+            type="number"
+            min="0"
+            max="999999999"
+            value="4705318"
+            class="antwort-input w-52 rounded-2xl border border-slate-700 bg-slate-800
+                   px-4 py-3 text-slate-100 text-xl font-semibold transition-colors"
+            aria-label="Zahl eingeben"
+            oninput="renderTafel()"  <!-- Tafel aktualisiert sich bei jeder Eingabe -->
+          />
+          <!-- Hilfstext damit klar ist was eingegeben werden soll -->
+          <span class="text-slate-500 text-sm">Zahl eingeben → Tafel wird sofort aktualisiert</span>
+        </div>
+
+        <!-- Stellenwert-Tafel: Kopfzeile + Ziffern-Zeile -->
+        <!--
+          Aufbau: zwei Zeilen
+          Zeile 1 (sv-header): Bezeichnungen der Stellen (Millionen, Hunderttausend, …)
+          Zeile 2 (sv-digits):  die zugehörigen Ziffern der eingegebenen Zahl
+        -->
+        <div class="overflow-x-auto">
+          <table class="w-full border-collapse text-sm" role="grid"
+                 aria-label="Stellenwert-Tafel">
+            <thead>
+              <tr id="sv-header" class="text-slate-500 text-xs uppercase tracking-wide">
+                <!-- Spalten werden durch renderTafel() dynamisch befüllt -->
+              </tr>
+            </thead>
+            <tbody>
+              <tr id="sv-digits" class="text-2xl font-bold text-slate-100">
+                <!-- Ziffern werden durch renderTafel() dynamisch befüllt -->
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Info-Box: erscheint wenn der Nutzer auf eine Stelle klickt -->
+        <div id="sv-info"
+             class="mt-5 rounded-2xl border border-emerald-400/30 bg-emerald-400/10
+                    px-5 py-3 text-emerald-300 text-sm font-medium hidden"
+             aria-live="polite">
+          <!-- Text wird durch handleSvClick() gesetzt -->
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════
+         ABSCHNITT 2: QUIZ – Stelle ablesen
+         Ziel: Schüler bestimmen, welche Ziffer auf einer
+               bestimmten Stelle steht.
+    ════════════════════════════════════════════════════ -->
+    <section class="mb-14" aria-labelledby="quiz-title">
+
+      <div class="flex items-center gap-3 mb-6">
+        <span class="w-8 h-8 rounded-full bg-emerald-400 text-slate-950 text-sm font-bold
+                     flex items-center justify-center flex-shrink-0">2</span>
+        <h2 id="quiz-title" class="text-xl font-semibold text-slate-100">
+          Quiz – Stelle ablesen
+        </h2>
+      </div>
+
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+
+        <!-- Punkte-Anzeige oben rechts -->
+        <div class="flex justify-end mb-4">
+          <span class="text-sm font-semibold text-slate-500">Punkte:&nbsp;
+            <span id="quiz-score" class="text-emerald-300">0 / 0</span>
+          </span>
+        </div>
+
+        <!-- Aufgaben-Karte: Zahl + Frage nach einer bestimmten Stelle -->
+        <div id="quiz-karte" class="mb-6 text-center anim-fadein">
+          <!-- Große Zahl die der Schüler analysieren soll -->
+          <p class="text-xs uppercase tracking-widest text-slate-500 mb-2">Welche Ziffer steht auf der …</p>
+          <p id="quiz-zahl"  class="text-4xl font-bold text-slate-100 mb-2 tracking-wide">
+            <!-- wird durch newQuizAufgabe() gesetzt -->
+          </p>
+          <p id="quiz-frage" class="text-lg font-semibold text-emerald-300">
+            <!-- z.B. "… Zehntausender-Stelle?" -->
+          </p>
+        </div>
+
+        <!-- 4 Antwort-Buttons (Multiple Choice) -->
+        <div id="quiz-buttons"
+             class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+          <!--
+            Die vier Buttons werden durch renderQuizButtons() erzeugt.
+            Einer davon ist die richtige Antwort, drei sind Zufalls-Ablenkungen.
+          -->
+        </div>
+
+        <!-- Feedback-Text nach der Antwort -->
+        <p id="quiz-feedback"
+           class="text-center text-base font-semibold min-h-[1.5em] mb-4"
+           aria-live="polite">
+        </p>
+
+        <!-- "Neue Aufgabe"-Button -->
+        <div class="flex justify-center">
+          <button
+            onclick="newQuizAufgabe()"
+            class="rounded-full border border-slate-700 text-slate-300 font-semibold
+                   px-6 py-2.5 text-sm hover:border-emerald-400/50 hover:text-slate-100
+                   transition-colors">
+            Neue Aufgabe
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════
+         ABSCHNITT 3: SACHAUFGABEN
+         Ziel: Alltagsbezug – Zahlen lesen, vergleichen,
+               runden in realistischen Szenarien.
+    ════════════════════════════════════════════════════ -->
+    <section class="mb-14" aria-labelledby="sach-title">
+
+      <div class="flex items-center gap-3 mb-6">
+        <span class="w-8 h-8 rounded-full bg-emerald-400 text-slate-950 text-sm font-bold
+                     flex items-center justify-center flex-shrink-0">3</span>
+        <h2 id="sach-title" class="text-xl font-semibold text-slate-100">
+          Sachaufgaben
+        </h2>
+      </div>
+
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+
+        <!-- Fortschritts-Punkte + Punkte-Zähler -->
+        <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
+          <div class="flex gap-2 items-center" id="sach-dots" aria-label="Aufgaben-Fortschritt">
+            <!-- 5 Punkte werden durch renderSachDots() erzeugt -->
+          </div>
+          <span class="text-sm font-semibold text-slate-500">
+            Punkte:&nbsp;<span id="sach-score" class="text-emerald-300">0 / 0</span>
+          </span>
+        </div>
+
+        <!-- Aufgaben-Karte -->
+        <div id="sach-karte" class="mb-5 anim-fadein">
+          <!-- Kontext: kurzes Szenario als Einstieg -->
+          <p id="sach-kontext"
+             class="text-xs font-semibold uppercase tracking-widest text-emerald-400/70 mb-2">
+          </p>
+          <!-- Die eigentliche Frage -->
+          <p id="sach-frage"
+             class="text-lg font-semibold text-slate-200 mb-5 leading-relaxed">
+          </p>
+          <!-- Eingabe-Zeile mit Einheiten-Label -->
+          <div class="flex items-center gap-3 flex-wrap">
+            <input
+              id="sach-input"
+              type="text"
+              inputmode="numeric"
+              placeholder="Deine Antwort"
+              class="antwort-input w-44 rounded-2xl border border-slate-700 bg-slate-800
+                     px-4 py-3 text-slate-100 text-lg font-bold transition-colors"
+              aria-label="Antwort eingeben"
+              onkeydown="if(event.key==='Enter') checkSach()"
+            />
+            <span id="sach-einheit" class="text-base font-semibold text-emerald-300"></span>
+          </div>
+        </div>
+
+        <!-- Feedback -->
+        <p id="sach-feedback"
+           class="text-center text-base font-semibold min-h-[1.5em] mb-4"
+           aria-live="polite">
+        </p>
+
+        <!-- Buttons -->
+        <div class="flex gap-3 justify-center flex-wrap">
+          <button
+            id="sach-check-btn"
+            onclick="checkSach()"
+            class="rounded-full bg-emerald-400 text-slate-950 font-semibold
+                   px-6 py-2.5 text-sm hover:bg-emerald-300 transition-colors">
+            Prüfen
+          </button>
+          <button
+            id="sach-next-btn"
+            onclick="nextSachAufgabe()"
+            class="hidden rounded-full border border-slate-700 text-slate-300 font-semibold
+                   px-6 py-2.5 text-sm hover:border-emerald-400/50 hover:text-slate-100
+                   transition-colors">
+            Nächste Aufgabe →
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════
+         MERKHILFE – Stellenwerte im Überblick
+    ════════════════════════════════════════════════════ -->
+    <section aria-labelledby="theorie-title" class="mb-10">
+
+      <h2 id="theorie-title"
+          class="text-sm font-semibold text-slate-300 mb-4 uppercase tracking-wide">
+        Merkhilfe – Stellenwerte
+      </h2>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+        <!-- Karte 1: Die neun Stellen -->
+        <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+          <h3 class="font-semibold text-emerald-300 mb-3 text-sm">🔢 Die Stellen (von rechts)</h3>
+          <ol class="text-slate-400 text-sm space-y-1 leading-relaxed list-none">
+            <!--
+              Stellen von rechts nach links:
+              E = Einer, Z = Zehner, H = Hunderter, usw.
+            -->
+            <li><span class="text-slate-200 font-medium w-5 inline-block">1.</span> Einer (E)</li>
+            <li><span class="text-slate-200 font-medium w-5 inline-block">2.</span> Zehner (Z)</li>
+            <li><span class="text-slate-200 font-medium w-5 inline-block">3.</span> Hunderter (H)</li>
+            <li><span class="text-slate-200 font-medium w-5 inline-block">4.</span> Tausender (T)</li>
+            <li><span class="text-slate-200 font-medium w-5 inline-block">5.</span> Zehntausender (ZT)</li>
+            <li><span class="text-slate-200 font-medium w-5 inline-block">6.</span> Hunderttausender (HT)</li>
+            <li><span class="text-slate-200 font-medium w-5 inline-block">7.</span> Millionen (M)</li>
+            <li><span class="text-slate-200 font-medium w-5 inline-block">8.</span> Zehnmillionen (ZM)</li>
+            <li><span class="text-slate-200 font-medium w-5 inline-block">9.</span> Hundertmillionen (HM)</li>
+          </ol>
+        </div>
+
+        <!-- Karte 2: Runden -->
+        <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+          <h3 class="font-semibold text-emerald-300 mb-3 text-sm">🎯 Runden – die Regel</h3>
+          <ul class="text-slate-400 text-sm space-y-2 leading-relaxed">
+            <li>Schau auf die Stelle <em class="not-italic text-slate-200">rechts</em> von der Rundestelle.</li>
+            <li><span class="text-slate-200 font-medium">0 – 4</span> → abrunden (Stelle bleibt, Rest → 0)</li>
+            <li><span class="text-slate-200 font-medium">5 – 9</span> → aufrunden (Stelle +1, Rest → 0)</li>
+            <li class="pt-2 border-t border-slate-700/50 text-xs text-slate-500">
+              Beispiel: 4.736 auf Hundert gerundet → 4.700<br>
+              (3 &lt; 5 → abrunden)
+            </li>
+          </ul>
+        </div>
+
+      </div>
+    </section>
+
+    <footer class="py-6 text-center text-xs text-slate-500">
+      © <span id="y"></span> Brandon Hank · Düsseldorf
+    </footer>
+
+  </main><!-- Ende main -->
+
+  <!--
+    ════════════════════════════════════════════════════════
+    SKRIPT-BLOCK
+    ────────────────────────────────────────────────────────
+    Reihenfolge:
+      1. window.__i18nBase setzen → script.js findet i18n-Dateien
+      2. topbar.html laden → Navigation ins DOM einfügen
+      3. script.js laden  → Sprachwechsel & Theme aktiv
+      4. Seiten-Logik (Tafel, Quiz, Sachaufgaben) initialisieren
+    ════════════════════════════════════════════════════════
+  -->
+  <script>
+    /* ── 1. Pfad-Basis für i18n-Dateien ────────────────────────────
+       script.js sucht standardmäßig im gleichen Ordner nach i18n/.
+       Da diese Seite zwei Ebenen tief liegt (academy/5_klasse/),
+       muss der Basispfad auf die Projektwurzel zeigen.           */
+    window.__i18nBase = '../../';
+
+    /* ── 2 + 3. Topbar laden, dann script.js dynamisch anhängen ───
+       Warum dynamisch? script.js greift sofort auf DOM-Elemente
+       der Topbar zu (Buttons btn-de, btn-en, themeToggle).
+       Würde script.js im <head> stehen, wäre die Topbar noch
+       nicht im DOM und die addEventListener-Aufrufe würden fehlschlagen. */
+    fetch('../../topbar.html')
+      .then(res => res.text())
+      .then(html => {
+        document.getElementById('topbar-container').innerHTML = html;
+        const s = document.createElement('script');
+        s.src = '../../assets/js/script.js';
+        /* ── 4. Nach dem Laden von script.js die Seite initialisieren */
+        s.onload = init;
+        document.body.appendChild(s);
+      });
+
+    /* ══════════════════════════════════════════════════════════════
+       DATEN
+    ══════════════════════════════════════════════════════════════ */
+
+    /*
+     * Stellennamen: Index 0 = Einer (ganz rechts), Index 8 = Hundertmillionen.
+     * Das Array läuft also von rechts nach links – genau wie Stellen in einer Zahl.
+     */
+    const STELLEN = [
+      { kurz: 'E',  lang: 'Einer'             },
+      { kurz: 'Z',  lang: 'Zehner'            },
+      { kurz: 'H',  lang: 'Hunderter'         },
+      { kurz: 'T',  lang: 'Tausender'         },
+      { kurz: 'ZT', lang: 'Zehntausender'     },
+      { kurz: 'HT', lang: 'Hunderttausender'  },
+      { kurz: 'M',  lang: 'Millionen'         },
+      { kurz: 'ZM', lang: 'Zehnmillionen'     },
+      { kurz: 'HM', lang: 'Hundertmillionen'  },
+    ];
+
+    /*
+     * Sachaufgaben – jede hat:
+     *   kontext : kurzes Szenario (wird klein über der Frage angezeigt)
+     *   frage   : die eigentliche Aufgabenstellung
+     *   antwort : die exakte Zahl-Antwort (wird per == verglichen, daher String OK)
+     *   einheit : Einheit die rechts neben dem Eingabefeld steht
+     *   hinweis : kurze Erklärung die nach falscher Antwort erscheint
+     */
+    const SACHAUFGABEN = [
+      {
+        kontext : '🌍 Erdkunde',
+        frage   : 'Deutschland hat ca. 84.358.845 Einwohner. Runde diese Zahl auf Millionen.',
+        antwort : '84',
+        einheit : 'Millionen',
+        hinweis : '84.358.845 → die Stelle rechts von Millionen ist 3 (< 5) → abrunden → 84 Millionen'
+      },
+      {
+        kontext : '💰 Finanzen',
+        frage   : 'Ein Sportstadion kostet 473.600.000 €. Welche Ziffer steht auf der Zehntausender-Stelle?',
+        antwort : '0',
+        einheit : '',
+        hinweis : '473.600.000 → die Zehntausender-Stelle (5. von rechts) hat die Ziffer 0'
+      },
+      {
+        kontext : '🚗 Verkehr',
+        frage   : 'Auf der Autobahn wurden 2.340.000 Fahrzeuge gezählt. Wie viele Hunderttausender stecken in dieser Zahl?',
+        antwort : '23',
+        einheit : 'Hunderttausender',
+        hinweis : '2.340.000 ÷ 100.000 = 23,4 → es stecken 23 volle Hunderttausender drin'
+      },
+      {
+        kontext : '📚 Bibliothek',
+        frage   : 'Eine Nationalbibliothek besitzt 16.538.000 Bücher. Runde auf Hunderttausend.',
+        antwort : '16500000',
+        einheit : '',
+        hinweis : '16.538.000 → Tausender-Stelle = 8 (≥ 5) → Hunderttausend aufrunden → 16.500.000'
+      },
+      {
+        kontext : '🌊 Natur',
+        frage   : 'Der Amazonas transportiert pro Sekunde 209.000 m³ Wasser. Welche Ziffer steht auf der Tausender-Stelle?',
+        antwort : '9',
+        einheit : '',
+        hinweis : '209.000 → Tausender-Stelle (4. von rechts) hat die Ziffer 9'
+      },
+    ];
+
+    /* ══════════════════════════════════════════════════════════════
+       ABSCHNITT 1 – STELLENWERT-TAFEL
+    ══════════════════════════════════════════════════════════════ */
+
+    /*
+     * renderTafel()
+     * Liest den Wert aus dem Eingabefeld, zerlegt ihn in Ziffern
+     * und füllt die Tabelle im HTML.
+     *
+     * Aufbau der Tabelle:
+     *   <tr id="sv-header">  ← Zeile mit Stellennamen
+     *   <tr id="sv-digits">  ← Zeile mit den Ziffern der Zahl
+     *
+     * Die Stellen werden von links (höchste) nach rechts (Einer) angezeigt.
+     */
+    function renderTafel() {
+      const raw   = document.getElementById('sv-input').value.trim();
+      const num   = parseInt(raw, 10);
+
+      /* Ungültige Eingaben abfangen (leer, negativ, zu groß) */
+      if (isNaN(num) || num < 0 || num > 999999999) return;
+
+      /* Zahl als String damit wir einzelne Ziffern adressieren können */
+      const str   = String(num);
+
+      /*
+       * Stellen-Objekte aufbauen: wir wollen die höchste Stelle links.
+       * STELLEN[0] = Einer → Index in str ist str.length - 1.
+       * Daher bauen wir das Array von der höchsten belegten Stelle abwärts.
+       */
+      const anzahl = str.length;          /* Wie viele Stellen hat die Zahl? */
+      let headerHTML = '';
+      let digitHTML  = '';
+
+      for (let i = anzahl - 1; i >= 0; i--) {
+        /* i = Index in STELLEN-Array (0 = Einer, 1 = Zehner, …) */
+        const stelle  = STELLEN[i];
+        const ziffer  = str[anzahl - 1 - i]; /* Ziffer an dieser Stelle */
+
+        /*
+         * data-stelle-index speichert den STELLEN-Index in der Zelle,
+         * damit handleSvClick() weiß welche Stelle angeklickt wurde.
+         */
+        headerHTML += `
+          <th class="sv-cell px-3 py-2 text-slate-500 font-normal cursor-pointer
+                     hover:text-emerald-300 transition-colors border-b border-slate-800"
+              data-stelle-index="${i}"
+              onclick="handleSvClick(${i}, '${ziffer}')"
+              title="${stelle.lang} anklicken">
+            ${stelle.kurz}
+          </th>`;
+
+        digitHTML += `
+          <td class="sv-cell px-3 py-4 font-bold border-b border-slate-800
+                     cursor-pointer hover:text-emerald-300 transition-colors"
+              data-stelle-index="${i}"
+              onclick="handleSvClick(${i}, '${ziffer}')">
+            ${ziffer}
+          </td>`;
+      }
+
+      document.getElementById('sv-header').innerHTML = headerHTML;
+      document.getElementById('sv-digits').innerHTML  = digitHTML;
+
+      /* Info-Box zurücksetzen wenn die Zahl geändert wird */
+      document.getElementById('sv-info').classList.add('hidden');
+    }
+
+    /*
+     * handleSvClick(stelleIndex, ziffer)
+     * Wird aufgerufen wenn der Nutzer auf eine Spalte der Tafel klickt.
+     * Zeigt eine Info-Box mit dem vollen Stellennamen und dem Wert der Stelle.
+     *
+     * @param stelleIndex  Index in STELLEN-Array (0 = Einer)
+     * @param ziffer       Die Ziffer als String (z.B. '4')
+     */
+    function handleSvClick(stelleIndex, ziffer) {
+      const stelle   = STELLEN[stelleIndex];
+      const wert     = parseInt(ziffer) * Math.pow(10, stelleIndex); /* Stellenwert berechnen */
+      const infoBox  = document.getElementById('sv-info');
+
+      infoBox.textContent =
+        `Die Ziffer ${ziffer} steht auf der ${stelle.lang}-Stelle. ` +
+        `Ihr Stellenwert ist: ${wert.toLocaleString('de-DE')}`;
+
+      infoBox.classList.remove('hidden');
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       ABSCHNITT 2 – QUIZ
+    ══════════════════════════════════════════════════════════════ */
+
+    /* Aktueller Quiz-Zustand */
+    let quizRichtig = 0;   /* Anzahl richtiger Antworten in dieser Sitzung */
+    let quizGesamt  = 0;   /* Anzahl aller Versuche */
+    let quizAktuell = {};  /* Enthält die aktuelle Aufgabe { zahl, stelleIndex, richtig } */
+
+    /*
+     * newQuizAufgabe()
+     * Erzeugt eine neue zufällige Aufgabe:
+     *   1. Zufällige Zahl im Bereich 100.000 – 9.999.999
+     *   2. Zufällige Stelle
+     *   3. Vier Antwort-Buttons (einer richtig, drei falsch)
+     */
+    function newQuizAufgabe() {
+      /* Zufällige Zahl zwischen 100.000 und 9.999.999 */
+      const zahl  = Math.floor(Math.random() * 9900000) + 100000;
+      const str   = String(zahl);
+      const maxI  = str.length - 1;          /* Höchste vorhandene Stelle */
+
+      /* Zufälligen Stellen-Index wählen */
+      const stelleIdx = Math.floor(Math.random() * (maxI + 1));
+      const richtigeZiffer = parseInt(str[str.length - 1 - stelleIdx]);
+
+      quizAktuell = { zahl, stelleIdx, richtig: richtigeZiffer };
+
+      /* Zahl und Frage ins DOM schreiben */
+      document.getElementById('quiz-zahl').textContent =
+        zahl.toLocaleString('de-DE');
+      document.getElementById('quiz-frage').textContent =
+        `… ${STELLEN[stelleIdx].lang}-Stelle?`;
+      document.getElementById('quiz-feedback').textContent = '';
+
+      renderQuizButtons(richtigeZiffer);
+    }
+
+    /*
+     * renderQuizButtons(richtigeZiffer)
+     * Erzeugt 4 Antwort-Buttons: die richtige Ziffer + 3 zufällige andere.
+     * Die Reihenfolge wird gemischt damit die richtige Antwort nicht immer
+     * an derselben Position steht.
+     *
+     * @param richtigeZiffer  Zahl 0–9
+     */
+    function renderQuizButtons(richtigeZiffer) {
+      /* Ablenkungen erzeugen: andere Ziffern 0–9, keine Duplikate */
+      const pool = [0,1,2,3,4,5,6,7,8,9].filter(z => z !== richtigeZiffer);
+      /* Pool mischen (Fisher-Yates) */
+      for (let i = pool.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [pool[i], pool[j]] = [pool[j], pool[i]];
+      }
+      const optionen = [richtigeZiffer, pool[0], pool[1], pool[2]];
+      /* Optionen noch einmal mischen damit die richtige nicht immer an Pos. 0 ist */
+      for (let i = 3; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [optionen[i], optionen[j]] = [optionen[j], optionen[i]];
+      }
+
+      const container = document.getElementById('quiz-buttons');
+      container.innerHTML = optionen.map(z => `
+        <button
+          class="btn-answer rounded-2xl border border-slate-700 bg-slate-800 px-4 py-4
+                 text-2xl font-bold text-slate-100 hover:border-emerald-400/50
+                 transition-colors"
+          onclick="checkQuiz(${z})">
+          ${z}
+        </button>`).join('');
+    }
+
+    /*
+     * checkQuiz(gewählt)
+     * Verarbeitet den Klick auf einen Antwort-Button.
+     *   - Richtig → Button grün, Punkte erhöhen
+     *   - Falsch  → gewählter Button rot, richtiger Button grün
+     *
+     * @param gewählt  Die Ziffer auf die der Schüler geklickt hat
+     */
+    function checkQuiz(gewählt) {
+      quizGesamt++;
+      const richtig = quizAktuell.richtig;
+      const buttons = document.querySelectorAll('#quiz-buttons .btn-answer');
+
+      /* Alle Buttons deaktivieren – kein zweiter Klick möglich */
+      buttons.forEach(btn => btn.disabled = true);
+
+      /* Richtigen und falschen Button markieren */
+      buttons.forEach(btn => {
+        const wert = parseInt(btn.textContent.trim());
+        if (wert === richtig)      btn.classList.add('btn-correct');
+        else if (wert === gewählt) btn.classList.add('btn-wrong');
+      });
+
+      if (gewählt === richtig) {
+        quizRichtig++;
+        document.getElementById('quiz-feedback').textContent = '✓ Richtig!';
+        document.getElementById('quiz-feedback').className =
+          'text-center text-base font-semibold min-h-[1.5em] mb-4 text-emerald-400';
+      } else {
+        document.getElementById('quiz-feedback').textContent =
+          `✗ Leider falsch. Richtig wäre ${richtig} gewesen.`;
+        document.getElementById('quiz-feedback').className =
+          'text-center text-base font-semibold min-h-[1.5em] mb-4 text-red-400';
+      }
+
+      /* Punkte-Anzeige aktualisieren */
+      document.getElementById('quiz-score').textContent =
+        `${quizRichtig} / ${quizGesamt}`;
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       ABSCHNITT 3 – SACHAUFGABEN
+    ══════════════════════════════════════════════════════════════ */
+
+    let sachIdx     = 0;   /* Index der aktuellen Sachaufgabe */
+    let sachRichtig = 0;   /* Richtige Antworten */
+    let sachGesamt  = 0;   /* Versuche gesamt */
+
+    /*
+     * renderSachDots()
+     * Zeichnet die Fortschritts-Punkte (einer pro Aufgabe).
+     * done = bereits beantwortet, current = aktuelle Aufgabe.
+     */
+    function renderSachDots() {
+      const container = document.getElementById('sach-dots');
+      container.innerHTML = SACHAUFGABEN.map((_, i) => {
+        let cls = 'sach-dot';
+        if (i < sachIdx)      cls += ' done';
+        else if (i === sachIdx) cls += ' current';
+        return `<span class="${cls}" aria-label="Aufgabe ${i + 1}"></span>`;
+      }).join('');
+    }
+
+    /*
+     * showSachAufgabe()
+     * Lädt die Aufgabe am aktuellen sachIdx ins DOM.
+     * Wird beim Start und bei "Nächste Aufgabe" aufgerufen.
+     */
+    function showSachAufgabe() {
+      /* Alle Aufgaben erledigt → Abschluss-Meldung */
+      if (sachIdx >= SACHAUFGABEN.length) {
+        document.getElementById('sach-karte').innerHTML =
+          `<p class="text-center text-emerald-300 text-lg font-semibold py-6">
+             🎉 Alle Sachaufgaben gelöst! ${sachRichtig} von ${SACHAUFGABEN.length} richtig.
+           </p>`;
+        document.getElementById('sach-check-btn').classList.add('hidden');
+        document.getElementById('sach-next-btn').classList.add('hidden');
+        return;
+      }
+
+      const a = SACHAUFGABEN[sachIdx];
+      document.getElementById('sach-kontext').textContent = a.kontext;
+      document.getElementById('sach-frage').textContent   = a.frage;
+      document.getElementById('sach-einheit').textContent = a.einheit;
+      document.getElementById('sach-input').value         = '';
+      document.getElementById('sach-feedback').textContent = '';
+      document.getElementById('sach-input').disabled      = false;
+      document.getElementById('sach-check-btn').classList.remove('hidden');
+      document.getElementById('sach-next-btn').classList.add('hidden');
+
+      /* Fade-In Animation neu starten */
+      const karte = document.getElementById('sach-karte');
+      karte.classList.remove('anim-fadein');
+      void karte.offsetWidth;     /* Layout-Neuberechnung erzwingen damit Animation neu startet */
+      karte.classList.add('anim-fadein');
+
+      renderSachDots();
+    }
+
+    /*
+     * checkSach()
+     * Wertet die Eingabe des Schülers aus.
+     * Vergleich: Leerzeichen entfernen, Punkte entfernen (Tausender-Trennzeichen).
+     */
+    function checkSach() {
+      const input    = document.getElementById('sach-input');
+      const feedback = document.getElementById('sach-feedback');
+      /* Eingabe normalisieren: Leerzeichen + Tausender-Punkte entfernen */
+      const eingabe  = input.value.trim().replace(/\./g, '').replace(/\s/g, '');
+      const richtig  = String(SACHAUFGABEN[sachIdx].antwort).replace(/\./g, '');
+
+      sachGesamt++;
+      input.disabled = true;
+      document.getElementById('sach-check-btn').classList.add('hidden');
+      document.getElementById('sach-next-btn').classList.remove('hidden');
+
+      if (eingabe === richtig) {
+        sachRichtig++;
+        feedback.textContent  = '✓ Richtig!';
+        feedback.className    = 'text-center text-base font-semibold min-h-[1.5em] mb-4 text-emerald-400';
+      } else {
+        feedback.textContent  =
+          `✗ Leider falsch. ${SACHAUFGABEN[sachIdx].hinweis}`;
+        feedback.className    = 'text-center text-base font-semibold min-h-[1.5em] mb-4 text-red-400';
+      }
+
+      document.getElementById('sach-score').textContent =
+        `${sachRichtig} / ${sachGesamt}`;
+    }
+
+    /*
+     * nextSachAufgabe()
+     * Geht zur nächsten Sachaufgabe.
+     */
+    function nextSachAufgabe() {
+      sachIdx++;
+      showSachAufgabe();
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       INITIALISIERUNG
+       Wird aufgerufen sobald script.js fertig geladen ist (s.onload).
+    ══════════════════════════════════════════════════════════════ */
+    function init() {
+      renderTafel();        /* Tafel mit dem Startwert 4.705.318 füllen */
+      newQuizAufgabe();     /* Erste Quiz-Aufgabe erzeugen */
+      showSachAufgabe();    /* Erste Sachaufgabe laden */
+    }
+  </script>
+
+</body>
+</html>

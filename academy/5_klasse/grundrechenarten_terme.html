@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Grundrechenarten &amp; Terme – Klasse 5 | MathAcademy</title>
+
+  <link rel="icon"             href="../../favicon.ico" />
+  <link rel="apple-touch-icon" href="../../apple-touch-icon.png" />
+  <link rel="manifest"         href="../../site.webmanifest" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../../assets/css/style.css?v=1.0" />
+
+  <style>
+    /* ── Animationen ───────────────────────────────────────────── */
+
+    /* Karte gleitet beim Erscheinen sanft von unten herein */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0);    }
+    }
+    /* Kurzes Wackeln bei falscher Antwort */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0);  }
+      20%       { transform: translateX(-8px); }
+      40%       { transform: translateX( 8px); }
+      60%       { transform: translateX(-5px); }
+      80%       { transform: translateX( 5px); }
+    }
+    .anim-fadein { animation: fadeInUp 0.35s ease both; }
+    .anim-shake  { animation: shake   0.4s  ease;      }
+
+    /* ── Term-Rechner ──────────────────────────────────────────── */
+
+    /*
+     * Jedes Token (Zahl, Operator, Klammer) im Schritt-für-Schritt-Rechner
+     * bekommt diesen Grundstil.
+     */
+    .token {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 2rem;
+      padding: 0.15rem 0.4rem;
+      border-radius: 6px;
+      font-variant-numeric: tabular-nums;
+      transition: background-color 0.25s, color 0.25s;
+    }
+    /* Hervorgehobener Token – wird während eines Rechenschritts markiert */
+    .token.highlight {
+      background-color: rgba(52, 211, 153, 0.25);
+      color: #6ee7b7;
+      font-weight: 700;
+    }
+    /* Bereits berechneter Teilterm – gedämpft dargestellt */
+    .token.done {
+      opacity: 0.4;
+    }
+
+    /* ── Quiz-Buttons ──────────────────────────────────────────── */
+    .btn-answer:hover:not(:disabled) { filter: brightness(1.15); }
+    .btn-answer:disabled { opacity: 0.55; cursor: not-allowed; }
+    .btn-correct {
+      background-color: #059669 !important;
+      border-color:     #34d399 !important;
+      color: #fff !important;
+    }
+    .btn-wrong {
+      background-color: #dc2626 !important;
+      border-color:     #f87171 !important;
+      color: #fff !important;
+    }
+
+    /* ── Sachaufgaben-Fortschrittspunkte ──────────────────────── */
+    .sach-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background-color: #334155;
+      transition: background-color 0.2s;
+    }
+    .sach-dot.done    { background-color: #34d399; }
+    .sach-dot.current {
+      background-color: #6ee7b7;
+      box-shadow: 0 0 0 3px rgba(52,211,153,0.25);
+    }
+
+    /* ── Eingabefelder ─────────────────────────────────────────── */
+    .antwort-input:focus {
+      outline: none;
+      border-color: #34d399;
+      box-shadow: 0 0 0 3px rgba(52,211,153,0.2);
+    }
+
+    /* ── Term-Builder Buttons ──────────────────────────────────── */
+    /*
+     * Die Zahlen- und Operator-Buttons im interaktiven Term-Builder.
+     * Grüner Umrandung beim Hover zeigt: klickbar.
+     */
+    .term-btn:hover { border-color: rgba(52,211,153,0.5); color: #fff; }
+  </style>
+</head>
+
+<body class="bg-slate-950 text-slate-100 min-h-screen">
+
+  <!-- Topbar-Container: wird per JS mit der Navigation befüllt -->
+  <div id="topbar-container"></div>
+
+  <main class="max-w-4xl mx-auto px-4 pb-16 pt-6">
+
+    <!-- Zurück-Link -->
+    <a href="/academy.html"
+       class="inline-flex items-center gap-2 text-sm text-slate-400
+              hover:text-emerald-300 transition-colors mb-6">
+      ← Zurück zur Akademie
+    </a>
+
+    <!-- Seiten-Header -->
+    <div class="mb-10">
+      <span class="text-xs font-semibold uppercase tracking-widest text-emerald-400 mb-2 block">
+        Klasse 5 · Aufbau
+      </span>
+      <h1 class="text-3xl sm:text-4xl font-bold text-slate-100 mb-3">
+        Grundrechenarten &amp; Terme
+      </h1>
+      <p class="text-slate-400 text-base max-w-xl">
+        Punkt-vor-Strich, Klammerregeln und gemischte Terme – verstehe
+        die Rechenreihenfolge mit dem interaktiven Schritt-für-Schritt-Rechner
+        und festige dein Wissen im Quiz.
+      </p>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════
+         ABSCHNITT 1: SCHRITT-FÜR-SCHRITT-RECHNER
+         Ziel: Schüler geben einen Term ein und sehen wie
+               der Rechner ihn Schritt für Schritt auflöst –
+               erst Klammern, dann Punkt, dann Strich.
+    ════════════════════════════════════════════════════ -->
+    <section class="mb-14" aria-labelledby="rechner-title">
+
+      <div class="flex items-center gap-3 mb-6">
+        <span class="w-8 h-8 rounded-full bg-emerald-400 text-slate-950 text-sm font-bold
+                     flex items-center justify-center flex-shrink-0">1</span>
+        <h2 id="rechner-title" class="text-xl font-semibold">
+          Schritt-für-Schritt-Rechner
+        </h2>
+      </div>
+
+      <p class="text-slate-400 text-sm mb-5">
+        Klicke auf die Beispiele oder gib einen eigenen Term ein.
+        Der Rechner zeigt dir jeden Rechenschritt einzeln an.
+      </p>
+
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+
+        <!-- Beispiel-Terme als schnelle Auswahl -->
+        <div class="flex flex-wrap gap-2 mb-5">
+          <!--
+            Jeder Button setzt den Term-Input und startet die Berechnung sofort.
+            Die Terme zeigen typische Klasse-5-Fälle: Punkt-vor-Strich, Klammern,
+            gemischte Rechenarten.
+          -->
+          <button onclick="setTerm('4 + 3 * 2')"
+                  class="term-btn rounded-full border border-slate-700 bg-slate-800
+                         px-3 py-1.5 text-sm text-slate-300 transition-colors">
+            4 + 3 × 2
+          </button>
+          <button onclick="setTerm('(4 + 3) * 2')"
+                  class="term-btn rounded-full border border-slate-700 bg-slate-800
+                         px-3 py-1.5 text-sm text-slate-300 transition-colors">
+            (4 + 3) × 2
+          </button>
+          <button onclick="setTerm('20 - 2 * 4 + 1')"
+                  class="term-btn rounded-full border border-slate-700 bg-slate-800
+                         px-3 py-1.5 text-sm text-slate-300 transition-colors">
+            20 − 2 × 4 + 1
+          </button>
+          <button onclick="setTerm('(10 - 4) * 3 + 2')"
+                  class="term-btn rounded-full border border-slate-700 bg-slate-800
+                         px-3 py-1.5 text-sm text-slate-300 transition-colors">
+            (10 − 4) × 3 + 2
+          </button>
+          <button onclick="setTerm('100 / 5 - 3 * 2')"
+                  class="term-btn rounded-full border border-slate-700 bg-slate-800
+                         px-3 py-1.5 text-sm text-slate-300 transition-colors">
+            100 ÷ 5 − 3 × 2
+          </button>
+        </div>
+
+        <!-- Eigene Term-Eingabe -->
+        <div class="flex flex-wrap gap-3 items-center mb-6">
+          <input
+            id="term-input"
+            type="text"
+            value="4 + 3 * 2"
+            placeholder="z.B. 4 + 3 * 2"
+            class="antwort-input flex-1 min-w-[200px] rounded-2xl border border-slate-700
+                   bg-slate-800 px-4 py-3 text-slate-100 text-lg font-mono transition-colors"
+            aria-label="Term eingeben"
+            onkeydown="if(event.key==='Enter') startRechner()"
+          />
+          <button
+            onclick="startRechner()"
+            class="rounded-full bg-emerald-400 text-slate-950 font-semibold
+                   px-5 py-3 text-sm hover:bg-emerald-300 transition-colors">
+            Berechnen
+          </button>
+        </div>
+
+        <!--
+          Schritt-Anzeige: Hier erscheinen die einzelnen Rechenschritte.
+          Jeder Schritt wird als eigene Zeile mit Erklärung ausgegeben.
+        -->
+        <div id="rechner-schritte" class="space-y-3" aria-live="polite">
+          <!-- Schritte werden durch startRechner() eingefügt -->
+        </div>
+
+        <!-- Ergebnis-Box – erscheint erst wenn alle Schritte abgeschlossen sind -->
+        <div id="rechner-ergebnis"
+             class="hidden mt-5 rounded-2xl border border-emerald-400/30
+                    bg-emerald-400/10 px-5 py-4 text-emerald-300 font-semibold text-lg">
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════
+         ABSCHNITT 2: QUIZ – Rechenreihenfolge
+         Ziel: Schüler berechnen gemischte Terme und wählen
+               das richtige Ergebnis aus 4 Optionen.
+    ════════════════════════════════════════════════════ -->
+    <section class="mb-14" aria-labelledby="quiz-title">
+
+      <div class="flex items-center gap-3 mb-6">
+        <span class="w-8 h-8 rounded-full bg-emerald-400 text-slate-950 text-sm font-bold
+                     flex items-center justify-center flex-shrink-0">2</span>
+        <h2 id="quiz-title" class="text-xl font-semibold">
+          Quiz – Rechenreihenfolge
+        </h2>
+      </div>
+
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+
+        <!-- Punkte-Anzeige -->
+        <div class="flex justify-end mb-4">
+          <span class="text-sm font-semibold text-slate-500">
+            Punkte:&nbsp;<span id="quiz-score" class="text-emerald-300">0 / 0</span>
+          </span>
+        </div>
+
+        <!-- Term-Anzeige -->
+        <div id="quiz-karte" class="mb-6 text-center anim-fadein">
+          <p class="text-xs uppercase tracking-widest text-slate-500 mb-3">
+            Berechne den Term:
+          </p>
+          <!-- Großer Term den der Schüler ausrechnen soll -->
+          <p id="quiz-term"
+             class="text-3xl sm:text-4xl font-bold font-mono text-slate-100 mb-2 leading-relaxed">
+            <!-- wird durch newQuizAufgabe() gesetzt -->
+          </p>
+        </div>
+
+        <!-- 4 Antwort-Buttons -->
+        <div id="quiz-buttons" class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+          <!-- werden durch renderQuizButtons() erzeugt -->
+        </div>
+
+        <!-- Feedback -->
+        <p id="quiz-feedback"
+           class="text-center text-base font-semibold min-h-[1.5em] mb-4"
+           aria-live="polite">
+        </p>
+
+        <!-- Neue Aufgabe -->
+        <div class="flex justify-center">
+          <button onclick="newQuizAufgabe()"
+                  class="rounded-full border border-slate-700 text-slate-300 font-semibold
+                         px-6 py-2.5 text-sm hover:border-emerald-400/50 hover:text-slate-100
+                         transition-colors">
+            Neue Aufgabe
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════
+         ABSCHNITT 3: SACHAUFGABEN
+    ════════════════════════════════════════════════════ -->
+    <section class="mb-14" aria-labelledby="sach-title">
+
+      <div class="flex items-center gap-3 mb-6">
+        <span class="w-8 h-8 rounded-full bg-emerald-400 text-slate-950 text-sm font-bold
+                     flex items-center justify-center flex-shrink-0">3</span>
+        <h2 id="sach-title" class="text-xl font-semibold">Sachaufgaben</h2>
+      </div>
+
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+
+        <!-- Fortschritt + Punkte -->
+        <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
+          <div class="flex gap-2 items-center" id="sach-dots"></div>
+          <span class="text-sm font-semibold text-slate-500">
+            Punkte:&nbsp;<span id="sach-score" class="text-emerald-300">0 / 0</span>
+          </span>
+        </div>
+
+        <!-- Aufgaben-Karte -->
+        <div id="sach-karte" class="mb-5 anim-fadein">
+          <p id="sach-kontext"
+             class="text-xs font-semibold uppercase tracking-widest text-emerald-400/70 mb-2"></p>
+          <p id="sach-frage"
+             class="text-lg font-semibold text-slate-200 mb-4 leading-relaxed"></p>
+          <!-- Term-Hint: zeigt den aufzuschreibenden Term damit Schüler das Muster erkennen -->
+          <p id="sach-term-hint"
+             class="text-sm text-slate-500 mb-4 font-mono"></p>
+          <div class="flex items-center gap-3 flex-wrap">
+            <input
+              id="sach-input"
+              type="text"
+              inputmode="numeric"
+              placeholder="Deine Antwort"
+              class="antwort-input w-44 rounded-2xl border border-slate-700 bg-slate-800
+                     px-4 py-3 text-slate-100 text-lg font-bold transition-colors"
+              onkeydown="if(event.key==='Enter') checkSach()"
+            />
+            <span id="sach-einheit" class="text-base font-semibold text-emerald-300"></span>
+          </div>
+        </div>
+
+        <!-- Feedback -->
+        <p id="sach-feedback"
+           class="text-center text-base font-semibold min-h-[1.5em] mb-4"
+           aria-live="polite"></p>
+
+        <!-- Buttons -->
+        <div class="flex gap-3 justify-center flex-wrap">
+          <button id="sach-check-btn" onclick="checkSach()"
+                  class="rounded-full bg-emerald-400 text-slate-950 font-semibold
+                         px-6 py-2.5 text-sm hover:bg-emerald-300 transition-colors">
+            Prüfen
+          </button>
+          <button id="sach-next-btn" onclick="nextSachAufgabe()"
+                  class="hidden rounded-full border border-slate-700 text-slate-300 font-semibold
+                         px-6 py-2.5 text-sm hover:border-emerald-400/50 transition-colors">
+            Nächste Aufgabe →
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════
+         MERKHILFE
+    ════════════════════════════════════════════════════ -->
+    <section aria-labelledby="theorie-title" class="mb-10">
+
+      <h2 id="theorie-title"
+          class="text-sm font-semibold text-slate-300 mb-4 uppercase tracking-wide">
+        Merkhilfe – Rechenreihenfolge
+      </h2>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+
+        <!-- Karte 1: Klammern zuerst -->
+        <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-5">
+          <h3 class="font-semibold text-emerald-300 mb-3 text-sm">
+            1️⃣ Klammern zuerst
+          </h3>
+          <ul class="text-slate-400 text-sm space-y-2 leading-relaxed">
+            <li>Alles in <span class="text-slate-200 font-medium">( )</span> wird zuerst berechnet.</li>
+            <li class="text-xs text-slate-500 pt-1 border-t border-slate-700/50">
+              (3 + 4) × 2 = 7 × 2 = <span class="text-emerald-300">14</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Karte 2: Punkt vor Strich -->
+        <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-5">
+          <h3 class="font-semibold text-emerald-300 mb-3 text-sm">
+            2️⃣ Punkt vor Strich
+          </h3>
+          <ul class="text-slate-400 text-sm space-y-2 leading-relaxed">
+            <li><span class="text-slate-200 font-medium">×</span> und <span class="text-slate-200 font-medium">÷</span> vor <span class="text-slate-200 font-medium">+</span> und <span class="text-slate-200 font-medium">−</span></li>
+            <li class="text-xs text-slate-500 pt-1 border-t border-slate-700/50">
+              4 + 3 × 2 = 4 + 6 = <span class="text-emerald-300">10</span> (nicht 14!)
+            </li>
+          </ul>
+        </div>
+
+        <!-- Karte 3: Von links nach rechts -->
+        <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-5">
+          <h3 class="font-semibold text-emerald-300 mb-3 text-sm">
+            3️⃣ Von links nach rechts
+          </h3>
+          <ul class="text-slate-400 text-sm space-y-2 leading-relaxed">
+            <li>Gleiche Stufe → von <span class="text-slate-200 font-medium">links</span> nach <span class="text-slate-200 font-medium">rechts</span> rechnen.</li>
+            <li class="text-xs text-slate-500 pt-1 border-t border-slate-700/50">
+              12 ÷ 4 × 3 = 3 × 3 = <span class="text-emerald-300">9</span> (nicht 1!)
+            </li>
+          </ul>
+        </div>
+
+      </div>
+    </section>
+
+    <footer class="py-6 text-center text-xs text-slate-500">
+      © <span id="y"></span> Brandon Hank · Düsseldorf
+    </footer>
+
+  </main>
+
+  <script>
+    /* ── Topbar + script.js laden ──────────────────────────────── */
+    window.__i18nBase = '../../';
+    fetch('../../topbar.html')
+      .then(res => res.text())
+      .then(html => {
+        document.getElementById('topbar-container').innerHTML = html;
+        const s = document.createElement('script');
+        s.src    = '../../assets/js/script.js';
+        s.onload = init;
+        document.body.appendChild(s);
+      });
+
+    /* ══════════════════════════════════════════════════════════
+       DATEN – Quiz-Aufgaben
+       Jede Aufgabe hat:
+         term     : String der angezeigt wird (mit × ÷ − für Lesbarkeit)
+         ausdruck : JavaScript-Ausdruck der ausgewertet wird
+         falsche  : 3 typische Fehler-Antworten (z.B. wenn man Reihenfolge ignoriert)
+    ══════════════════════════════════════════════════════════ */
+    const QUIZ_AUFGABEN = [
+      { term: '4 + 3 × 2',           ausdruck: '4 + 3 * 2',           falsche: [14, 5, 12]  },
+      { term: '(4 + 3) × 2',         ausdruck: '(4 + 3) * 2',         falsche: [10, 9, 11]  },
+      { term: '20 − 2 × 4 + 1',      ausdruck: '20 - 2 * 4 + 1',      falsche: [73, 9, 14]  },
+      { term: '(10 − 4) × 3 + 2',    ausdruck: '(10 - 4) * 3 + 2',    falsche: [26, 10, 30] },
+      { term: '100 ÷ 5 − 3 × 2',     ausdruck: '100 / 5 - 3 * 2',     falsche: [188, 6, 22] },
+      { term: '3 × (8 − 5) + 7',     ausdruck: '3 * (8 - 5) + 7',     falsche: [9, 22, 10]  },
+      { term: '50 ÷ (2 + 3) × 4',    ausdruck: '50 / (2 + 3) * 4',    falsche: [4, 46, 44]  },
+      { term: '6 + 4 × 3 − 8 ÷ 2',  ausdruck: '6 + 4 * 3 - 8 / 2',  falsche: [10, 13, 20] },
+    ];
+
+    /*
+     * DATEN – Sachaufgaben
+     * term_hint: zeigt den Term den der Schüler aufschreiben würde –
+     *            hilft beim Übergang von Sprache zu Mathematik.
+     */
+    const SACHAUFGABEN = [
+      {
+        kontext   : '🛒 Einkaufen',
+        frage     : 'Anna kauft 3 Hefte für je 2 € und 1 Lineal für 4 €. Wie viel zahlt sie insgesamt?',
+        term_hint : 'Term: 3 × 2 + 4',
+        antwort   : '10',
+        einheit   : '€',
+        hinweis   : '3 × 2 = 6, dann 6 + 4 = 10 €'
+      },
+      {
+        kontext   : '🏃 Sport',
+        frage     : 'Ein Läufer läuft 4 Runden à 200 m und dann noch 2 × 150 m. Wie viele Meter lief er?',
+        term_hint : 'Term: 4 × 200 + 2 × 150',
+        antwort   : '1100',
+        einheit   : 'm',
+        hinweis   : '4 × 200 = 800, 2 × 150 = 300, dann 800 + 300 = 1100 m'
+      },
+      {
+        kontext   : '🎁 Geburtstag',
+        frage     : 'Tim hat 50 € und gibt (3 × 8 + 6) € für Geschenke aus. Wie viel hat er noch?',
+        term_hint : 'Term: 50 − (3 × 8 + 6)',
+        antwort   : '20',
+        einheit   : '€',
+        hinweis   : 'Klammer: 3 × 8 = 24, 24 + 6 = 30. Dann 50 − 30 = 20 €'
+      },
+      {
+        kontext   : '📦 Lager',
+        frage     : 'In einem Lager stehen 6 Regale mit je 4 Kisten, plus 2 Einzelkisten. Wie viele Kisten sind es?',
+        term_hint : 'Term: 6 × 4 + 2',
+        antwort   : '26',
+        einheit   : 'Kisten',
+        hinweis   : '6 × 4 = 24, dann 24 + 2 = 26 Kisten'
+      },
+      {
+        kontext   : '🚌 Ausflug',
+        frage     : 'Eine Klasse von 28 Schülern teilt sich in (4 × 3) Gruppen. Wie viele Schüler sind pro Gruppe, wenn alle gleich groß sind?',
+        term_hint : 'Term: 28 ÷ (4 × 3)',
+        antwort   : '2',
+        einheit   : 'Schüler',
+        hinweis   : '4 × 3 = 12 Gruppen, dann 28 ÷ 12 ≈ 2 (vereinfacht für Klasse 5)'
+      },
+    ];
+
+    /* ══════════════════════════════════════════════════════════
+       ABSCHNITT 1 – SCHRITT-FÜR-SCHRITT-RECHNER
+    ══════════════════════════════════════════════════════════ */
+
+    /*
+     * setTerm(termString)
+     * Setzt den Eingabe-Wert und startet die Berechnung sofort.
+     * Wird von den Beispiel-Buttons aufgerufen.
+     */
+    function setTerm(termString) {
+      document.getElementById('term-input').value = termString;
+      startRechner();
+    }
+
+    /*
+     * startRechner()
+     * Liest den Term aus dem Input, validiert ihn und zeigt die Schritte an.
+     *
+     * Sicherheitshinweis:
+     *   eval() wird hier bewusst eingesetzt, weil nur +,-,*,/,(,),Ziffern
+     *   und Leerzeichen erlaubt sind (Whitelist-Prüfung unten).
+     *   Fremde Zeichen werden abgelehnt → kein Code-Injection möglich.
+     */
+    function startRechner() {
+      const raw = document.getElementById('term-input').value.trim();
+
+      /* ── Sicherheits-Whitelist: nur Ziffern und Rechenzeichen erlaubt ── */
+      if (!/^[\d\s\+\-\*\/\(\)\.]+$/.test(raw)) {
+        zeigeFehler('Ungültige Zeichen. Erlaubt: Ziffern, + - * / ( )');
+        return;
+      }
+
+      const schritte  = document.getElementById('rechner-schritte');
+      const ergebnis  = document.getElementById('rechner-ergebnis');
+      schritte.innerHTML = '';
+      ergebnis.classList.add('hidden');
+
+      /* Anzeige-String: * → ×, / → ÷, - → − (typografisch korrekt) */
+      const anzeige = raw.replace(/\*/g,'×').replace(/\//g,'÷').replace(/-/g,'−');
+
+      /* Schritt 0: Original-Term anzeigen */
+      fuegeSchrittHinzu(`Gegeben: <span class="font-mono text-slate-200">${anzeige}</span>`, '');
+
+      /*
+       * Reihenfolge der Auflösung:
+       *   1. Klammern (innerste zuerst)
+       *   2. Punkt-Operatoren (* /)
+       *   3. Strich-Operatoren (+ -)
+       *
+       * Wir simulieren das indem wir den Term schrittweise vereinfachen
+       * und nach jedem Schritt den Zwischenzustand anzeigen.
+       */
+      let term = raw;
+
+      /* ─ Schritt 1: Klammern auflösen ──────────────────────── */
+      let klammerRegex = /\(([^()]+)\)/;  /* Findet die innerste Klammer */
+      let runde = 1;
+      while (klammerRegex.test(term)) {
+        term = term.replace(klammerRegex, (match, inner) => {
+          const teilErgebnis = eval(inner);
+          const innerAnzeige = inner.replace(/\*/g,'×').replace(/\//g,'÷').replace(/-/g,'−');
+          fuegeSchrittHinzu(
+            `Klammer ${runde}: <span class="font-mono text-emerald-300">(${innerAnzeige})</span> = ${teilErgebnis}`,
+            term.replace(/\*/g,'×').replace(/\//g,'÷').replace(/-/g,'−')
+               .replace(match, `<span class="token highlight">${teilErgebnis}</span>`)
+          );
+          runde++;
+          return teilErgebnis;
+        });
+      }
+
+      /* ─ Schritt 2: Punkt-Operatoren (* /) ─────────────────── */
+      /*
+       * Regex erklärt:
+       *   (-?\d+\.?\d*)   erste Zahl (optional negativ, optional Dezimal)
+       *   \s*[*\/]\s*     Operator * oder / mit optionalen Leerzeichen
+       *   (-?\d+\.?\d*)   zweite Zahl
+       */
+      let punktRegex = /(-?\d+\.?\d*)\s*([*\/])\s*(-?\d+\.?\d*)/;
+      while (punktRegex.test(term)) {
+        term = term.replace(punktRegex, (match, a, op, b) => {
+          const teilErgebnis = op === '*' ? parseFloat(a) * parseFloat(b)
+                                          : parseFloat(a) / parseFloat(b);
+          const opAnzeige    = op === '*' ? '×' : '÷';
+          fuegeSchrittHinzu(
+            `Punkt: <span class="font-mono text-emerald-300">${a} ${opAnzeige} ${b}</span> = ${teilErgebnis}`,
+            ''
+          );
+          return teilErgebnis;
+        });
+      }
+
+      /* ─ Schritt 3: Strich-Operatoren (+ -) ─────────────────── */
+      let strichRegex = /(-?\d+\.?\d*)\s*([+\-])\s*(\d+\.?\d*)/;
+      while (strichRegex.test(term)) {
+        term = term.replace(strichRegex, (match, a, op, b) => {
+          const teilErgebnis = op === '+' ? parseFloat(a) + parseFloat(b)
+                                          : parseFloat(a) - parseFloat(b);
+          const opAnzeige    = op === '+' ? '+' : '−';
+          fuegeSchrittHinzu(
+            `Strich: <span class="font-mono text-emerald-300">${a} ${opAnzeige} ${b}</span> = ${teilErgebnis}`,
+            ''
+          );
+          return teilErgebnis;
+        });
+      }
+
+      /* Endergebnis anzeigen */
+      const endwert = parseFloat(term);
+      ergebnis.innerHTML =
+        `Ergebnis: <span class="text-slate-100">${anzeige}</span> = <span class="text-emerald-300">${endwert}</span>`;
+      ergebnis.classList.remove('hidden');
+    }
+
+    /*
+     * fuegeSchrittHinzu(erklaerung, termAnzeige)
+     * Fügt eine neue Zeile in die Schritt-Liste ein.
+     *
+     * @param erklaerung  HTML-String mit der Erklärung des Schritts
+     * @param termAnzeige HTML-String mit dem aktuellen Term-Zustand (optional)
+     */
+    function fuegeSchrittHinzu(erklaerung, termAnzeige) {
+      const container = document.getElementById('rechner-schritte');
+      const div = document.createElement('div');
+      div.className = 'rounded-2xl border border-slate-700/50 bg-slate-800/40 px-4 py-3 text-sm anim-fadein';
+      div.innerHTML = `<p class="text-slate-300">${erklaerung}</p>` +
+                      (termAnzeige ? `<p class="text-slate-500 font-mono mt-1 text-xs">${termAnzeige}</p>` : '');
+      container.appendChild(div);
+    }
+
+    /*
+     * zeigeFehler(msg)
+     * Zeigt eine Fehlermeldung im Schritt-Bereich an.
+     */
+    function zeigeFehler(msg) {
+      const schritte = document.getElementById('rechner-schritte');
+      schritte.innerHTML =
+        `<div class="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-red-400 text-sm">
+           ⚠ ${msg}
+         </div>`;
+      document.getElementById('rechner-ergebnis').classList.add('hidden');
+    }
+
+    /* ══════════════════════════════════════════════════════════
+       ABSCHNITT 2 – QUIZ
+    ══════════════════════════════════════════════════════════ */
+
+    let quizRichtig = 0;
+    let quizGesamt  = 0;
+    let quizAktuell = null; /* Aktuelle Aufgabe aus QUIZ_AUFGABEN */
+
+    /*
+     * newQuizAufgabe()
+     * Wählt eine zufällige Aufgabe aus QUIZ_AUFGABEN und baut die Buttons auf.
+     */
+    function newQuizAufgabe() {
+      /* Zufällige Aufgabe wählen – möglichst nicht dieselbe wie zuvor */
+      let idx;
+      do { idx = Math.floor(Math.random() * QUIZ_AUFGABEN.length); }
+      while (QUIZ_AUFGABEN[idx] === quizAktuell && QUIZ_AUFGABEN.length > 1);
+
+      quizAktuell = QUIZ_AUFGABEN[idx];
+      const richtig = eval(quizAktuell.ausdruck); /* Ergebnis berechnen */
+
+      document.getElementById('quiz-term').textContent = quizAktuell.term;
+      document.getElementById('quiz-feedback').textContent = '';
+
+      renderQuizButtons(richtig, quizAktuell.falsche);
+    }
+
+    /*
+     * renderQuizButtons(richtig, falsche)
+     * Baut 4 Antwort-Buttons: die richtige Zahl + 3 Ablenkungen.
+     * Reihenfolge wird gemischt.
+     *
+     * @param richtig  Zahl – das korrekte Ergebnis
+     * @param falsche  Array[3] – typische Fehler-Antworten
+     */
+    function renderQuizButtons(richtig, falsche) {
+      const optionen = [richtig, ...falsche];
+      /* Fisher-Yates Mischen */
+      for (let i = optionen.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [optionen[i], optionen[j]] = [optionen[j], optionen[i]];
+      }
+      document.getElementById('quiz-buttons').innerHTML = optionen.map(v => `
+        <button
+          class="btn-answer rounded-2xl border border-slate-700 bg-slate-800 px-4 py-4
+                 text-xl font-bold text-slate-100 hover:border-emerald-400/50 transition-colors"
+          onclick="checkQuiz(${v}, ${richtig})">
+          ${v}
+        </button>`).join('');
+    }
+
+    /*
+     * checkQuiz(gewählt, richtig)
+     * Wertet die Antwort aus, färbt Buttons und aktualisiert die Punkte.
+     */
+    function checkQuiz(gewählt, richtig) {
+      quizGesamt++;
+      document.querySelectorAll('#quiz-buttons .btn-answer').forEach(btn => {
+        btn.disabled = true;
+        const wert   = parseFloat(btn.textContent.trim());
+        if (wert === richtig)      btn.classList.add('btn-correct');
+        else if (wert === gewählt) btn.classList.add('btn-wrong');
+      });
+
+      const fb = document.getElementById('quiz-feedback');
+      if (gewählt === richtig) {
+        quizRichtig++;
+        fb.textContent = '✓ Richtig!';
+        fb.className   = 'text-center text-base font-semibold min-h-[1.5em] mb-4 text-emerald-400';
+      } else {
+        fb.textContent = `✗ Leider falsch. Das Ergebnis ist ${richtig}.`;
+        fb.className   = 'text-center text-base font-semibold min-h-[1.5em] mb-4 text-red-400';
+      }
+      document.getElementById('quiz-score').textContent = `${quizRichtig} / ${quizGesamt}`;
+    }
+
+    /* ══════════════════════════════════════════════════════════
+       ABSCHNITT 3 – SACHAUFGABEN
+    ══════════════════════════════════════════════════════════ */
+
+    let sachIdx     = 0;
+    let sachRichtig = 0;
+    let sachGesamt  = 0;
+
+    function renderSachDots() {
+      document.getElementById('sach-dots').innerHTML =
+        SACHAUFGABEN.map((_, i) => {
+          let cls = 'sach-dot';
+          if (i < sachIdx)       cls += ' done';
+          else if (i === sachIdx) cls += ' current';
+          return `<span class="${cls}"></span>`;
+        }).join('');
+    }
+
+    function showSachAufgabe() {
+      if (sachIdx >= SACHAUFGABEN.length) {
+        document.getElementById('sach-karte').innerHTML =
+          `<p class="text-center text-emerald-300 text-lg font-semibold py-6">
+             🎉 Alle Sachaufgaben gelöst! ${sachRichtig} von ${SACHAUFGABEN.length} richtig.
+           </p>`;
+        document.getElementById('sach-check-btn').classList.add('hidden');
+        document.getElementById('sach-next-btn').classList.add('hidden');
+        return;
+      }
+      const a = SACHAUFGABEN[sachIdx];
+      document.getElementById('sach-kontext').textContent   = a.kontext;
+      document.getElementById('sach-frage').textContent     = a.frage;
+      document.getElementById('sach-term-hint').textContent = a.term_hint;
+      document.getElementById('sach-einheit').textContent   = a.einheit;
+      document.getElementById('sach-input').value           = '';
+      document.getElementById('sach-input').disabled        = false;
+      document.getElementById('sach-feedback').textContent  = '';
+      document.getElementById('sach-check-btn').classList.remove('hidden');
+      document.getElementById('sach-next-btn').classList.add('hidden');
+
+      /* Fade-In neu starten */
+      const k = document.getElementById('sach-karte');
+      k.classList.remove('anim-fadein');
+      void k.offsetWidth;
+      k.classList.add('anim-fadein');
+
+      renderSachDots();
+    }
+
+    function checkSach() {
+      const eingabe = document.getElementById('sach-input').value.trim();
+      const richtig = String(SACHAUFGABEN[sachIdx].antwort);
+      sachGesamt++;
+      document.getElementById('sach-input').disabled = true;
+      document.getElementById('sach-check-btn').classList.add('hidden');
+      document.getElementById('sach-next-btn').classList.remove('hidden');
+
+      const fb = document.getElementById('sach-feedback');
+      if (eingabe === richtig) {
+        sachRichtig++;
+        fb.textContent = '✓ Richtig!';
+        fb.className   = 'text-center text-base font-semibold min-h-[1.5em] mb-4 text-emerald-400';
+      } else {
+        fb.textContent = `✗ Leider falsch. ${SACHAUFGABEN[sachIdx].hinweis}`;
+        fb.className   = 'text-center text-base font-semibold min-h-[1.5em] mb-4 text-red-400';
+      }
+      document.getElementById('sach-score').textContent = `${sachRichtig} / ${sachGesamt}`;
+    }
+
+    function nextSachAufgabe() { sachIdx++; showSachAufgabe(); }
+
+    /* ── Initialisierung ───────────────────────────────────────── */
+    function init() {
+      startRechner();     /* Rechner mit Startwert "4 + 3 * 2" befüllen */
+      newQuizAufgabe();   /* Erste Quiz-Aufgabe laden                   */
+      showSachAufgabe();  /* Erste Sachaufgabe laden                     */
+    }
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Flächeninhalt – Klasse 5 | MathAcademy</title>
+
+  <link rel="icon"             href="../../favicon.ico" />
+  <link rel="apple-touch-icon" href="../../apple-touch-icon.png" />
+  <link rel="manifest"         href="../../site.webmanifest" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../../assets/css/style.css?v=1.0" />
+
+  <style>
+    /* ── Animationen ───────────────────────────────────────────── */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0);    }
+    }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0);     }
+      20%       { transform: translateX(-8px); }
+      40%       { transform: translateX( 8px); }
+      60%       { transform: translateX(-5px); }
+      80%       { transform: translateX( 5px); }
+    }
+    .anim-fadein { animation: fadeInUp 0.35s ease both; }
+    .anim-shake  { animation: shake   0.4s  ease;      }
+
+    /* ── SVG-Zeichenfläche ─────────────────────────────────────── */
+
+    /*
+     * Das SVG zeigt eine skalierbare Vorschau der Figur.
+     * max-width + height: auto sorgen für responsives Verhalten.
+     */
+    #figur-svg {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+    }
+
+    /*
+     * Die Fläche der Figur (Rechteck oder Dreieck).
+     * Grüne Füllung mit Transparenz + grüner Rand.
+     */
+    #figur-flaeche {
+      fill:   rgba(52, 211, 153, 0.15);  /* emerald, sehr dezent */
+      stroke: #34d399;                    /* emerald-400 */
+      stroke-width: 2;
+      transition: all 0.3s ease;          /* weicher Übergang wenn Maße sich ändern */
+    }
+
+    /*
+     * Maßlinien (Pfeile/Linien die Breite und Höhe anzeigen).
+     * Dezentes Grau damit sie nicht von der Fläche ablenken.
+     */
+    .mass-linie {
+      stroke: #64748b;       /* slate-500 */
+      stroke-width: 1.5;
+      stroke-dasharray: 4 3; /* gestrichelt */
+    }
+
+    /* Beschriftungen an den Maßlinien */
+    .mass-label {
+      fill: #94a3b8;   /* slate-400 */
+      font-size: 12px;
+      font-family: ui-monospace, monospace;
+    }
+
+    /* ── Schieberegler (Range-Inputs) ──────────────────────────── */
+
+    /*
+     * Grüner Daumen beim Fokus/Hover – passt zur Farbpalette der Seite.
+     * -webkit- Prefix für Chrome/Safari, ohne Prefix für Firefox.
+     */
+    input[type=range]::-webkit-slider-thumb {
+      background: #34d399;   /* emerald-400 */
+    }
+    input[type=range]::-moz-range-thumb {
+      background: #34d399;
+      border: none;
+    }
+    input[type=range] {
+      accent-color: #34d399; /* modernes CSS – setzt Slider-Farbe in allen Browsern */
+    }
+
+    /* ── Quiz-Buttons ──────────────────────────────────────────── */
+    .btn-answer:hover:not(:disabled) { filter: brightness(1.15); }
+    .btn-answer:disabled { opacity: 0.55; cursor: not-allowed; }
+    .btn-correct {
+      background-color: #059669 !important;
+      border-color:     #34d399 !important;
+      color: #fff !important;
+    }
+    .btn-wrong {
+      background-color: #dc2626 !important;
+      border-color:     #f87171 !important;
+      color: #fff !important;
+    }
+
+    /* ── Sachaufgaben-Fortschrittspunkte ──────────────────────── */
+    .sach-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background-color: #334155;
+      transition: background-color 0.2s;
+    }
+    .sach-dot.done    { background-color: #34d399; }
+    .sach-dot.current {
+      background-color: #6ee7b7;
+      box-shadow: 0 0 0 3px rgba(52,211,153,0.25);
+    }
+
+    /* ── Eingabefelder ─────────────────────────────────────────── */
+    .antwort-input:focus {
+      outline: none;
+      border-color: #34d399;
+      box-shadow: 0 0 0 3px rgba(52,211,153,0.2);
+    }
+
+    /* ── Tab-Buttons (Rechteck / Dreieck) ──────────────────────── */
+    /* Aktiver Tab bekommt grünen Unterstrich und helle Textfarbe */
+    .tab-active {
+      color: #34d399 !important;
+      border-bottom-color: #34d399 !important;
+    }
+  </style>
+</head>
+
+<body class="bg-slate-950 text-slate-100 min-h-screen">
+
+  <!-- Topbar-Container -->
+  <div id="topbar-container"></div>
+
+  <main class="max-w-4xl mx-auto px-4 pb-16 pt-6">
+
+    <!-- Zurück-Link -->
+    <a href="/academy.html"
+       class="inline-flex items-center gap-2 text-sm text-slate-400
+              hover:text-emerald-300 transition-colors mb-6">
+      ← Zurück zur Akademie
+    </a>
+
+    <!-- Seiten-Header -->
+    <div class="mb-10">
+      <span class="text-xs font-semibold uppercase tracking-widest text-emerald-400 mb-2 block">
+        Klasse 5 · Aufbau
+      </span>
+      <h1 class="text-3xl sm:text-4xl font-bold text-slate-100 mb-3">
+        Flächeninhalt
+      </h1>
+      <p class="text-slate-400 text-base max-w-xl">
+        Berechne Flächen von Rechtecken und Dreiecken – mit dem interaktiven
+        Figur-Rechner, einem zufälligen Quiz und Sachaufgaben aus dem Alltag.
+      </p>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════
+         ABSCHNITT 1: INTERAKTIVER FIGUR-RECHNER
+         Ziel: Schüler stellen Breite und Höhe per Slider ein,
+               sehen die Figur live im SVG und die Formel mit
+               eingesetzten Werten.
+    ════════════════════════════════════════════════════ -->
+    <section class="mb-14" aria-labelledby="rechner-title">
+
+      <div class="flex items-center gap-3 mb-6">
+        <span class="w-8 h-8 rounded-full bg-emerald-400 text-slate-950 text-sm font-bold
+                     flex items-center justify-center flex-shrink-0">1</span>
+        <h2 id="rechner-title" class="text-xl font-semibold">
+          Interaktiver Figur-Rechner
+        </h2>
+      </div>
+
+      <p class="text-slate-400 text-sm mb-5">
+        Wähle eine Figur und stelle die Maße mit den Schiebereglern ein.
+        Die Vorschau und die Formel aktualisieren sich sofort.
+      </p>
+
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+
+        <!-- Tab-Leiste: Rechteck / Dreieck -->
+        <!--
+          role="tablist" + aria-selected für Barrierefreiheit.
+          switchFigur() wechselt zwischen den zwei Figuren.
+        -->
+        <div class="flex gap-1 mb-6 border-b border-slate-800" role="tablist">
+          <button
+            id="tab-rechteck"
+            class="tab-active px-5 py-2.5 text-sm font-semibold border-b-2
+                   border-transparent text-slate-400 transition-colors focus:outline-none"
+            role="tab" aria-selected="true"
+            onclick="switchFigur('rechteck')">
+            Rechteck
+          </button>
+          <button
+            id="tab-dreieck"
+            class="px-5 py-2.5 text-sm font-semibold border-b-2
+                   border-transparent text-slate-400 transition-colors focus:outline-none"
+            role="tab" aria-selected="false"
+            onclick="switchFigur('dreieck')">
+            Dreieck
+          </button>
+        </div>
+
+        <!-- Zwei-Spalten-Layout: links Slider, rechts SVG -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 items-center">
+
+          <!-- Linke Spalte: Schieberegler -->
+          <div class="space-y-6">
+
+            <!-- Breite-Slider -->
+            <div>
+              <label class="flex justify-between text-sm font-medium text-slate-300 mb-2">
+                <span>Breite (b)</span>
+                <!-- Aktueller Wert wird durch updateFigur() aktualisiert -->
+                <span id="label-b" class="text-emerald-300 font-bold">8 cm</span>
+              </label>
+              <input
+                id="slider-b"
+                type="range"
+                min="1" max="20" value="8" step="1"
+                class="w-full h-2 rounded-full bg-slate-700 appearance-none cursor-pointer"
+                aria-label="Breite einstellen"
+                oninput="updateFigur()"
+              />
+            </div>
+
+            <!-- Höhe-Slider -->
+            <div>
+              <label class="flex justify-between text-sm font-medium text-slate-300 mb-2">
+                <span id="label-h-name">Höhe (h)</span>
+                <span id="label-h" class="text-emerald-300 font-bold">5 cm</span>
+              </label>
+              <input
+                id="slider-h"
+                type="range"
+                min="1" max="20" value="5" step="1"
+                class="w-full h-2 rounded-full bg-slate-700 appearance-none cursor-pointer"
+                aria-label="Höhe einstellen"
+                oninput="updateFigur()"
+              />
+            </div>
+
+            <!-- Formel-Anzeige -->
+            <!--
+              Zeigt die Formel mit eingesetzten Werten:
+                Rechteck: A = b × h = 8 × 5 = 40 cm²
+                Dreieck:  A = (g × h) ÷ 2 = (8 × 5) ÷ 2 = 20 cm²
+            -->
+            <div class="rounded-2xl border border-slate-700/50 bg-slate-800/40 p-4">
+              <p class="text-xs text-slate-500 uppercase tracking-wide mb-2">Formel</p>
+              <p id="formel-text"
+                 class="text-lg font-semibold font-mono text-slate-100 leading-relaxed">
+                <!-- wird durch updateFigur() gesetzt -->
+              </p>
+              <p id="ergebnis-text"
+                 class="text-2xl font-bold text-emerald-300 mt-1">
+                <!-- Endergebnis z.B. "= 40 cm²" -->
+              </p>
+            </div>
+
+          </div><!-- Ende linke Spalte -->
+
+          <!-- Rechte Spalte: SVG-Vorschau der Figur -->
+          <!--
+            Das SVG hat einen fixen viewBox damit die Koordinaten
+            unabhängig von der tatsächlichen Darstellungsgröße sind.
+            Koordinatensystem: (0,0) oben links, x nach rechts, y nach unten.
+          -->
+          <div>
+            <svg id="figur-svg"
+                 viewBox="0 0 220 180"
+                 xmlns="http://www.w3.org/2000/svg"
+                 aria-label="Figur-Vorschau">
+
+              <!-- Gitter-Hintergrund: hilft beim Abschätzen der Größe -->
+              <defs>
+                <pattern id="grid" width="10" height="10"
+                         patternUnits="userSpaceOnUse">
+                  <path d="M 10 0 L 0 0 0 10"
+                        fill="none" stroke="#1e293b" stroke-width="0.5"/>
+                </pattern>
+              </defs>
+              <rect width="220" height="180" fill="url(#grid)" />
+
+              <!-- Die eigentliche Figur (Rechteck oder Dreieck) -->
+              <!-- id="figur-flaeche" → wird durch updateFigur() mit neuen Koordinaten gefüllt -->
+              <polygon id="figur-flaeche" points="" />
+
+              <!-- Maßlinien und Beschriftungen -->
+              <!-- werden durch drawMasslinien() erzeugt -->
+              <g id="mass-gruppe"></g>
+
+            </svg>
+          </div><!-- Ende rechte Spalte -->
+
+        </div><!-- Ende Grid -->
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════
+         ABSCHNITT 2: QUIZ – Flächeninhalt berechnen
+    ════════════════════════════════════════════════════ -->
+    <section class="mb-14" aria-labelledby="quiz-title">
+
+      <div class="flex items-center gap-3 mb-6">
+        <span class="w-8 h-8 rounded-full bg-emerald-400 text-slate-950 text-sm font-bold
+                     flex items-center justify-center flex-shrink-0">2</span>
+        <h2 id="quiz-title" class="text-xl font-semibold">
+          Quiz – Flächeninhalt berechnen
+        </h2>
+      </div>
+
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+
+        <!-- Figur-Typ Filter -->
+        <div class="flex gap-2 mb-5">
+          <button id="qf-alle"
+                  class="rounded-full px-4 py-1.5 text-xs font-semibold
+                         bg-emerald-400 text-slate-950 transition-colors"
+                  onclick="setQuizFigur('alle')">Alle</button>
+          <button id="qf-rechteck"
+                  class="rounded-full px-4 py-1.5 text-xs font-semibold
+                         bg-slate-700 text-slate-300 hover:bg-slate-600 transition-colors"
+                  onclick="setQuizFigur('rechteck')">Rechteck</button>
+          <button id="qf-dreieck"
+                  class="rounded-full px-4 py-1.5 text-xs font-semibold
+                         bg-slate-700 text-slate-300 hover:bg-slate-600 transition-colors"
+                  onclick="setQuizFigur('dreieck')">Dreieck</button>
+        </div>
+
+        <!-- Punkte -->
+        <div class="flex justify-end mb-4">
+          <span class="text-sm font-semibold text-slate-500">
+            Punkte:&nbsp;<span id="quiz-score" class="text-emerald-300">0 / 0</span>
+          </span>
+        </div>
+
+        <!-- Aufgaben-Karte -->
+        <div id="quiz-karte" class="mb-6 text-center anim-fadein">
+          <!-- Figur-Typ Badge -->
+          <span id="quiz-figur-badge"
+                class="inline-block rounded-full border border-emerald-400/20
+                       bg-emerald-400/10 px-3 py-1 text-xs font-medium
+                       text-emerald-300 mb-3">
+          </span>
+          <!-- Aufgaben-Text mit den Maßen -->
+          <p id="quiz-aufgabe"
+             class="text-xl font-semibold text-slate-200 mb-1 leading-relaxed">
+          </p>
+          <p class="text-sm text-slate-500">Welcher Flächeninhalt ist richtig?</p>
+        </div>
+
+        <!-- 4 Antwort-Buttons -->
+        <div id="quiz-buttons" class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+        </div>
+
+        <!-- Feedback -->
+        <p id="quiz-feedback"
+           class="text-center text-base font-semibold min-h-[1.5em] mb-4"
+           aria-live="polite"></p>
+
+        <!-- Neue Aufgabe -->
+        <div class="flex justify-center">
+          <button onclick="newQuizAufgabe()"
+                  class="rounded-full border border-slate-700 text-slate-300 font-semibold
+                         px-6 py-2.5 text-sm hover:border-emerald-400/50 transition-colors">
+            Neue Aufgabe
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════
+         ABSCHNITT 3: SACHAUFGABEN
+    ════════════════════════════════════════════════════ -->
+    <section class="mb-14" aria-labelledby="sach-title">
+
+      <div class="flex items-center gap-3 mb-6">
+        <span class="w-8 h-8 rounded-full bg-emerald-400 text-slate-950 text-sm font-bold
+                     flex items-center justify-center flex-shrink-0">3</span>
+        <h2 id="sach-title" class="text-xl font-semibold">Sachaufgaben</h2>
+      </div>
+
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+
+        <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
+          <div class="flex gap-2 items-center" id="sach-dots"></div>
+          <span class="text-sm font-semibold text-slate-500">
+            Punkte:&nbsp;<span id="sach-score" class="text-emerald-300">0 / 0</span>
+          </span>
+        </div>
+
+        <div id="sach-karte" class="mb-5 anim-fadein">
+          <p id="sach-kontext"
+             class="text-xs font-semibold uppercase tracking-widest text-emerald-400/70 mb-2"></p>
+          <p id="sach-frage"
+             class="text-lg font-semibold text-slate-200 mb-2 leading-relaxed"></p>
+          <!-- Formel-Hinweis: zeigt welche Formel anzuwenden ist -->
+          <p id="sach-formel"
+             class="text-sm font-mono text-slate-500 mb-4"></p>
+          <div class="flex items-center gap-3 flex-wrap">
+            <input
+              id="sach-input"
+              type="text"
+              inputmode="decimal"
+              placeholder="Deine Antwort"
+              class="antwort-input w-44 rounded-2xl border border-slate-700 bg-slate-800
+                     px-4 py-3 text-slate-100 text-lg font-bold transition-colors"
+              onkeydown="if(event.key==='Enter') checkSach()"
+            />
+            <span id="sach-einheit" class="text-base font-semibold text-emerald-300"></span>
+          </div>
+        </div>
+
+        <p id="sach-feedback"
+           class="text-center text-base font-semibold min-h-[1.5em] mb-4"
+           aria-live="polite"></p>
+
+        <div class="flex gap-3 justify-center flex-wrap">
+          <button id="sach-check-btn" onclick="checkSach()"
+                  class="rounded-full bg-emerald-400 text-slate-950 font-semibold
+                         px-6 py-2.5 text-sm hover:bg-emerald-300 transition-colors">
+            Prüfen
+          </button>
+          <button id="sach-next-btn" onclick="nextSachAufgabe()"
+                  class="hidden rounded-full border border-slate-700 text-slate-300
+                         font-semibold px-6 py-2.5 text-sm hover:border-emerald-400/50
+                         transition-colors">
+            Nächste Aufgabe →
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════
+         MERKHILFE
+    ════════════════════════════════════════════════════ -->
+    <section aria-labelledby="theorie-title" class="mb-10">
+
+      <h2 id="theorie-title"
+          class="text-sm font-semibold text-slate-300 mb-4 uppercase tracking-wide">
+        Merkhilfe – Flächenformeln
+      </h2>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+        <!-- Karte 1: Rechteck -->
+        <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+          <h3 class="font-semibold text-emerald-300 mb-3 text-sm flex items-center gap-2">
+            ▭ Rechteck
+          </h3>
+          <ul class="text-slate-400 text-sm space-y-2 leading-relaxed">
+            <li>
+              <span class="text-slate-200 font-semibold font-mono">A = b × h</span>
+            </li>
+            <li>b = Breite, h = Höhe</li>
+            <li class="text-xs text-slate-500 pt-1 border-t border-slate-700/50">
+              Beispiel: b = 6 cm, h = 4 cm<br>
+              A = 6 × 4 = <span class="text-emerald-300">24 cm²</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Karte 2: Dreieck -->
+        <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+          <h3 class="font-semibold text-emerald-300 mb-3 text-sm flex items-center gap-2">
+            △ Dreieck
+          </h3>
+          <ul class="text-slate-400 text-sm space-y-2 leading-relaxed">
+            <li>
+              <span class="text-slate-200 font-semibold font-mono">A = (g × h) ÷ 2</span>
+            </li>
+            <li>g = Grundlinie, h = Höhe</li>
+            <li class="text-xs text-slate-500 pt-1 border-t border-slate-700/50">
+              Beispiel: g = 6 cm, h = 4 cm<br>
+              A = (6 × 4) ÷ 2 = <span class="text-emerald-300">12 cm²</span>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+    </section>
+
+    <footer class="py-6 text-center text-xs text-slate-500">
+      © <span id="y"></span> Brandon Hank · Düsseldorf
+    </footer>
+
+  </main>
+
+  <script>
+    /* ── Topbar + script.js laden ──────────────────────────────── */
+    window.__i18nBase = '../../';
+    fetch('../../topbar.html')
+      .then(res => res.text())
+      .then(html => {
+        document.getElementById('topbar-container').innerHTML = html;
+        const s = document.createElement('script');
+        s.src    = '../../assets/js/script.js';
+        s.onload = init;
+        document.body.appendChild(s);
+      });
+
+    /* ══════════════════════════════════════════════════════════
+       DATEN – Sachaufgaben
+       formel: zeigt die anzuwendende Formel als Hinweis an
+    ══════════════════════════════════════════════════════════ */
+    const SACHAUFGABEN = [
+      {
+        kontext : '🏡 Garten',
+        frage   : 'Ein rechteckiger Garten ist 12 m breit und 8 m lang. Wie groß ist seine Fläche?',
+        formel  : 'Formel: A = b × h',
+        antwort : '96',
+        einheit : 'm²',
+        hinweis : 'A = 12 × 8 = 96 m²'
+      },
+      {
+        kontext : '🎨 Kunst',
+        frage   : 'Ein dreieckiges Bild hat eine Grundlinie von 10 cm und eine Höhe von 6 cm. Wie groß ist die Bildfläche?',
+        formel  : 'Formel: A = (g × h) ÷ 2',
+        antwort : '30',
+        einheit : 'cm²',
+        hinweis : 'A = (10 × 6) ÷ 2 = 60 ÷ 2 = 30 cm²'
+      },
+      {
+        kontext : '🏫 Schule',
+        frage   : 'Ein Klassenzimmer ist 9 m lang und 7 m breit. Wie viele Quadratmeter Boden muss gestrichen werden?',
+        formel  : 'Formel: A = b × h',
+        antwort : '63',
+        einheit : 'm²',
+        hinweis : 'A = 9 × 7 = 63 m²'
+      },
+      {
+        kontext : '⛺ Camping',
+        frage   : 'Ein dreieckiges Zeltdach hat eine Grundlinie von 4 m und eine Höhe von 3 m. Wie groß ist die Dachfläche?',
+        formel  : 'Formel: A = (g × h) ÷ 2',
+        antwort : '6',
+        einheit : 'm²',
+        hinweis : 'A = (4 × 3) ÷ 2 = 12 ÷ 2 = 6 m²'
+      },
+      {
+        kontext : '🖼️ Bilderrahmen',
+        frage   : 'Ein Poster ist 50 cm breit und 70 cm hoch. Wie viele cm² Fläche hat es?',
+        formel  : 'Formel: A = b × h',
+        antwort : '3500',
+        einheit : 'cm²',
+        hinweis : 'A = 50 × 70 = 3500 cm²'
+      },
+    ];
+
+    /* ══════════════════════════════════════════════════════════
+       ABSCHNITT 1 – FIGUR-RECHNER
+    ══════════════════════════════════════════════════════════ */
+
+    /*
+     * Aktuelle Figur: 'rechteck' oder 'dreieck'.
+     * Wird durch switchFigur() geändert.
+     */
+    let aktiveFigur = 'rechteck';
+
+    /*
+     * switchFigur(figur)
+     * Wechselt zwischen Rechteck und Dreieck.
+     * Aktualisiert die Tab-Optik und das Höhen-Label.
+     *
+     * @param figur  'rechteck' oder 'dreieck'
+     */
+    function switchFigur(figur) {
+      aktiveFigur = figur;
+
+      /* Tab-Styling: aktiver Tab bekommt tab-active Klasse */
+      document.getElementById('tab-rechteck').className =
+        (figur === 'rechteck' ? 'tab-active ' : '') +
+        'px-5 py-2.5 text-sm font-semibold border-b-2 border-transparent text-slate-400 transition-colors focus:outline-none';
+      document.getElementById('tab-dreieck').className =
+        (figur === 'dreieck' ? 'tab-active ' : '') +
+        'px-5 py-2.5 text-sm font-semibold border-b-2 border-transparent text-slate-400 transition-colors focus:outline-none';
+
+      /*
+       * Beim Dreieck heißt die "Breite" Grundlinie (g) statt Breite (b).
+       * Das Label wird entsprechend angepasst.
+       */
+      document.getElementById('label-h-name').textContent =
+        figur === 'dreieck' ? 'Grundlinie (g)' : 'Höhe (h)';
+
+      updateFigur(); /* SVG und Formel neu zeichnen */
+    }
+
+    /*
+     * updateFigur()
+     * Liest die Slider-Werte, berechnet den Flächeninhalt,
+     * aktualisiert Formel-Text und zeichnet das SVG neu.
+     *
+     * SVG-Koordinaten:
+     *   Das SVG hat viewBox="0 0 220 180".
+     *   Wir reservieren 30px Rand auf jeder Seite für Maßlinien.
+     *   Nutzbare Breite: 160px, Höhe: 120px.
+     *   Die Figur wird auf diesen Bereich skaliert.
+     */
+    function updateFigur() {
+      const b = parseInt(document.getElementById('slider-b').value);
+      const h = parseInt(document.getElementById('slider-h').value);
+
+      /* Labels aktualisieren */
+      document.getElementById('label-b').textContent = `${b} cm`;
+      document.getElementById('label-h').textContent = `${h} cm`;
+
+      /* ── Flächenberechnung ─────────────────────────────────── */
+      let flaeche, formel, formelAusgabe;
+      if (aktiveFigur === 'rechteck') {
+        flaeche       = b * h;
+        formel        = `A = b × h`;
+        formelAusgabe = `A = ${b} × ${h} = ${flaeche}`;
+      } else {
+        /* Dreieck: b = Grundlinie, h = Höhe */
+        flaeche       = (b * h) / 2;
+        formel        = `A = (g × h) ÷ 2`;
+        formelAusgabe = `A = (${b} × ${h}) ÷ 2 = ${flaeche}`;
+      }
+
+      document.getElementById('formel-text').textContent  = formelAusgabe;
+      document.getElementById('ergebnis-text').textContent = `= ${flaeche} cm²`;
+
+      /* ── SVG zeichnen ──────────────────────────────────────── */
+      drawFigur(b, h);
+    }
+
+    /*
+     * drawFigur(b, h)
+     * Skaliert die Figur auf den SVG-Bereich und setzt die Punkte.
+     *
+     * SVG-Koordinaten-Erklärung:
+     *   Rand:  30px auf jeder Seite → Platz für Maßlinien
+     *   maxW:  160  (Breite des nutzbaren Bereichs)
+     *   maxH:  120  (Höhe des nutzbaren Bereichs)
+     *   startX/Y: obere linke Ecke der Figur
+     *
+     * @param b  Breite in cm (aus Slider, 1–20)
+     * @param h  Höhe in cm (aus Slider, 1–20)
+     */
+    function drawFigur(b, h) {
+      const maxB   = 20, maxH = 20;  /* Slider-Maximum */
+      const rand   = 30;             /* Rand in SVG-Einheiten */
+      const maxW   = 160, maxHpx = 120;
+
+      /* Skalierungsfaktoren: Figurbreite/-höhe → SVG-Pixel */
+      const sx = (b / maxB) * maxW;
+      const sy = (h / maxH) * maxHpx;
+
+      /* Figur-Startpunkt: zentriert im SVG */
+      const x0 = rand + (maxW - sx) / 2;
+      const y0 = rand + (maxHpx - sy) / 2;
+
+      let punkte;
+      if (aktiveFigur === 'rechteck') {
+        /*
+         * Rechteck: 4 Eckpunkte im Uhrzeigersinn
+         *   oben-links → oben-rechts → unten-rechts → unten-links
+         */
+        punkte = `${x0},${y0} ${x0+sx},${y0} ${x0+sx},${y0+sy} ${x0},${y0+sy}`;
+      } else {
+        /*
+         * Gleichschenkliges Dreieck:
+         *   Spitze oben-mitte, Basis unten-links und unten-rechts
+         */
+        punkte = `${x0 + sx/2},${y0} ${x0+sx},${y0+sy} ${x0},${y0+sy}`;
+      }
+      document.getElementById('figur-flaeche').setAttribute('points', punkte);
+
+      drawMasslinien(x0, y0, sx, sy, b, h);
+    }
+
+    /*
+     * drawMasslinien(x0, y0, sx, sy, b, h)
+     * Zeichnet gestrichelte Maßlinien mit Beschriftungen.
+     *
+     * @param x0, y0  Obere linke Ecke der Figur in SVG-Koordinaten
+     * @param sx, sy  Breite und Höhe der Figur in SVG-Koordinaten
+     * @param b, h    Tatsächliche Maße in cm (für die Beschriftung)
+     */
+    function drawMasslinien(x0, y0, sx, sy, b, h) {
+      const g   = document.getElementById('mass-gruppe');
+      const bLabel = aktiveFigur === 'dreieck' ? `g = ${b} cm` : `b = ${b} cm`;
+      const hLabel = `h = ${h} cm`;
+
+      /*
+       * Maßlinie unten (Breite):
+       *   Horizontale gestrichelte Linie unterhalb der Figur.
+       *   y-Position: y0 + sy + 14 (etwas unterhalb der Figur)
+       */
+      const yUnten = y0 + sy + 14;
+      /*
+       * Maßlinie rechts (Höhe):
+       *   Vertikale gestrichelte Linie rechts neben der Figur.
+       *   x-Position: x0 + sx + 14
+       */
+      const xRechts = x0 + sx + 14;
+
+      g.innerHTML = `
+        <!-- Breiten-Linie -->
+        <line x1="${x0}"    y1="${yUnten}"
+              x2="${x0+sx}" y2="${yUnten}"
+              class="mass-linie" />
+        <!-- Breiten-Beschriftung: mittig unter der Linie -->
+        <text x="${x0 + sx/2}" y="${yUnten + 12}"
+              class="mass-label" text-anchor="middle">${bLabel}</text>
+
+        <!-- Höhen-Linie -->
+        <line x1="${xRechts}" y1="${y0}"
+              x2="${xRechts}" y2="${y0+sy}"
+              class="mass-linie" />
+        <!-- Höhen-Beschriftung: mittig rechts, um 90° gedreht -->
+        <text x="${xRechts + 12}" y="${y0 + sy/2}"
+              class="mass-label" text-anchor="middle"
+              transform="rotate(90, ${xRechts + 12}, ${y0 + sy/2})">${hLabel}</text>
+      `;
+    }
+
+    /* ══════════════════════════════════════════════════════════
+       ABSCHNITT 2 – QUIZ
+    ══════════════════════════════════════════════════════════ */
+
+    let quizRichtig  = 0;
+    let quizGesamt   = 0;
+    let quizFigur    = 'alle'; /* Aktuell gewählter Figur-Filter */
+
+    /*
+     * setQuizFigur(figur)
+     * Wechselt den Filter und erzeugt eine neue Aufgabe.
+     */
+    function setQuizFigur(figur) {
+      quizFigur = figur;
+
+      /* Filter-Buttons neu einfärben */
+      ['alle','rechteck','dreieck'].forEach(f => {
+        const btn = document.getElementById(`qf-${f}`);
+        btn.className = `rounded-full px-4 py-1.5 text-xs font-semibold transition-colors ` +
+          (f === figur
+            ? 'bg-emerald-400 text-slate-950'
+            : 'bg-slate-700 text-slate-300 hover:bg-slate-600');
+      });
+
+      newQuizAufgabe();
+    }
+
+    /*
+     * newQuizAufgabe()
+     * Erzeugt eine zufällige Aufgabe:
+     *   1. Figur wählen (abhängig vom Filter)
+     *   2. Zufällige Maße (2–15 cm)
+     *   3. Richtiges Ergebnis berechnen
+     *   4. 3 falsche Antworten generieren (nahe am richtigen Wert)
+     */
+    function newQuizAufgabe() {
+      /* Figur bestimmen */
+      const figuren = quizFigur === 'alle'
+        ? ['rechteck', 'dreieck']
+        : [quizFigur];
+      const figur = figuren[Math.floor(Math.random() * figuren.length)];
+
+      /* Zufällige Maße: 2–15 cm */
+      const b = Math.floor(Math.random() * 14) + 2;
+      const h = Math.floor(Math.random() * 14) + 2;
+
+      /* Richtiges Ergebnis */
+      const richtig = figur === 'rechteck' ? b * h : (b * h) / 2;
+
+      /* Badge und Aufgabentext */
+      document.getElementById('quiz-figur-badge').textContent =
+        figur === 'rechteck' ? '▭ Rechteck' : '△ Dreieck';
+
+      document.getElementById('quiz-aufgabe').textContent = figur === 'rechteck'
+        ? `b = ${b} cm,  h = ${h} cm`
+        : `g = ${b} cm,  h = ${h} cm`;
+
+      document.getElementById('quiz-feedback').textContent = '';
+
+      /* Falsche Antworten: ±1, ±2 Abweichung, ohne Duplikate und > 0 */
+      const falsch = new Set();
+      const abw    = [b * h, (b * h) / 2, b + h, b * h - b, b * h + h];
+      abw.forEach(v => { if (v !== richtig && v > 0) falsch.add(v); });
+
+      /* Auffüllen falls zu wenige Ablenkungen */
+      let i = 1;
+      while (falsch.size < 3) {
+        const v = richtig + i;
+        if (v !== richtig && v > 0) falsch.add(v);
+        i++;
+      }
+
+      const optionen = [richtig, ...[...falsch].slice(0, 3)];
+      /* Fisher-Yates mischen */
+      for (let i = optionen.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [optionen[i], optionen[j]] = [optionen[j], optionen[i]];
+      }
+
+      document.getElementById('quiz-buttons').innerHTML = optionen.map(v => `
+        <button
+          class="btn-answer rounded-2xl border border-slate-700 bg-slate-800 px-3 py-4
+                 text-lg font-bold text-slate-100 hover:border-emerald-400/50 transition-colors"
+          onclick="checkQuiz(${v}, ${richtig})">
+          ${v} cm²
+        </button>`).join('');
+    }
+
+    /*
+     * checkQuiz(gewählt, richtig)
+     * Markiert Buttons und aktualisiert Punktestand.
+     */
+    function checkQuiz(gewählt, richtig) {
+      quizGesamt++;
+      document.querySelectorAll('#quiz-buttons .btn-answer').forEach(btn => {
+        btn.disabled = true;
+        /* Wert aus Button-Text extrahieren (vor " cm²") */
+        const wert = parseFloat(btn.textContent.trim());
+        if (wert === richtig)      btn.classList.add('btn-correct');
+        else if (wert === gewählt) btn.classList.add('btn-wrong');
+      });
+
+      const fb = document.getElementById('quiz-feedback');
+      if (gewählt === richtig) {
+        quizRichtig++;
+        fb.textContent = '✓ Richtig!';
+        fb.className   = 'text-center text-base font-semibold min-h-[1.5em] mb-4 text-emerald-400';
+      } else {
+        fb.textContent = `✗ Leider falsch. Richtig wäre ${richtig} cm² gewesen.`;
+        fb.className   = 'text-center text-base font-semibold min-h-[1.5em] mb-4 text-red-400';
+      }
+      document.getElementById('quiz-score').textContent = `${quizRichtig} / ${quizGesamt}`;
+    }
+
+    /* ══════════════════════════════════════════════════════════
+       ABSCHNITT 3 – SACHAUFGABEN
+    ══════════════════════════════════════════════════════════ */
+
+    let sachIdx     = 0;
+    let sachRichtig = 0;
+    let sachGesamt  = 0;
+
+    function renderSachDots() {
+      document.getElementById('sach-dots').innerHTML =
+        SACHAUFGABEN.map((_, i) => {
+          let cls = 'sach-dot';
+          if (i < sachIdx)        cls += ' done';
+          else if (i === sachIdx) cls += ' current';
+          return `<span class="${cls}"></span>`;
+        }).join('');
+    }
+
+    function showSachAufgabe() {
+      if (sachIdx >= SACHAUFGABEN.length) {
+        document.getElementById('sach-karte').innerHTML =
+          `<p class="text-center text-emerald-300 text-lg font-semibold py-6">
+             🎉 Alle Sachaufgaben gelöst! ${sachRichtig} von ${SACHAUFGABEN.length} richtig.
+           </p>`;
+        document.getElementById('sach-check-btn').classList.add('hidden');
+        document.getElementById('sach-next-btn').classList.add('hidden');
+        return;
+      }
+      const a = SACHAUFGABEN[sachIdx];
+      document.getElementById('sach-kontext').textContent  = a.kontext;
+      document.getElementById('sach-frage').textContent    = a.frage;
+      document.getElementById('sach-formel').textContent   = a.formel;
+      document.getElementById('sach-einheit').textContent  = a.einheit;
+      document.getElementById('sach-input').value          = '';
+      document.getElementById('sach-input').disabled       = false;
+      document.getElementById('sach-feedback').textContent = '';
+      document.getElementById('sach-check-btn').classList.remove('hidden');
+      document.getElementById('sach-next-btn').classList.add('hidden');
+
+      const k = document.getElementById('sach-karte');
+      k.classList.remove('anim-fadein');
+      void k.offsetWidth;   /* Animation neu starten */
+      k.classList.add('anim-fadein');
+
+      renderSachDots();
+    }
+
+    function checkSach() {
+      const eingabe = document.getElementById('sach-input').value.trim().replace(',', '.');
+      const richtig = String(SACHAUFGABEN[sachIdx].antwort);
+      sachGesamt++;
+      document.getElementById('sach-input').disabled = true;
+      document.getElementById('sach-check-btn').classList.add('hidden');
+      document.getElementById('sach-next-btn').classList.remove('hidden');
+
+      const fb = document.getElementById('sach-feedback');
+      if (parseFloat(eingabe) === parseFloat(richtig)) {
+        sachRichtig++;
+        fb.textContent = '✓ Richtig!';
+        fb.className   = 'text-center text-base font-semibold min-h-[1.5em] mb-4 text-emerald-400';
+      } else {
+        fb.textContent = `✗ Leider falsch. ${SACHAUFGABEN[sachIdx].hinweis}`;
+        fb.className   = 'text-center text-base font-semibold min-h-[1.5em] mb-4 text-red-400';
+      }
+      document.getElementById('sach-score').textContent = `${sachRichtig} / ${sachGesamt}`;
+    }
+
+    function nextSachAufgabe() { sachIdx++; showSachAufgabe(); }
+
+    /* ── Initialisierung ───────────────────────────────────────── */
+    function init() {
+      updateFigur();      /* SVG mit Startwerten (b=8, h=5) zeichnen */
+      newQuizAufgabe();   /* Erste Quiz-Aufgabe laden                 */
+      showSachAufgabe();  /* Erste Sachaufgabe laden                  */
+    }
+  </script>
+
+</body>
+</html>
