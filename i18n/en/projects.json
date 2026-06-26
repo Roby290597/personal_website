@@ -1,0 +1,16 @@
+{
+  "projects_title": "Projects",
+  "projects_section_header": "Personal Projects with a Machine Learning Focus",
+  "projects_subtitle": "Selected work — clear outcomes & tech stack.",
+  "projects_0_tag_oss": "NLP · Transformers",
+  "projects_1_tag_oss": "Regression Methods",
+  "projects_0_desc": "Using text-based AI to identify emotions and summarize German Bundestag speeches. Open-source on GitHub.",
+  "projects_1_desc": "Regression model to predict health insurance costs based on tabular data. Focus on model performance and interpretability.",
+  "projects_repo": "Repo →",
+  "projects_demo": "Demo",
+  "projects_2_title": "Graph Similarity Learning",
+  "projects_2_tag": "Graph Neural Networks",
+  "projects_2_desc": "Master's thesis: evaluation of graph similarity learning — experiments, metrics, analysis.",
+  "projects_2_chip": "Evaluation",
+  "projects_details": "Details →"
+}

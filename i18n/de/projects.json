@@ -1,0 +1,16 @@
+{
+  "projects_title": "Projekte",
+  "projects_section_header": "Persönliche Projekte mit Machine Learning Fokus",
+  "projects_subtitle": "Auswahl – mit klaren Ergebnissen & Tech Stack.",
+  "projects_0_tag_oss": "NLP · Transformers",
+  "projects_1_tag_oss": "Regression Methoden",
+  "projects_0_desc": "Nutzung von Text-basierten KI zur Identifikation von Emotion und Zusammenfassungen von Bundestagsreden. Open-Source auf GitHub.",
+  "projects_1_desc": "Regression Modell zur Vorhersage von Krankenversicherungspreisen basierend auf tabellarischen Daten. Fokus auf Modellleistung und Interpretierbarkeit.",
+  "projects_repo": "Repo →",
+  "projects_demo": "Demo",
+  "projects_2_title": "Graph Similarity Learning",
+  "projects_2_tag": "Graph Neural Networks",
+  "projects_2_desc": "Masterarbeit: Evaluation von Graph Similarity Learning – Experimente, Metriken, Analyse.",
+  "projects_2_chip": "Evaluation",
+  "projects_details": "Details →"
+}
