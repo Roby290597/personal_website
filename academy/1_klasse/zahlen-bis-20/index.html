@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zahlen bis 20 – Klasse 1</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../../style.css?v=1.0" />
+  <style>
+    body { background-color: #020617; color: #f1f5f9; font-family: system-ui, sans-serif; }
+    .theorie-text { white-space: pre-wrap; font-size: 1.2rem; line-height: 1.9; }
+    .btn-primary {
+      background: #34d399;
+      color: #020617;
+      font-weight: 700;
+      padding: 1rem 2rem;
+      border-radius: 1rem;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: background 0.2s;
+      border: none;
+    }
+    .btn-primary:hover:not(:disabled) { background: #6ee7b7; }
+    .btn-primary:disabled { background: #1e3a30; color: #4b5563; cursor: not-allowed; }
+    .btn-option {
+      background: #1e293b;
+      border: 2px solid #334155;
+      color: #f1f5f9;
+      font-weight: 600;
+      padding: 1rem 1.5rem;
+      border-radius: 1rem;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-align: center;
+    }
+    .btn-option:hover:not(:disabled) { border-color: #34d399; color: #34d399; }
+    .btn-option.correct { background: #064e3b; border-color: #34d399; color: #34d399; }
+    .btn-option.wrong { background: #450a0a; border-color: #ef4444; color: #ef4444; }
+    .btn-option:disabled { cursor: not-allowed; }
+    .card { border-radius: 1.5rem; border: 1px solid #1e293b; background: rgba(15,23,42,0.5); padding: 1.5rem; }
+    .step-complete { background: #34d399; color: #020617; font-weight: 700; }
+    .step-current { background: rgba(52,211,153,0.15); border: 2px solid #34d399; color: #6ee7b7; font-weight: 700; }
+    .step-next { background: #1e293b; border: 1px solid #475569; color: #cbd5e1; cursor: pointer; }
+    .step-next:hover { border-color: #94a3b8; }
+    .step-locked { background: #0f172a; border: 1px solid #1e293b; color: #4b5563; cursor: not-allowed; opacity: 0.5; }
+    .number-input {
+      background: #0f172a;
+      border: 2px solid #334155;
+      color: #f1f5f9;
+      text-align: center;
+      font-size: 1.75rem;
+      font-weight: 700;
+      border-radius: 1rem;
+      padding: 0.75rem 1rem;
+      width: 120px;
+      outline: none;
+    }
+    .number-input:focus { border-color: #34d399; }
+    .feedback-ok { background: #064e3b; border: 1px solid #34d399; color: #34d399; border-radius: 1rem; padding: 0.75rem 1.25rem; font-weight: 600; }
+    .feedback-err { background: #3f0f0f; border: 1px solid #ef4444; color: #fca5a5; border-radius: 1rem; padding: 0.75rem 1.25rem; font-weight: 600; }
+    .badge { background: rgba(52,211,153,0.15); color: #34d399; border: 1px solid rgba(52,211,153,0.3); border-radius: 9999px; padding: 0.25rem 0.9rem; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.04em; }
+  </style>
+</head>
+<body class="min-h-screen">
+
+<!-- Topbar placeholder -->
+<div id="topbar-container"></div>
+
+<main class="max-w-3xl mx-auto px-4 pb-16 pt-6">
+
+  <!-- Back link + badge -->
+  <div class="flex items-center justify-between mb-6">
+    <a href="../../academy.html" class="text-slate-400 hover:text-emerald-400 transition-colors text-sm font-medium">← Zurück zur Akademie</a>
+    <span class="badge">Klasse 1 · Zahlen</span>
+  </div>
+
+  <!-- Header -->
+  <div class="mb-8 text-center">
+    <div class="text-5xl mb-3">🔢</div>
+    <h1 class="text-3xl font-black text-white mb-2">Zahlen bis 20</h1>
+    <p class="text-slate-400 text-base">8 Lektionen · Klasse 1</p>
+  </div>
+
+  <!-- Stepper -->
+  <div id="stepper" class="mb-8 flex flex-wrap gap-2 justify-center"></div>
+
+  <!-- Lesson view -->
+  <div id="lesson-view"></div>
+
+  <!-- Completion screen -->
+  <div id="completion-screen" class="hidden text-center">
+    <div class="card p-10 mb-6">
+      <div class="text-7xl mb-5">🏆</div>
+      <h2 class="text-3xl font-black text-white mb-4">Du kannst alle Zahlen bis 20!</h2>
+      <p class="text-xl text-slate-300 mb-6">Super gemacht! 🎉 Du bist ein Zahlen-Profi!</p>
+      <div id="stats-grid" class="grid grid-cols-2 gap-4 mb-8"></div>
+      <a href="../../academy.html" class="btn-primary inline-block text-center no-underline">Zur Akademie 🚀</a>
+    </div>
+    <button onclick="resetProgress()" class="text-slate-500 hover:text-slate-300 text-sm mt-2 transition-colors">Neu starten</button>
+  </div>
+
+  <!-- Reset link (bottom) -->
+  <div id="reset-link" class="text-center mt-10">
+    <button onclick="resetProgress()" class="text-slate-600 hover:text-slate-400 text-sm transition-colors">Neu starten</button>
+  </div>
+
+</main>
+
+<script>
+// ─── DATA ────────────────────────────────────────────────────────────────────
+
+const LEKTIONEN = [
+  {
+    id:0, titel:"Zahlen 1 bis 5",
+    theorie:`Zahlen sind überall! 🔢
+Schau dir diese Zahlen an:
+
+1️⃣  Eins   — ein Apfel 🍎
+2️⃣  Zwei   — zwei Äpfel 🍎🍎
+3️⃣  Drei   — drei Äpfel 🍎🍎🍎
+4️⃣  Vier   — vier Äpfel 🍎🍎🍎🍎
+5️⃣  Fünf   — fünf Äpfel 🍎🍎🍎🍎🍎
+
+Zähl laut mit! Du schaffst das! 💪`,
+    aufgaben:[
+      {typ:'mc', frage:'Wie viele Sterne siehst du? ⭐⭐⭐', optionen:['1','2','3','4'], richtig:2},
+      {typ:'zahl', frage:'Wie viele Äpfel? 🍎🍎', antwort:2, einheit:''},
+      {typ:'mc', frage:'Welche Zahl kommt nach der 3?', optionen:['1','2','5','4'], richtig:3},
+      {typ:'zahl', frage:'Wie viele Punkte? 🔵🔵🔵🔵🔵', antwort:5, einheit:''},
+      {typ:'mc', frage:'Was ist die kleinste Zahl?', optionen:['5','3','1','4'], richtig:2},
+    ]
+  },
+  {
+    id:1, titel:"Zahlen 6 bis 10",
+    theorie:`Weiter geht's! 🚀 Jetzt lernst du 6 bis 10:
+
+6️⃣  Sechs   🌟🌟🌟🌟🌟🌟
+7️⃣  Sieben  🌟🌟🌟🌟🌟🌟🌟
+8️⃣  Acht    🌟🌟🌟🌟🌟🌟🌟🌟
+9️⃣  Neun   🌟🌟🌟🌟🌟🌟🌟🌟🌟
+🔟  Zehn   🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟
+
+Zähl die Sterne! Du bist super! 🎉`,
+    aufgaben:[
+      {typ:'zahl', frage:'Wie viele Herzen? ❤️❤️❤️❤️❤️❤️❤️', antwort:7, einheit:''},
+      {typ:'mc', frage:'Welche Zahl ist das? 🌟🌟🌟🌟🌟🌟🌟🌟', optionen:['6','7','8','9'], richtig:2},
+      {typ:'zahl', frage:'Wie viele Blumen? 🌸🌸🌸🌸🌸🌸🌸🌸🌸🌸', antwort:10, einheit:''},
+      {typ:'mc', frage:'Was kommt nach der 9?', optionen:['7','8','11','10'], richtig:3},
+      {typ:'mc', frage:'Welche Zahl ist größer — 6 oder 8?', optionen:['6','8','gleich','weiß nicht'], richtig:1},
+    ]
+  },
+  {
+    id:2, titel:"Zahlen 11 bis 15",
+    theorie:`Du lernst immer mehr! 🏆 Jetzt kommen größere Zahlen:
+
+1️⃣1️⃣  Elf
+1️⃣2️⃣  Zwölf
+1️⃣3️⃣  Dreizehn
+1️⃣4️⃣  Vierzehn
+1️⃣5️⃣  Fünfzehn
+
+Tipp: 13 = 10 + 3 🎯
+Tipp: 15 = 10 + 5 🎯`,
+    aufgaben:[
+      {typ:'mc', frage:'Was ist 10 + 2?', optionen:['11','12','13','14'], richtig:1},
+      {typ:'zahl', frage:'Was ist 10 + 4?', antwort:14, einheit:''},
+      {typ:'mc', frage:'Wie schreibt man dreizehn?', optionen:['31','30','13','3'], richtig:2},
+      {typ:'zahl', frage:'Was ist 10 + 5?', antwort:15, einheit:''},
+      {typ:'mc', frage:'Welche Zahl ist das? Zehn und noch eins dazu.', optionen:['10','21','12','11'], richtig:3},
+    ]
+  },
+  {
+    id:3, titel:"Zahlen 16 bis 20",
+    theorie:`Fast am Ziel! 🎯 Die letzten Zahlen bis 20:
+
+1️⃣6️⃣  Sechzehn   = 10 + 6
+1️⃣7️⃣  Siebzehn   = 10 + 7
+1️⃣8️⃣  Achtzehn   = 10 + 8
+1️⃣9️⃣  Neunzehn   = 10 + 9
+2️⃣0️⃣  Zwanzig    = 10 + 10
+
+Du kennst jetzt alle Zahlen bis 20! 🎉`,
+    aufgaben:[
+      {typ:'zahl', frage:'Was ist 10 + 7?', antwort:17, einheit:''},
+      {typ:'mc', frage:'Wie heißt die Zahl 18?', optionen:['Siebzehn','Neunzehn','Achtzehn','Zwanzig'], richtig:2},
+      {typ:'zahl', frage:'Was ist 10 + 10?', antwort:20, einheit:''},
+      {typ:'mc', frage:'Was ist 10 + 9?', optionen:['16','17','18','19'], richtig:3},
+      {typ:'zahl', frage:'Was ist 10 + 6?', antwort:16, einheit:''},
+    ]
+  },
+  {
+    id:4, titel:"Größer und kleiner",
+    theorie:`Zahlen kann man vergleichen! 🔍
+
+Wenn eine Zahl mehr ist, sagen wir: GRÖSSER ➡️
+Wenn eine Zahl weniger ist, sagen wir: KLEINER ⬅️
+
+Beispiele:
+🐘 10 ist GRÖSSER als 5
+🐭 3 ist KLEINER als 8
+⚖️ 7 ist GLEICH wie 7
+
+Merke: Die größere Zahl kommt weiter hinten! 📏`,
+    aufgaben:[
+      {typ:'mc', frage:'Was ist größer — 5 oder 9?', optionen:['5','9','gleich','weiß nicht'], richtig:1},
+      {typ:'mc', frage:'Was ist kleiner — 12 oder 7?', optionen:['12','7','gleich','weiß nicht'], richtig:1},
+      {typ:'mc', frage:'Sind 8 und 8 gleich?', optionen:['Ja! ✅','Nein','8 ist größer','8 ist kleiner'], richtig:0},
+      {typ:'mc', frage:'Was ist größer — 15 oder 19?', optionen:['15','19','gleich','weiß nicht'], richtig:1},
+      {typ:'mc', frage:'Was ist kleiner — 20 oder 11?', optionen:['20','11','gleich','weiß nicht'], richtig:1},
+    ]
+  },
+  {
+    id:5, titel:"Vorgänger und Nachfolger",
+    theorie:`Jede Zahl hat Nachbarn! 🏘️
+
+Der VORGÄNGER kommt DAVOR ⬅️
+Der NACHFOLGER kommt DANACH ➡️
+
+Beispiel bei der 7:
+⬅️ 6 ist der Vorgänger
+7️⃣ die Zahl selbst
+➡️ 8 ist der Nachfolger
+
+Einfach 1 dazuzählen oder 1 wegnehmen! ✨`,
+    aufgaben:[
+      {typ:'zahl', frage:'Was kommt nach der 5? (Nachfolger)', antwort:6, einheit:''},
+      {typ:'zahl', frage:'Was kommt vor der 9? (Vorgänger)', antwort:8, einheit:''},
+      {typ:'mc', frage:'Was ist der Nachfolger von 13?', optionen:['12','14','15','11'], richtig:1},
+      {typ:'zahl', frage:'Was ist der Vorgänger von 20?', antwort:19, einheit:''},
+      {typ:'mc', frage:'Was ist der Nachfolger von 17?', optionen:['16','15','18','19'], richtig:2},
+    ]
+  },
+  {
+    id:6, titel:"Zahlen der Reihe nach",
+    theorie:`Zahlen haben eine Reihenfolge! 📋
+
+Von klein nach groß heißt: AUFSTEIGEND ⬆️
+1, 2, 3, 4, 5 ... 20
+
+Von groß nach klein heißt: ABSTEIGEND ⬇️
+20, 19, 18, 17 ... 1
+
+Stell dir eine Treppe vor! 🪜
+Raufgehen = größer werden
+Runtergehen = kleiner werden`,
+    aufgaben:[
+      {typ:'mc', frage:'Welche Zahl fehlt? 3, 4, __, 6', optionen:['2','7','5','8'], richtig:2},
+      {typ:'zahl', frage:'Welche Zahl fehlt? 10, 11, 12, __', antwort:13, einheit:''},
+      {typ:'mc', frage:'Welche Zahl fehlt? 8, __, 10', optionen:['7','11','6','9'], richtig:3},
+      {typ:'zahl', frage:'Welche Zahl fehlt? 17, 18, 19, __', antwort:20, einheit:''},
+      {typ:'mc', frage:'Was kommt nach 14, 15, 16 ...?', optionen:['13','18','17','19'], richtig:2},
+    ]
+  },
+  {
+    id:7, titel:"Abschlusstest: Zahlen bis 20",
+    theorie:`Du hast alle Zahlen bis 20 gelernt! 🏆
+
+Du kannst jetzt:
+✅ Zahlen von 1 bis 20 kennen
+✅ Größer und kleiner vergleichen
+✅ Vorgänger und Nachfolger finden
+✅ Zahlenreihen ergänzen
+
+Zeig was du kannst! 💪🌟`,
+    aufgaben:[
+      {typ:'zahl', frage:'Wie viele Sterne? ⭐⭐⭐⭐⭐⭐⭐⭐⭐', antwort:9, einheit:''},
+      {typ:'mc', frage:'Was ist größer — 14 oder 16?', optionen:['14','16','gleich','weiß nicht'], richtig:1},
+      {typ:'zahl', frage:'Was ist der Nachfolger von 11?', antwort:12, einheit:''},
+      {typ:'mc', frage:'Welche Zahl fehlt? 5, 6, __, 8', optionen:['4','9','7','10'], richtig:2},
+      {typ:'zahl', frage:'Was ist 10 + 8?', antwort:18, einheit:''},
+    ]
+  },
+];
+
+// ─── LOCALSTORAGE ────────────────────────────────────────────────────────────
+
+const PROGRESS_KEY = 'k1_zahlen_progress';
+let progress = loadProgress();
+
+function loadProgress() {
+  try { return JSON.parse(localStorage.getItem(PROGRESS_KEY)) || {completed:[], current:0}; }
+  catch(e) { return {completed:[], current:0}; }
+}
+
+function saveProgress(p) {
+  localStorage.setItem(PROGRESS_KEY, JSON.stringify(p));
+}
+
+function isUnlocked(idx) {
+  return idx === 0 || progress.completed.includes(idx - 1);
+}
+
+function resetProgress() {
+  if (confirm('Möchtest du wirklich neu starten? 🤔')) {
+    localStorage.removeItem(PROGRESS_KEY);
+    location.reload();
+  }
+}
+
+// ─── STATE ───────────────────────────────────────────────────────────────────
+
+let currentLesson = progress.current || 0;
+// Per-lesson exercise state: which are solved
+let lessonAnswered = {}; // { aufgabeIdx: true/false }
+
+// ─── STEPPER ─────────────────────────────────────────────────────────────────
+
+function renderStepper() {
+  const el = document.getElementById('stepper');
+  el.innerHTML = '';
+  LEKTIONEN.forEach((l, idx) => {
+    const btn = document.createElement('button');
+    const isCompleted = progress.completed.includes(idx);
+    const isCurrent = idx === currentLesson;
+    const unlocked = isUnlocked(idx);
+
+    btn.textContent = isCompleted ? '✓' : String(idx + 1);
+    btn.title = l.titel;
+    btn.style.cssText = 'width:2.75rem;height:2.75rem;border-radius:9999px;font-weight:700;font-size:1rem;transition:all 0.15s;';
+
+    if (isCompleted) {
+      btn.className = 'step-complete';
+      btn.style.cssText += 'border:none;';
+      btn.onclick = () => goToLesson(idx);
+    } else if (isCurrent && unlocked) {
+      btn.className = 'step-current';
+      btn.onclick = () => goToLesson(idx);
+    } else if (unlocked) {
+      btn.className = 'step-next';
+      btn.onclick = () => goToLesson(idx);
+    } else {
+      btn.className = 'step-locked';
+      btn.disabled = true;
+    }
+
+    el.appendChild(btn);
+  });
+}
+
+// ─── LESSON NAVIGATION ───────────────────────────────────────────────────────
+
+function goToLesson(idx) {
+  if (!isUnlocked(idx)) return;
+  currentLesson = idx;
+  lessonAnswered = {};
+  progress.current = idx;
+  saveProgress(progress);
+  renderStepper();
+  renderLesson();
+  document.getElementById('completion-screen').classList.add('hidden');
+  document.getElementById('lesson-view').classList.remove('hidden');
+  document.getElementById('reset-link').classList.remove('hidden');
+  window.scrollTo({top: 0, behavior:'smooth'});
+}
+
+// ─── LESSON RENDER ───────────────────────────────────────────────────────────
+
+function renderLesson() {
+  const l = LEKTIONEN[currentLesson];
+  const view = document.getElementById('lesson-view');
+
+  const totalAufgaben = l.aufgaben.length;
+  const solvedCount = Object.keys(lessonAnswered).length;
+  const allSolved = solvedCount === totalAufgaben;
+  const isLastLesson = currentLesson === LEKTIONEN.length - 1;
+
+  let html = `
+    <div class="card mb-6">
+      <div class="flex items-center gap-3 mb-1">
+        <span class="text-emerald-400 text-sm font-semibold">Lektion ${currentLesson + 1} von ${LEKTIONEN.length}</span>
+      </div>
+      <h2 class="text-2xl font-black text-white mb-5">${l.titel}</h2>
+      <div class="theorie-text text-slate-200">${escHtml(l.theorie)}</div>
+    </div>
+
+    <div class="mb-6">
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-slate-400 text-sm font-semibold">Aufgaben (${solvedCount}/${totalAufgaben})</span>
+        <span class="text-slate-500 text-sm">${allSolved ? '✅ Alle gelöst!' : ''}</span>
+      </div>
+  `;
+
+  l.aufgaben.forEach((a, idx) => {
+    const solved = !!lessonAnswered[idx];
+    html += renderAufgabe(a, idx, solved);
+  });
+
+  html += `</div>`;
+
+  // Finish button
+  html += `
+    <div class="text-center mt-4 mb-2">
+      <button id="btn-finish" onclick="finishLesson()"
+        class="btn-primary text-xl px-10 py-5"
+        ${allSolved ? '' : 'disabled'}>
+        ${isLastLesson ? 'Kurs abschließen 🏆' : 'Lektion abschließen ✅'}
+      </button>
+      ${!allSolved ? '<p class="text-slate-500 text-sm mt-3">Löse alle Aufgaben! 💪</p>' : ''}
+    </div>
+  `;
+
+  view.innerHTML = html;
+}
+
+function renderAufgabe(a, idx, solved) {
+  const solvedClass = solved ? 'border-emerald-600' : '';
+  let inner = '';
+
+  if (a.typ === 'mc') {
+    inner = renderMC(a, idx, solved);
+  } else if (a.typ === 'zahl') {
+    inner = renderZahl(a, idx, solved);
+  }
+
+  return `
+    <div id="aufgabe-${idx}" class="card mb-4 ${solvedClass}" style="${solved ? 'border-color:#059669;' : ''}">
+      <div class="flex items-start gap-3 mb-4">
+        <span class="text-2xl">${solved ? '✅' : '❓'}</span>
+        <p class="text-lg font-semibold text-white leading-snug">${escHtml(a.frage)}</p>
+      </div>
+      ${inner}
+    </div>
+  `;
+}
+
+function renderMC(a, idx, solved) {
+  let html = `<div class="grid grid-cols-2 gap-3" id="mc-grid-${idx}">`;
+  a.optionen.forEach((opt, oi) => {
+    const isCorrect = oi === a.richtig;
+    let cls = 'btn-option';
+    let dis = '';
+    if (solved) {
+      cls += isCorrect ? ' correct' : ' wrong';
+      dis = 'disabled';
+    }
+    html += `<button class="${cls}" ${dis} onclick="checkMC(${idx},${oi})">${escHtml(opt)}</button>`;
+  });
+  html += `</div>`;
+  if (solved) {
+    html += `<div class="feedback-ok mt-3">Super! 🌟 Richtig gemacht!</div>`;
+  } else {
+    html += `<div id="feedback-${idx}" class="mt-3 hidden"></div>`;
+  }
+  return html;
+}
+
+function renderZahl(a, idx, solved) {
+  let html = `
+    <div class="flex flex-col items-center gap-3">
+      <input
+        id="input-${idx}"
+        type="number" min="0" max="20"
+        class="number-input"
+        placeholder="?"
+        ${solved ? 'disabled value="' + a.antwort + '"' : ''}
+      />
+  `;
+  if (solved) {
+    html += `<div class="feedback-ok w-full text-center">Super! 🌟 Das ist richtig!</div>`;
+  } else {
+    html += `
+      <button class="btn-primary px-8 py-3" onclick="checkZahl(${idx})">Prüfen</button>
+      <div id="feedback-${idx}" class="mt-1 hidden"></div>
+    `;
+  }
+  html += `</div>`;
+  return html;
+}
+
+// ─── CHECK ANSWERS ───────────────────────────────────────────────────────────
+
+function checkMC(aufgabeIdx, chosenIdx) {
+  const l = LEKTIONEN[currentLesson];
+  const a = l.aufgaben[aufgabeIdx];
+  const grid = document.getElementById(`mc-grid-${aufgabeIdx}`);
+  const feedbackEl = document.getElementById(`feedback-${aufgabeIdx}`);
+
+  if (chosenIdx === a.richtig) {
+    // Mark all buttons
+    Array.from(grid.children).forEach((btn, i) => {
+      btn.disabled = true;
+      if (i === a.richtig) btn.classList.add('correct');
+      else btn.classList.add('wrong');
+    });
+    feedbackEl.className = 'feedback-ok mt-3';
+    feedbackEl.textContent = 'Super! 🌟 Das ist richtig!';
+    feedbackEl.classList.remove('hidden');
+    markSolved(aufgabeIdx);
+  } else {
+    // Wrong
+    const chosenBtn = grid.children[chosenIdx];
+    chosenBtn.classList.add('wrong');
+    setTimeout(() => chosenBtn.classList.remove('wrong'), 700);
+    feedbackEl.className = 'feedback-err mt-3';
+    feedbackEl.textContent = 'Nicht ganz — schau nochmal hin! 🤔';
+    feedbackEl.classList.remove('hidden');
+  }
+}
+
+function checkZahl(aufgabeIdx) {
+  const l = LEKTIONEN[currentLesson];
+  const a = l.aufgaben[aufgabeIdx];
+  const input = document.getElementById(`input-${aufgabeIdx}`);
+  const feedbackEl = document.getElementById(`feedback-${aufgabeIdx}`);
+  const val = parseInt(input.value, 10);
+
+  if (!isNaN(val) && val === a.antwort) {
+    input.disabled = true;
+    input.style.borderColor = '#34d399';
+    feedbackEl.className = 'feedback-ok mt-1';
+    feedbackEl.textContent = 'Toll gemacht! 🎉 Das ist richtig!';
+    feedbackEl.classList.remove('hidden');
+    markSolved(aufgabeIdx);
+  } else {
+    input.style.borderColor = '#ef4444';
+    setTimeout(() => { input.style.borderColor = '#334155'; }, 700);
+    feedbackEl.className = 'feedback-err mt-1';
+    feedbackEl.textContent = 'Nicht ganz! 💪 Versuch es nochmal.';
+    feedbackEl.classList.remove('hidden');
+  }
+}
+
+function markSolved(idx) {
+  lessonAnswered[idx] = true;
+  const l = LEKTIONEN[currentLesson];
+  const allSolved = Object.keys(lessonAnswered).length === l.aufgaben.length;
+
+  // Update card border
+  const card = document.getElementById(`aufgabe-${idx}`);
+  if (card) card.style.borderColor = '#059669';
+
+  // Update icon
+  const iconEl = card && card.querySelector('span');
+  if (iconEl) iconEl.textContent = '✅';
+
+  // Update finish button
+  const btn = document.getElementById('btn-finish');
+  if (btn && allSolved) {
+    btn.removeAttribute('disabled');
+    const sibling = btn.nextElementSibling;
+    if (sibling) sibling.remove();
+  }
+
+  // Update counter
+  const solvedCount = Object.keys(lessonAnswered).length;
+  const counterEl = document.querySelector('.flex.items-center.justify-between.mb-3 .text-slate-400');
+  if (counterEl) counterEl.textContent = `Aufgaben (${solvedCount}/${l.aufgaben.length})`;
+  if (allSolved) {
+    const allDoneEl = document.querySelector('.flex.items-center.justify-between.mb-3 .text-slate-500');
+    if (allDoneEl) allDoneEl.textContent = '✅ Alle gelöst!';
+  }
+}
+
+// ─── FINISH LESSON ───────────────────────────────────────────────────────────
+
+function finishLesson() {
+  const idx = currentLesson;
+  if (!progress.completed.includes(idx)) {
+    progress.completed.push(idx);
+  }
+
+  const isLast = idx === LEKTIONEN.length - 1;
+
+  if (isLast) {
+    saveProgress(progress);
+    showCompletion();
+  } else {
+    const next = idx + 1;
+    progress.current = next;
+    saveProgress(progress);
+    goToLesson(next);
+  }
+}
+
+// ─── COMPLETION ──────────────────────────────────────────────────────────────
+
+function showCompletion() {
+  document.getElementById('lesson-view').classList.add('hidden');
+  document.getElementById('reset-link').classList.add('hidden');
+  const screen = document.getElementById('completion-screen');
+  screen.classList.remove('hidden');
+
+  const stats = document.getElementById('stats-grid');
+  stats.innerHTML = `
+    <div class="card text-center">
+      <div class="text-3xl font-black text-emerald-400">${LEKTIONEN.length}</div>
+      <div class="text-slate-400 text-sm mt-1">Lektionen</div>
+    </div>
+    <div class="card text-center">
+      <div class="text-3xl font-black text-emerald-400">${LEKTIONEN.reduce((s,l)=>s+l.aufgaben.length,0)}</div>
+      <div class="text-slate-400 text-sm mt-1">Aufgaben</div>
+    </div>
+    <div class="card text-center">
+      <div class="text-3xl font-black text-emerald-400">20</div>
+      <div class="text-slate-400 text-sm mt-1">Zahlen gelernt</div>
+    </div>
+    <div class="card text-center">
+      <div class="text-3xl font-black text-emerald-400">⭐</div>
+      <div class="text-slate-400 text-sm mt-1">Zahlen-Profi</div>
+    </div>
+  `;
+
+  renderStepper();
+  window.scrollTo({top: 0, behavior:'smooth'});
+}
+
+// ─── UTILS ───────────────────────────────────────────────────────────────────
+
+function escHtml(str) {
+  return str
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+
+// ─── TOPBAR ──────────────────────────────────────────────────────────────────
+
+(function loadTopbar() {
+  try {
+    window.__i18nBase = '../../';
+    fetch('../../topbar.html')
+      .then(r => r.text())
+      .then(html => {
+        document.getElementById('topbar-container').innerHTML = html;
+      })
+      .catch(() => {});
+  } catch(e) {}
+})();
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+
+function init() {
+  progress = loadProgress();
+
+  // If all lessons completed, show completion
+  if (progress.completed.length === LEKTIONEN.length) {
+    renderStepper();
+    document.getElementById('lesson-view').classList.add('hidden');
+    document.getElementById('reset-link').classList.add('hidden');
+    showCompletion();
+    return;
+  }
+
+  // Find current lesson
+  currentLesson = progress.current || 0;
+  // Ensure current is unlocked
+  while (currentLesson > 0 && !isUnlocked(currentLesson)) {
+    currentLesson--;
+  }
+  progress.current = currentLesson;
+  saveProgress(progress);
+
+  renderStepper();
+  renderLesson();
+}
+
+init();
+</script>
+</body>
+</html>
