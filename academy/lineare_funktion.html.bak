@@ -10,11 +10,11 @@
        ================================================================ -->
 
   <!-- Favicon: das kleine Icon im Browser-Tab -->
-  <link rel="icon" href="../favicon.ico">
+  <link rel="icon" href="./favicon.ico">
   <!-- Web App Manifest: ermöglicht "App auf Startbildschirm hinzufügen" auf Mobilgeräten -->
-  <link rel="manifest" href="../site.webmanifest">
+  <link rel="manifest" href="./site.webmanifest">
   <!-- Apple-Icon: das Icon wenn jemand die Seite auf dem iPhone-Homescreen speichert -->
-  <link rel="apple-touch-icon" href="../apple-touch-icon.png">
+  <link rel="apple-touch-icon" href="./apple-touch-icon.png">
 
   <!-- Zeichensatz UTF-8: damit Umlaute (ä, ö, ü) korrekt angezeigt werden -->
   <meta charset="UTF-8" />
@@ -32,7 +32,7 @@
 
   <!-- Eigene CSS-Datei für das Site-Theme (Farben, Scrollbar, Card-Effekte) -->
   <!-- ?v=1.0 → "Cache Busting": erzwingt, dass der Browser die neue Version lädt -->
-  <link rel="stylesheet" href="../assets/css/style.css?v=1.0">
+  <link rel="stylesheet" href="style.css?v=1.0">
 </head>
 
 <body class="bg-slate-950 text-slate-100">
@@ -63,7 +63,7 @@
     <section class="py-14 md:py-20">
       <!-- Zurück-Link zur Akademie-Übersichtsseite -->
       <!-- inline-flex + items-center = Icon und Text stehen nebeneinander -->
-      <a href="../academy.html" class="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-200 mb-6 transition">
+      <a href="academy.html" class="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-200 mb-6 transition">
         ← Zurück zur Akademie
       </a>
 

@@ -11,15 +11,15 @@
   <meta name="description" content="Lerne schriftlich zu multiplizieren – mit Schritt-für-Schritt-Algorithmus, halbschriftlicher Methode und Quiz." />
 
   <!-- Favicon und App-Icons -->
-  <link rel="icon" href="../../favicon.ico">
-  <link rel="manifest" href="../../site.webmanifest">
-  <link rel="apple-touch-icon" href="../../apple-touch-icon.png">
+  <link rel="icon" href="../../../favicon.ico">
+  <link rel="manifest" href="../../../site.webmanifest">
+  <link rel="apple-touch-icon" href="../../../apple-touch-icon.png">
 
   <!-- Tailwind CSS über CDN für Utility-Klassen -->
   <script src="https://cdn.tailwindcss.com"></script>
 
   <!-- Globale Theme-Variablen und Stile -->
-  <link rel="stylesheet" href="../../assets/css/style.css?v=1.0">
+  <link rel="stylesheet" href="../../../assets/css/style.css?v=1.0">
 
   <style>
     /* ── Eingabefeld: Zahlen-Spinner ausblenden ──────────────── */
