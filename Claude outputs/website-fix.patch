@@ -1,0 +1,483 @@
+diff --git a/academy.html b/academy.html
+index 273d573..8aebfe3 100644
+--- a/academy.html
++++ b/academy.html
+@@ -136,10 +136,10 @@
+ 
+       { g:3, lvl:'base', n:10, t:{de:'Schriftlich Rechnen', en:'Column Arithmetic'}, d:{de:'Addieren und Subtrahieren mit Übertrag bis 1000.', en:'Add and subtract with carrying up to 1000.'}, tags:['Addition','Subtraktion'], url: "academy/3_klasse/schriftlichrechnen.html" },
+       { g:3, lvl:'base', n:11, t:{de:'Mal & Geteilt', en:'Multiply & Divide'}, d:{de:'Multiplikation und Division sicher anwenden.', en:'Apply multiplication and division confidently.'}, tags:['Multiplikation','Division'], url: "academy/3_klasse/malgeteilt.html" },
+-      { g:3, lvl:'base', n:7,  t:{de:'Flächen & Umfang', en:'Area & Perimeter'}, d:{de:'Rechtecke messen und den Umfang bestimmen.', en:'Measure rectangles and find the perimeter.'}, tags:['Geometrie'], url: "academy/3_klasse/flachenumfang.html" },
++      { g:3, lvl:'base', n:7,  t:{de:'Flächen & Umfang', en:'Area & Perimeter'}, d:{de:'Rechtecke messen und den Umfang bestimmen.', en:'Measure rectangles and find the perimeter.'}, tags:['Geometrie'], url: "academy/3_klasse/flaechenumfang.html" },
+ 
+       { g:4, lvl:'base', n:10, t:{de:'Schriftlich Multiplizieren', en:'Long Multiplication'}, d:{de:'Mehrstellige Zahlen multiplizieren und dividieren.', en:'Multiply and divide multi-digit numbers.'}, tags:['Multiplikation','Division'], url: "academy/4_klasse/schriftlichmultiplizieren.html" },
+-      { g:4, lvl:'base', n:9,  t:{de:'Größen & Einheiten', en:'Units & Measures'}, d:{de:'Längen, Gewichte und Zeitspannen umrechnen.', en:'Convert lengths, weights and durations.'}, tags:['Einheiten'], url: "academy/4_klasse/groessen Einheiten.html" },
++      { g:4, lvl:'base', n:9,  t:{de:'Größen & Einheiten', en:'Units & Measures'}, d:{de:'Längen, Gewichte und Zeitspannen umrechnen.', en:'Convert lengths, weights and durations.'}, tags:['Einheiten'], url: "academy/4_klasse/groesseneinheiten.html" },
+       { g:4, lvl:'base', n:7,  t:{de:'Symmetrie & Körper', en:'Symmetry & Solids'}, d:{de:'Spiegelachsen finden, Würfel und Quader erkunden.', en:'Find axes of symmetry, explore cubes and cuboids.'}, tags:['Geometrie'], url: "academy/4_klasse/symmetriekoerper.html" },
+ 
+       { g:5, lvl:'build', n:9,  t:{de:'Große Zahlen & Stellenwert', en:'Large Numbers & Place Value'}, d:{de:'Millionen lesen, runden und ordnen.', en:'Read, round and order numbers into the millions.'}, tags:['Zahlen','Runden'], url: "academy/5_klasse/groesse_zahlen_stellenwert.html" },
+diff --git a/academy/10_klasse/exponentielles_wachstum.html b/academy/10_klasse/exponentielles_wachstum.html
+index c321dd5..4bbe2b8 100644
+--- a/academy/10_klasse/exponentielles_wachstum.html
++++ b/academy/10_klasse/exponentielles_wachstum.html
+@@ -47,7 +47,7 @@
+ 
+   <main class="max-w-4xl mx-auto px-4 pb-16 pt-6">
+ 
+-    <a href="/academy.html"
++    <a href="../../academy.html"
+        class="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-emerald-300 transition-colors mb-6">
+       ← Zurück zur Akademie
+     </a>
+diff --git a/academy/10_klasse/potenzen_wurzeln.html b/academy/10_klasse/potenzen_wurzeln.html
+index c6cad75..71bb0f7 100644
+--- a/academy/10_klasse/potenzen_wurzeln.html
++++ b/academy/10_klasse/potenzen_wurzeln.html
+@@ -40,7 +40,7 @@
+ 
+   <main class="max-w-4xl mx-auto px-4 pb-16 pt-6">
+ 
+-    <a href="/academy.html"
++    <a href="../../academy.html"
+        class="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-emerald-300 transition-colors mb-6">
+       ← Zurück zur Akademie
+     </a>
+diff --git a/academy/10_klasse/trigonometrie.html b/academy/10_klasse/trigonometrie.html
+index 8b7c78e..7914d14 100644
+--- a/academy/10_klasse/trigonometrie.html
++++ b/academy/10_klasse/trigonometrie.html
+@@ -53,7 +53,7 @@
+ 
+   <main class="max-w-4xl mx-auto px-4 pb-16 pt-6">
+ 
+-    <a href="/academy.html"
++    <a href="../../academy.html"
+        class="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-emerald-300 transition-colors mb-6">
+       ← Zurück zur Akademie
+     </a>
+diff --git a/academy/1_klasse/formenmuster.html b/academy/1_klasse/formenmuster.html
+index e58407f..3ec4bad 100644
+--- a/academy/1_klasse/formenmuster.html
++++ b/academy/1_klasse/formenmuster.html
+@@ -119,7 +119,7 @@
+   <main class="max-w-4xl mx-auto px-4 pb-16 pt-6">
+ 
+     <!-- ── Zurück-Link zur Akademie-Übersicht ── -->
+-    <a href="../academy.html"
++    <a href="../../academy.html"
+        class="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-emerald-300 transition-colors mb-6">
+       <!-- Pfeil-Symbol -->
+       ← Zurück zur Akademie
+diff --git a/academy/1_klasse/plusminusbis20.html b/academy/1_klasse/plusminusbis20.html
+index a795406..545873f 100644
+--- a/academy/1_klasse/plusminusbis20.html
++++ b/academy/1_klasse/plusminusbis20.html
+@@ -79,7 +79,7 @@
+     <section class="pt-10 pb-6">
+ 
+       <!-- Link zurück zur Akademie-Übersicht -->
+-      <a href="../academy.html"
++      <a href="../../academy.html"
+          class="inline-flex items-center gap-1 text-sm text-slate-400 hover:text-emerald-300 transition-colors mb-6 group">
+         <!-- Pfeil-Icon, vergrößert sich beim Hover -->
+         <span class="group-hover:-translate-x-0.5 transition-transform">←</span>
+diff --git a/academy/1_klasse/zahlenbis20.html b/academy/1_klasse/zahlenbis20.html
+index e6c56a6..4afed7f 100644
+--- a/academy/1_klasse/zahlenbis20.html
++++ b/academy/1_klasse/zahlenbis20.html
+@@ -128,7 +128,7 @@
+ 
+     <!-- Zurück-Link zur Akademie-Übersicht -->
+     <a
+-      href="../academy.html"
++      href="../../academy.html"
+       class="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-emerald-300 mb-8 transition-colors"
+     >
+       <!--
+diff --git a/academy/2_klasse/daskleineeinmaleins.html b/academy/2_klasse/daskleineeinmaleins.html
+index 4d3dea4..1ce7c29 100644
+--- a/academy/2_klasse/daskleineeinmaleins.html
++++ b/academy/2_klasse/daskleineeinmaleins.html
+@@ -1484,7 +1484,7 @@
+         // Jetzt script.js dynamisch laden
+         // createElement('script') → erzeugt ein neues <script>-Element
+         const s = document.createElement('script');
+-        s.src = '../../script.js'; // Pfad zu script.js
++        s.src = '../../assets/js/script.js'; // Pfad zu script.js
+         // appendChild → fügt das <script>-Element zum <body> hinzu
+         // → der Browser lädt und führt script.js sofort aus
+         document.body.appendChild(s);
+diff --git a/academy/2_klasse/uhrzeitgeld.html b/academy/2_klasse/uhrzeitgeld.html
+index 61416bf..6c6a9c4 100644
+--- a/academy/2_klasse/uhrzeitgeld.html
++++ b/academy/2_klasse/uhrzeitgeld.html
+@@ -1007,7 +1007,6 @@
+       stundenZeiger.setAttribute('x1', '100');      // Startpunkt: Mittelpunkt x
+       stundenZeiger.setAttribute('y1', '100');      // Startpunkt: Mittelpunkt y
+       stundenZeiger.setAttribute('x2', '100');      // Endpunkt vor Rotation: zeigt nach oben
+-      stundenZeiger.setAttribute('y2', '100 - 55'); // wird durch transform gedreht
+       // Genauere Berechnung mit sin/cos statt SVG-transform für Zuverlässigkeit:
+       const shRad = stundenWinkel * Math.PI / 180;
+       stundenZeiger.setAttribute('x2', (100 + 55 * Math.sin(shRad)).toFixed(2));
+@@ -1642,7 +1641,7 @@
+ 
+         // Jetzt script.js dynamisch laden
+         const s = document.createElement('script'); // Neues <script>-Element erstellen
+-        s.src = '../../script.js';                  // Pfad zu script.js
++        s.src = '../../assets/js/script.js';                  // Pfad zu script.js
+         document.body.appendChild(s);               // Dem <body> hinzufügen → wird sofort ausgeführt
+       });
+   </script>
+diff --git a/academy/2_klasse/zahlenbis100.html b/academy/2_klasse/zahlenbis100.html
+index edde504..ce3306f 100644
+--- a/academy/2_klasse/zahlenbis100.html
++++ b/academy/2_klasse/zahlenbis100.html
+@@ -1752,7 +1752,7 @@
+         // script.js dynamisch laden: erst NACH dem Einfügen der Topbar
+         // createElement('script') → neues <script>-Element erzeugen
+         const s = document.createElement('script');
+-        s.src = '../../script.js'; // Pfad zu script.js (zwei Ebenen höher)
++        s.src = '../../assets/js/script.js'; // Pfad zu script.js (zwei Ebenen höher)
+         // appendChild → fügt das Script dem <body> hinzu → Browser lädt und führt es aus
+         document.body.appendChild(s);
+       });
+diff --git a/academy/3_klasse/flaechenumfang.html b/academy/3_klasse/flaechenumfang.html
+index 63d17fa..1b309fb 100644
+--- a/academy/3_klasse/flaechenumfang.html
++++ b/academy/3_klasse/flaechenumfang.html
+@@ -1872,7 +1872,7 @@
+ 
+         // script.js dynamisch laden (nach dem Einfügen der Topbar)
+         var s = document.createElement('script'); // neues <script>-Element erzeugen
+-        s.src = '../../script.js';                // Pfad zu script.js (zwei Ebenen höher)
++        s.src = '../../assets/js/script.js';                // Pfad zu script.js (zwei Ebenen höher)
+         document.body.appendChild(s);             // zum <body> hinzufügen → Browser führt es aus
+       });
+   </script>
+diff --git a/academy/3_klasse/malgeteilt.html b/academy/3_klasse/malgeteilt.html
+index 4cb2432..2ca31f9 100644
+--- a/academy/3_klasse/malgeteilt.html
++++ b/academy/3_klasse/malgeteilt.html
+@@ -1178,7 +1178,7 @@
+ 
+         /* Globales Script nachladen: Login, Sprache, Theme usw. */
+         const s = document.createElement('script');
+-        s.src = '../../script.js';   /* Pfad zum gemeinsamen Script */
++        s.src = '../../assets/js/script.js';   /* Pfad zum gemeinsamen Script */
+         document.body.appendChild(s); /* Am Ende des Body einfügen */
+       });
+   </script>
+diff --git a/academy/3_klasse/schriftlichrechnen.html b/academy/3_klasse/schriftlichrechnen.html
+index 4e28e27..ed8f451 100644
+--- a/academy/3_klasse/schriftlichrechnen.html
++++ b/academy/3_klasse/schriftlichrechnen.html
+@@ -596,7 +596,7 @@
+ 
+         // Skript-Tag dynamisch erzeugen und ans Dokument hängen
+         const s = document.createElement('script'); // createElement(): erzeugt neues Element
+-        s.src = '../../script.js';                   // src: Pfad zum Skript
++        s.src = '../../assets/js/script.js';                   // src: Pfad zum Skript
+         document.body.appendChild(s);               // appendChild(): fügt Element am Ende des body ein
+       });
+ 
+diff --git a/academy/4_klasse/groesseneinheiten.html b/academy/4_klasse/groesseneinheiten.html
+index 5fb1c93..b2d7d4a 100644
+--- a/academy/4_klasse/groesseneinheiten.html
++++ b/academy/4_klasse/groesseneinheiten.html
+@@ -604,7 +604,7 @@
+         // Haupt-Skript nachträglich laden – erst NACH dem Einfügen der Topbar
+         // damit script.js die darin enthaltenen DOM-Elemente findet
+         var s = document.createElement('script');  // neues <script>-Element erzeugen
+-        s.src = '../../script.js';                  // Pfad zur globalen Skript-Datei
++        s.src = '../../assets/js/script.js';                  // Pfad zur globalen Skript-Datei
+         document.body.appendChild(s);              // ans Ende des <body> hängen
+       });
+   </script>
+diff --git a/academy/4_klasse/schriftlichmultiplizieren.html b/academy/4_klasse/schriftlichmultiplizieren.html
+index e512afa..29e60c5 100644
+--- a/academy/4_klasse/schriftlichmultiplizieren.html
++++ b/academy/4_klasse/schriftlichmultiplizieren.html
+@@ -1225,7 +1225,7 @@
+ 
+         // Globales Skript (Login, Sprache, Theme, etc.) nachladen
+         const s = document.createElement('script');
+-        s.src = '../../script.js';
++        s.src = '../../assets/js/script.js';
+         document.body.appendChild(s);
+       });
+   </script>
+diff --git a/academy/4_klasse/symmetriekoerper.html b/academy/4_klasse/symmetriekoerper.html
+index e6fb871..76eea32 100644
+--- a/academy/4_klasse/symmetriekoerper.html
++++ b/academy/4_klasse/symmetriekoerper.html
+@@ -686,7 +686,7 @@
+         document.getElementById('topbar-container').innerHTML = html;
+         // Das dazugehörige Skript nachladen (Menü-Toggle, Sprache usw.)
+         const s = document.createElement('script');
+-        s.src = '../../script.js';
++        s.src = '../../assets/js/script.js';
+         document.body.appendChild(s);
+       });
+ 
+diff --git a/academy/5_klasse/flaecheninhalt.html b/academy/5_klasse/flaecheninhalt.html
+index 422be77..96c6096 100644
+--- a/academy/5_klasse/flaecheninhalt.html
++++ b/academy/5_klasse/flaecheninhalt.html
+@@ -137,7 +137,7 @@
+   <main class="max-w-4xl mx-auto px-4 pb-16 pt-6">
+ 
+     <!-- Zurück-Link -->
+-    <a href="/academy.html"
++    <a href="../../academy.html"
+        class="inline-flex items-center gap-2 text-sm text-slate-400
+               hover:text-emerald-300 transition-colors mb-6">
+       ← Zurück zur Akademie
+diff --git a/academy/5_klasse/groesse_zahlen_stellenwert.html b/academy/5_klasse/groesse_zahlen_stellenwert.html
+index a245e10..9237653 100644
+--- a/academy/5_klasse/groesse_zahlen_stellenwert.html
++++ b/academy/5_klasse/groesse_zahlen_stellenwert.html
+@@ -118,7 +118,7 @@
+   <main class="max-w-4xl mx-auto px-4 pb-16 pt-6">
+ 
+     <!-- ── Zurück-Link ── -->
+-    <a href="/academy.html"
++    <a href="../../academy.html"
+        class="inline-flex items-center gap-2 text-sm text-slate-400
+               hover:text-emerald-300 transition-colors mb-6">
+       ← Zurück zur Akademie
+diff --git a/academy/5_klasse/grundrechenarten_terme.html b/academy/5_klasse/grundrechenarten_terme.html
+index da2a776..a293e67 100644
+--- a/academy/5_klasse/grundrechenarten_terme.html
++++ b/academy/5_klasse/grundrechenarten_terme.html
+@@ -109,7 +109,7 @@
+   <main class="max-w-4xl mx-auto px-4 pb-16 pt-6">
+ 
+     <!-- Zurück-Link -->
+-    <a href="/academy.html"
++    <a href="../../academy.html"
+        class="inline-flex items-center gap-2 text-sm text-slate-400
+               hover:text-emerald-300 transition-colors mb-6">
+       ← Zurück zur Akademie
+diff --git a/academy/6_klasse/brueche_verstehen.html b/academy/6_klasse/brueche_verstehen.html
+index b0edc8d..263548d 100644
+--- a/academy/6_klasse/brueche_verstehen.html
++++ b/academy/6_klasse/brueche_verstehen.html
+@@ -83,7 +83,7 @@
+ 
+   <main class="max-w-4xl mx-auto px-4 pb-16 pt-6">
+ 
+-    <a href="/academy.html"
++    <a href="../../academy.html"
+        class="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-emerald-300 transition-colors mb-6">
+       ← Zurück zur Akademie
+     </a>
+diff --git a/academy/6_klasse/dezimalzahlen.html b/academy/6_klasse/dezimalzahlen.html
+index 00af49a..2f3e58a 100644
+--- a/academy/6_klasse/dezimalzahlen.html
++++ b/academy/6_klasse/dezimalzahlen.html
+@@ -71,7 +71,7 @@
+ 
+   <main class="max-w-4xl mx-auto px-4 pb-16 pt-6">
+ 
+-    <a href="/academy.html"
++    <a href="../../academy.html"
+        class="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-emerald-300 transition-colors mb-6">
+       ← Zurück zur Akademie
+     </a>
+diff --git a/academy/6_klasse/teilbarkeit_primzahlen.html b/academy/6_klasse/teilbarkeit_primzahlen.html
+index 92fbf0a..c697924 100644
+--- a/academy/6_klasse/teilbarkeit_primzahlen.html
++++ b/academy/6_klasse/teilbarkeit_primzahlen.html
+@@ -63,7 +63,7 @@
+ 
+   <main class="max-w-4xl mx-auto px-4 pb-16 pt-6">
+ 
+-    <a href="/academy.html"
++    <a href="../../academy.html"
+        class="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-emerald-300 transition-colors mb-6">
+       ← Zurück zur Akademie
+     </a>
+diff --git a/academy/7_klasse/negative_zahlen.html b/academy/7_klasse/negative_zahlen.html
+index de19301..0d928ee 100644
+--- a/academy/7_klasse/negative_zahlen.html
++++ b/academy/7_klasse/negative_zahlen.html
+@@ -58,7 +58,7 @@
+ 
+   <main class="max-w-4xl mx-auto px-4 pb-16 pt-6">
+ 
+-    <a href="/academy.html"
++    <a href="../../academy.html"
+        class="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-emerald-300 transition-colors mb-6">
+       ← Zurück zur Akademie
+     </a>
+diff --git a/academy/7_klasse/prozent_zinsrechnung.html b/academy/7_klasse/prozent_zinsrechnung.html
+index aa1be31..9678368 100644
+--- a/academy/7_klasse/prozent_zinsrechnung.html
++++ b/academy/7_klasse/prozent_zinsrechnung.html
+@@ -66,7 +66,7 @@
+ 
+   <main class="max-w-4xl mx-auto px-4 pb-16 pt-6">
+ 
+-    <a href="/academy.html"
++    <a href="../../academy.html"
+        class="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-emerald-300 transition-colors mb-6">
+       ← Zurück zur Akademie
+     </a>
+diff --git a/academy/7_klasse/terme_variablen.html b/academy/7_klasse/terme_variablen.html
+index 5b7e2d9..3024432 100644
+--- a/academy/7_klasse/terme_variablen.html
++++ b/academy/7_klasse/terme_variablen.html
+@@ -65,7 +65,7 @@
+ 
+   <main class="max-w-4xl mx-auto px-4 pb-16 pt-6">
+ 
+-    <a href="/academy.html"
++    <a href="../../academy.html"
+        class="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-emerald-300 transition-colors mb-6">
+       ← Zurück zur Akademie
+     </a>
+diff --git a/academy/8_klasse/lineare_funktionen.html b/academy/8_klasse/lineare_funktionen.html
+index 8275d66..371ffd2 100644
+--- a/academy/8_klasse/lineare_funktionen.html
++++ b/academy/8_klasse/lineare_funktionen.html
+@@ -53,7 +53,7 @@
+ 
+   <main class="max-w-4xl mx-auto px-4 pb-16 pt-6">
+ 
+-    <a href="/academy.html"
++    <a href="../../academy.html"
+        class="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-emerald-300 transition-colors mb-6">
+       ← Zurück zur Akademie
+     </a>
+diff --git a/academy/8_klasse/wahrscheinlichkeit.html b/academy/8_klasse/wahrscheinlichkeit.html
+index 32c6a39..6aba690 100644
+--- a/academy/8_klasse/wahrscheinlichkeit.html
++++ b/academy/8_klasse/wahrscheinlichkeit.html
+@@ -63,7 +63,7 @@
+ 
+   <main class="max-w-4xl mx-auto px-4 pb-16 pt-6">
+ 
+-    <a href="/academy.html"
++    <a href="../../academy.html"
+        class="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-emerald-300 transition-colors mb-6">
+       ← Zurück zur Akademie
+     </a>
+diff --git a/academy/9_klasse/pythagoras.html b/academy/9_klasse/pythagoras.html
+index c2a454d..c6bdf84 100644
+--- a/academy/9_klasse/pythagoras.html
++++ b/academy/9_klasse/pythagoras.html
+@@ -48,7 +48,7 @@
+ 
+   <main class="max-w-4xl mx-auto px-4 pb-16 pt-6">
+ 
+-    <a href="/academy.html"
++    <a href="../../academy.html"
+        class="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-emerald-300 transition-colors mb-6">
+       ← Zurück zur Akademie
+     </a>
+diff --git a/academy/9_klasse/quadratische_funktionen.html b/academy/9_klasse/quadratische_funktionen.html
+index 3ed2d22..6c2c6b0 100644
+--- a/academy/9_klasse/quadratische_funktionen.html
++++ b/academy/9_klasse/quadratische_funktionen.html
+@@ -44,7 +44,7 @@
+ 
+   <main class="max-w-4xl mx-auto px-4 pb-16 pt-6">
+ 
+-    <a href="/academy.html"
++    <a href="../../academy.html"
+        class="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-emerald-300 transition-colors mb-6">
+       ← Zurück zur Akademie
+     </a>
+diff --git a/academy/9_klasse/strahlensaetze.html b/academy/9_klasse/strahlensaetze.html
+index 5e67c57..728fffd 100644
+--- a/academy/9_klasse/strahlensaetze.html
++++ b/academy/9_klasse/strahlensaetze.html
+@@ -49,7 +49,7 @@
+ 
+   <main class="max-w-4xl mx-auto px-4 pb-16 pt-6">
+ 
+-    <a href="/academy.html"
++    <a href="../../academy.html"
+        class="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-emerald-300 transition-colors mb-6">
+       ← Zurück zur Akademie
+     </a>
+diff --git a/academy/assets/lesson-engine.js b/academy/assets/lesson-engine.js
+index 5d5f076..3399fe0 100644
+--- a/academy/assets/lesson-engine.js
++++ b/academy/assets/lesson-engine.js
+@@ -588,7 +588,14 @@
+ 
+     fetch(cfg.basis + 'topbar.html')
+       .then(function (r) { return r.ok ? r.text() : ''; })
+-      .then(function (html) { if (html) host.innerHTML = html; })
++      .then(function (html) {
++        if (!html) return;
++        host.innerHTML = html;
++        // script.js braucht die Topbar-Buttons, deshalb erst danach laden
++        var s = document.createElement('script');
++        s.src = cfg.basis + 'assets/js/script.js';
++        document.body.appendChild(s);
++      })
+       .catch(function () { /* Topbar ist optional */ });
+   }
+ 
+diff --git a/assets/js/script.js b/assets/js/script.js
+index 6a4a092..a3fa521 100644
+--- a/assets/js/script.js
++++ b/assets/js/script.js
+@@ -1,5 +1,24 @@
+-// Aktuelles Jahr im Footer setzen
+-document.getElementById("y").textContent = new Date().getFullYear();
++// Aktuelles Jahr im Footer setzen (nicht jede Seite hat einen Footer)
++const yearEl = document.getElementById("y");
++if (yearEl) yearEl.textContent = new Date().getFullYear();
++
++// Topbar-Links relativ zur Projektroot machen.
++// topbar.html enthält Pfade wie "aboutme.html". Auf Unterseiten (z.B. academy/5_klasse/)
++// würden die sonst falsch aufgelöst. Absolute Pfade ("/aboutme.html") gehen auf
++// GitHub Pages nicht, weil die Seite unter /personal_website/ liegt.
++(function fixTopbarLinks() {
++  const base = window.__i18nBase || './';
++  document.querySelectorAll('#topbar-container [href], #topbar-container [src]').forEach((el) => {
++    const attr = el.hasAttribute('href') ? 'href' : 'src';
++    const val = el.getAttribute(attr);
++    if (!val || /^(https?:|mailto:|#|\/|\.\.\/)/.test(val)) return;
++    el.setAttribute(attr, base + val);
++  });
++  // Bilder haben data-src statt src, damit sie nicht vorab vom falschen Pfad laden
++  document.querySelectorAll('#topbar-container img[data-src]').forEach((img) => {
++    img.src = base + img.getAttribute('data-src');
++  });
++})();
+ 
+ let translations = {};
+ 
+diff --git a/topbar.html b/topbar.html
+index b356875..4384f09 100644
+--- a/topbar.html
++++ b/topbar.html
+@@ -1,19 +1,19 @@
+ <div class="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
+   <div class="flex items-center gap-4">
+     <img
+-      src="/assets/images/Nice_guy_icon1.png"
++      data-src="assets/images/Nice_guy_icon1.png"
+       alt="my_icon"
+       class="h-10 w-10 rounded-2xl border border-slate-800 object-cover shadow-xl"
+     />
+-    <a class="font-semibold tracking-tight" href="/">Brandon Hank</a>
++    <a class="font-semibold tracking-tight" href="index.html">Brandon Hank</a>
+   </div>
+ 
+   <div class="flex items-center gap-4">
+     <nav class="flex gap-4 text-sm text-slate-300">
+-      <a class="hover:text-white" href="/aboutme.html" data-i18n="nav_about">Über mich</a>
+-      <a class="hover:text-white" href="/projects.html" data-i18n="nav_projects">Projekte</a>
+-      <a class="hover:text-white" href="/academy.html" data-i18n="nav_academy">Academie</a>
+-      <a class="hover:text-white" href="/media.html" data-i18n="nav_media">Medien</a>
++      <a class="hover:text-white" href="aboutme.html" data-i18n="nav_about">Über mich</a>
++      <a class="hover:text-white" href="projects.html" data-i18n="nav_projects">Projekte</a>
++      <a class="hover:text-white" href="academy.html" data-i18n="nav_academy">Academie</a>
++      <a class="hover:text-white" href="media.html" data-i18n="nav_media">Medien</a>
+     </nav>
+ 
+     <div class="flex items-center gap-1 rounded-xl border border-slate-800 bg-slate-900/40 p-1 text-xs text-slate-200">
