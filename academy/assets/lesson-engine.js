@@ -588,7 +588,14 @@
 
     fetch(cfg.basis + 'topbar.html')
       .then(function (r) { return r.ok ? r.text() : ''; })
-      .then(function (html) { if (html) host.innerHTML = html; })
+      .then(function (html) {
+        if (!html) return;
+        host.innerHTML = html;
+        // script.js braucht die Topbar-Buttons, deshalb erst danach laden
+        var s = document.createElement('script');
+        s.src = cfg.basis + 'assets/js/script.js';
+        document.body.appendChild(s);
+      })
       .catch(function () { /* Topbar ist optional */ });
   }
 

@@ -1007,7 +1007,6 @@
       stundenZeiger.setAttribute('x1', '100');      // Startpunkt: Mittelpunkt x
       stundenZeiger.setAttribute('y1', '100');      // Startpunkt: Mittelpunkt y
       stundenZeiger.setAttribute('x2', '100');      // Endpunkt vor Rotation: zeigt nach oben
-      stundenZeiger.setAttribute('y2', '100 - 55'); // wird durch transform gedreht
       // Genauere Berechnung mit sin/cos statt SVG-transform für Zuverlässigkeit:
       const shRad = stundenWinkel * Math.PI / 180;
       stundenZeiger.setAttribute('x2', (100 + 55 * Math.sin(shRad)).toFixed(2));
@@ -1642,7 +1641,7 @@
 
         // Jetzt script.js dynamisch laden
         const s = document.createElement('script'); // Neues <script>-Element erstellen
-        s.src = '../../script.js';                  // Pfad zu script.js
+        s.src = '../../assets/js/script.js';                  // Pfad zu script.js
         document.body.appendChild(s);               // Dem <body> hinzufügen → wird sofort ausgeführt
       });
   </script>

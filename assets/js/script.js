@@ -1,5 +1,24 @@
-// Aktuelles Jahr im Footer setzen
-document.getElementById("y").textContent = new Date().getFullYear();
+// Aktuelles Jahr im Footer setzen (nicht jede Seite hat einen Footer)
+const yearEl = document.getElementById("y");
+if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+// Topbar-Links relativ zur Projektroot machen.
+// topbar.html enthält Pfade wie "aboutme.html". Auf Unterseiten (z.B. academy/5_klasse/)
+// würden die sonst falsch aufgelöst. Absolute Pfade ("/aboutme.html") gehen auf
+// GitHub Pages nicht, weil die Seite unter /personal_website/ liegt.
+(function fixTopbarLinks() {
+  const base = window.__i18nBase || './';
+  document.querySelectorAll('#topbar-container [href], #topbar-container [src]').forEach((el) => {
+    const attr = el.hasAttribute('href') ? 'href' : 'src';
+    const val = el.getAttribute(attr);
+    if (!val || /^(https?:|mailto:|#|\/|\.\.\/)/.test(val)) return;
+    el.setAttribute(attr, base + val);
+  });
+  // Bilder haben data-src statt src, damit sie nicht vorab vom falschen Pfad laden
+  document.querySelectorAll('#topbar-container img[data-src]').forEach((img) => {
+    img.src = base + img.getAttribute('data-src');
+  });
+})();
 
 let translations = {};
 

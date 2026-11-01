@@ -1752,7 +1752,7 @@
         // script.js dynamisch laden: erst NACH dem Einfügen der Topbar
         // createElement('script') → neues <script>-Element erzeugen
         const s = document.createElement('script');
-        s.src = '../../script.js'; // Pfad zu script.js (zwei Ebenen höher)
+        s.src = '../../assets/js/script.js'; // Pfad zu script.js (zwei Ebenen höher)
         // appendChild → fügt das Script dem <body> hinzu → Browser lädt und führt es aus
         document.body.appendChild(s);
       });
