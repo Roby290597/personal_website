@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="de">
+
+<head>
+  <link rel="icon" href="./favicon.ico">
+  <link rel="manifest" href="./site.webmanifest">
+  <link rel="apple-touch-icon" href="./apple-touch-icon.png">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <!-- Diese Seite soll nicht in Suchmaschinen auftauchen -->
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Brandon Hank | Jobs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="assets/css/style.css?v=1.0">
+</head>
+
+<body class="bg-slate-950 text-slate-100">
+<header class="border-b border-slate-800 bg-slate-950/80 backdrop-blur sticky top-0 z-50">
+  <div id="topbar-container"></div>
+</header>
+
+<main class="mx-auto max-w-5xl px-4">
+  <section class="py-14 md:py-20">
+
+    <!-- Sperrbildschirm -->
+    <div id="lock" class="mx-auto max-w-sm rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
+      <h1 class="text-xl font-semibold" data-i18n="jobs_lock_title">Geschützter Bereich</h1>
+      <p class="mt-2 text-sm text-slate-400" data-i18n="jobs_lock_text">Bitte Passwort eingeben.</p>
+      <form id="lock-form" class="mt-5 flex gap-2">
+        <input id="pw" type="password" autocomplete="current-password" required
+               class="flex-1 rounded-xl border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 outline-none focus:border-emerald-400" />
+        <button type="submit" class="rounded-xl border border-slate-700 px-4 py-2 text-sm hover:bg-slate-800/60"
+                data-i18n="jobs_unlock">Öffnen</button>
+      </form>
+      <p id="lock-error" hidden class="mt-3 text-sm text-rose-400" data-i18n="jobs_wrong_pw">Falsches Passwort.</p>
+    </div>
+
+    <!-- Inhalt, erst nach dem Entschlüsseln sichtbar -->
+    <div id="content" hidden>
+      <div class="flex items-center justify-between">
+        <h1 class="text-2xl font-semibold" data-i18n="jobs_title">Jobs</h1>
+        <button id="logout" class="rounded-xl border border-slate-800 px-3 py-1.5 text-xs text-slate-300 hover:bg-slate-800/60"
+                data-i18n="jobs_lock_again">Sperren</button>
+      </div>
+
+      <h2 class="mt-10 text-lg font-semibold">
+        <span data-i18n="jobs_applied">Beworben</span>
+        <span id="count-applied" class="ml-2 text-sm text-slate-400"></span>
+      </h2>
+      <div id="list-applied" class="mt-4 grid gap-4 md:grid-cols-2"></div>
+
+      <h2 class="mt-12 text-lg font-semibold">
+        <span data-i18n="jobs_planned">Noch bewerben</span>
+        <span id="count-planned" class="ml-2 text-sm text-slate-400"></span>
+      </h2>
+      <div id="list-planned" class="mt-4 grid gap-4 md:grid-cols-2"></div>
+    </div>
+
+  </section>
+</main>
+
+<footer class="py-10 text-center text-xs text-slate-500">
+  © <span id="y"></span> Brandon Hank · Düsseldorf
+</footer>
+
+<script>
+  fetch('topbar.html')
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById('topbar-container').innerHTML = html;
+      const s = document.createElement('script');
+      s.src = 'assets/js/script.js';
+      document.body.appendChild(s);
+    });
+</script>
+<script src="assets/js/jobs.js"></script>
+</body>
+</html>

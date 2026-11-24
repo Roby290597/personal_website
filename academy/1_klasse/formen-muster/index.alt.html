@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Formen und Muster – Klasse 1</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../../style.css?v=1.0" />
+  <style>
+    /* Theorie-Text mit Zeilenumbrüchen */
+    .theorie-text {
+      white-space: pre-wrap;
+      font-size: 1.125rem;
+      line-height: 1.8;
+    }
+    /* Sanfte Übergänge */
+    .lektion-card {
+      transition: all 0.2s ease;
+    }
+    /* Zahlen-Input groß und zentriert */
+    .zahl-input {
+      font-size: 1.5rem;
+      text-align: center;
+      width: 120px;
+    }
+    /* Buttons für Multiple Choice */
+    .mc-btn {
+      transition: all 0.15s ease;
+    }
+    .mc-btn:hover:not(:disabled) {
+      transform: scale(1.02);
+    }
+    /* Fade-In Animation */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .fade-in {
+      animation: fadeIn 0.3s ease forwards;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen">
+
+  <!-- Topbar wird dynamisch geladen -->
+  <div id="topbar-container"></div>
+
+  <!-- Haupt-Container -->
+  <div class="max-w-3xl mx-auto px-4 py-8">
+
+    <!-- Zurück-Link -->
+    <div class="mb-6">
+      <a href="../../academy.html" class="text-slate-400 hover:text-emerald-400 transition-colors text-sm">
+        ← Zurück zur Akademie
+      </a>
+    </div>
+
+    <!-- Kurs-Header -->
+    <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6 mb-8">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <span class="text-xs font-semibold uppercase tracking-widest text-emerald-400 bg-emerald-400/10 px-3 py-1 rounded-full">
+            Klasse 1 · Formen
+          </span>
+          <h1 class="text-3xl font-bold mt-3 mb-2">Formen und Muster</h1>
+          <p class="text-slate-400">6 Lektionen · Lerne Formen kennen! ⭕🔺🟦</p>
+        </div>
+        <div class="text-5xl">📐</div>
+      </div>
+      <!-- Fortschrittsbalken -->
+      <div class="mt-4">
+        <div class="flex justify-between text-sm text-slate-400 mb-2">
+          <span id="fortschritt-text">0 von 6 Lektionen abgeschlossen</span>
+          <span id="fortschritt-prozent">0%</span>
+        </div>
+        <div class="h-2 bg-slate-800 rounded-full overflow-hidden">
+          <div id="fortschritt-balken" class="h-2 bg-emerald-400 rounded-full transition-all duration-500" style="width:0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stepper: Lektions-Übersicht -->
+    <div id="stepper" class="flex gap-2 mb-8 flex-wrap justify-center"></div>
+
+    <!-- Haupt-Inhalt: Lektions-Ansicht oder Abschluss -->
+    <div id="haupt-inhalt"></div>
+
+    <!-- Reset-Link -->
+    <div class="mt-12 text-center">
+      <button
+        onclick="neustarten()"
+        class="text-slate-600 hover:text-slate-400 text-sm transition-colors"
+      >
+        Neu starten
+      </button>
+    </div>
+
+  </div>
+
+  <script>
+    // ── Topbar laden ──────────────────────────────────────────────
+    window.__i18nBase = '../../';
+    fetch('../../topbar.html')
+      .then(r => r.ok ? r.text() : '')
+      .then(html => { if (html) document.getElementById('topbar-container').innerHTML = html; })
+      .catch(() => {});
+
+    // ── LocalStorage ──────────────────────────────────────────────
+    const PROGRESS_KEY = 'k1_formen_progress';
+
+    function loadProgress() {
+      try {
+        return JSON.parse(localStorage.getItem(PROGRESS_KEY)) || { completed: [], current: 0 };
+      } catch(e) {
+        return { completed: [], current: 0 };
+      }
+    }
+
+    function saveProgress(p) {
+      localStorage.setItem(PROGRESS_KEY, JSON.stringify(p));
+    }
+
+    function isUnlocked(idx) {
+      return idx === 0 || progress.completed.includes(idx - 1);
+    }
+
+    // ── Lektions-Daten ────────────────────────────────────────────
+    const LEKTIONEN = [
+      {
+        id: 0,
+        titel: "Der Kreis ⭕",
+        theorie: `Ein Kreis ist rund! ⭕
+
+Das hat der Kreis:
+✅ keine Ecken
+✅ keine geraden Seiten
+✅ eine runde Linie
+
+Beispiele für Kreise:
+🌕 Mond
+☀️ Sonne
+🍕 Pizza (von oben)
+⚽ Fußball (von oben)
+
+Schau dich um! Was ist rund? 🔍`,
+        aufgaben: [
+          { typ: 'mc', frage: 'Wie viele Ecken hat ein Kreis?', optionen: ['0', '1', '2', '3'], richtig: 0 },
+          { typ: 'mc', frage: 'Welche Form ist rund?', optionen: ['Dreieck', 'Kreis', 'Viereck', 'Rechteck'], richtig: 1 },
+          { typ: 'mc', frage: 'Was hat die Form eines Kreises?', optionen: ['Türe', 'Fenster', 'Münze', 'Buch'], richtig: 2 },
+          { typ: 'zahl', frage: 'Wie viele Ecken hat ein Kreis?', antwort: 0, einheit: 'Ecken' },
+          { typ: 'mc', frage: 'Ist ein ⭕ ein Kreis?', optionen: ['Ja! ✅', 'Nein', 'Vielleicht', 'Weiß nicht'], richtig: 0 },
+        ]
+      },
+      {
+        id: 1,
+        titel: "Das Dreieck 🔺",
+        theorie: `Ein Dreieck hat drei Ecken! 🔺
+
+Das hat das Dreieck:
+✅ 3 Ecken (Spitzen)
+✅ 3 Seiten (gerade Linien)
+
+Schau mal: 3 Ecken = 3 Seiten!
+
+Beispiele für Dreiecke:
+🍕 Pizzastück
+⛺ Zelt
+🔺 Warnzeichen
+
+Zähl die Ecken! Du schaffst das! 💪`,
+        aufgaben: [
+          { typ: 'zahl', frage: 'Wie viele Ecken hat ein Dreieck?', antwort: 3, einheit: 'Ecken' },
+          { typ: 'mc', frage: 'Wie viele Seiten hat ein Dreieck?', optionen: ['2', '3', '4', '5'], richtig: 1 },
+          { typ: 'mc', frage: 'Welche Form hat 3 Ecken?', optionen: ['Kreis', 'Dreieck', 'Viereck', 'Rechteck'], richtig: 1 },
+          { typ: 'mc', frage: 'Was hat die Form eines Dreiecks?', optionen: ['Teller', 'Buch', 'Pizzastück', 'Fenster'], richtig: 2 },
+          { typ: 'zahl', frage: 'Wie viele Seiten hat ein Dreieck?', antwort: 3, einheit: 'Seiten' },
+        ]
+      },
+      {
+        id: 2,
+        titel: "Das Viereck und Rechteck 🟦",
+        theorie: `Viereck = vier Ecken! 🟦
+
+Das hat das Viereck:
+✅ 4 Ecken
+✅ 4 Seiten
+
+Ein Rechteck ist ein besonderes Viereck! 📐
+Beim Rechteck sind je zwei Seiten gleich lang.
+
+Ein Quadrat ist auch ein Viereck! ⬛
+Beim Quadrat sind ALLE Seiten gleich lang.
+
+Beispiele:
+📱 Handy → Rechteck
+📺 Fernseher → Rechteck
+🎲 Würfelfläche → Quadrat`,
+        aufgaben: [
+          { typ: 'zahl', frage: 'Wie viele Ecken hat ein Viereck?', antwort: 4, einheit: 'Ecken' },
+          { typ: 'mc', frage: 'Welche Form hat 4 Ecken?', optionen: ['Kreis', 'Dreieck', 'Viereck', 'Fünfeck'], richtig: 2 },
+          { typ: 'mc', frage: 'Was hat die Form eines Rechtecks?', optionen: ['Münze', 'Pizzastück', 'Buch', 'Ball'], richtig: 2 },
+          { typ: 'zahl', frage: 'Wie viele Seiten hat ein Rechteck?', antwort: 4, einheit: 'Seiten' },
+          { typ: 'mc', frage: 'Was ist ein Quadrat?', optionen: ['Kreis mit 4 Ecken', 'Viereck mit gleich langen Seiten', 'Dreieck', 'Oval'], richtig: 1 },
+        ]
+      },
+      {
+        id: 3,
+        titel: "Formen erkennen 🔍",
+        theorie: `Du kennst jetzt drei Formen! 🎉
+
+⭕ Kreis → rund, 0 Ecken
+🔺 Dreieck → 3 Ecken, 3 Seiten
+🟦 Viereck → 4 Ecken, 4 Seiten
+
+Überall siehst du Formen! Schau genau hin! 👀
+
+Fenster → Rechteck 🟦
+Uhr → Kreis ⭕
+Pizzastück → Dreieck 🔺`,
+        aufgaben: [
+          { typ: 'mc', frage: 'Welche Form hat eine Uhr?', optionen: ['Dreieck', 'Kreis', 'Viereck', 'Rechteck'], richtig: 1 },
+          { typ: 'mc', frage: 'Welche Form hat ein Fenster?', optionen: ['Kreis', 'Dreieck', 'Rechteck', 'Oval'], richtig: 2 },
+          { typ: 'mc', frage: 'Wie viele Ecken hat ein Kreis?', optionen: ['0', '1', '2', '3'], richtig: 0 },
+          { typ: 'mc', frage: 'Wie viele Ecken hat ein Dreieck?', optionen: ['2', '3', '4', '5'], richtig: 1 },
+          { typ: 'mc', frage: 'Was hat mehr Ecken — Dreieck oder Viereck?', optionen: ['Dreieck', 'Viereck', 'gleich', 'weiß nicht'], richtig: 1 },
+        ]
+      },
+      {
+        id: 4,
+        titel: "Muster erkennen 🔄",
+        theorie: `Ein Muster wiederholt sich! 🔄
+
+Schau dir das an:
+⭕ 🔺 ⭕ 🔺 ⭕ 🔺 ...
+Das Muster: Kreis, Dreieck, Kreis, Dreieck...
+
+Noch ein Beispiel:
+🔴 🔵 🔴 🔵 🔴 🔵 ...
+Das Muster: Rot, Blau, Rot, Blau...
+
+Muster sind überall!
+Auf Tapeten, Stoffen, in der Natur 🌿`,
+        aufgaben: [
+          { typ: 'mc', frage: '⭕ 🔺 ⭕ 🔺 ⭕ __ Was kommt als nächstes?', optionen: ['⭕ Kreis', '🔺 Dreieck', '🟦 Viereck', '🔴 Punkt'], richtig: 1 },
+          { typ: 'mc', frage: '🔴 🔵 🔴 🔵 🔴 __ Was kommt als nächstes?', optionen: ['Rot 🔴', 'Blau 🔵', 'Grün 🟢', 'Gelb 🟡'], richtig: 1 },
+          { typ: 'mc', frage: '🟦 🟦 ⭕ 🟦 🟦 __ Was kommt als nächstes?', optionen: ['🟦 Viereck', '⭕ Kreis', '🔺 Dreieck', '🔴 Punkt'], richtig: 1 },
+          { typ: 'mc', frage: 'Was ist ein Muster?', optionen: ['Etwas Zufälliges', 'Etwas das sich wiederholt', 'Eine Farbe', 'Eine Zahl'], richtig: 1 },
+          { typ: 'mc', frage: '1 2 1 2 1 __ Was kommt als nächstes?', optionen: ['1', '2', '3', '4'], richtig: 1 },
+        ]
+      },
+      {
+        id: 5,
+        titel: "Abschlusstest: Formen und Muster 🏆",
+        theorie: `Du hast Formen und Muster gelernt! 🏆
+
+Du kannst jetzt:
+✅ Kreis erkennen ⭕
+✅ Dreieck erkennen 🔺
+✅ Viereck erkennen 🟦
+✅ Muster erkennen und fortsetzen 🔄
+
+Zeig was du kannst! Du bist toll! 💪🌟`,
+        aufgaben: [
+          { typ: 'mc', frage: 'Welche Form hat 3 Ecken?', optionen: ['Kreis', 'Dreieck', 'Viereck', 'Rechteck'], richtig: 1 },
+          { typ: 'zahl', frage: 'Wie viele Ecken hat ein Viereck?', antwort: 4, einheit: 'Ecken' },
+          { typ: 'mc', frage: '⭕ 🔺 ⭕ 🔺 __ Was kommt?', optionen: ['⭕ Kreis', '🔺 Dreieck', '🟦 Viereck', 'kein'], richtig: 0 },
+          { typ: 'mc', frage: 'Was hat die Form eines Kreises?', optionen: ['Buch', 'Münze', 'Tür', 'Fenster'], richtig: 1 },
+          { typ: 'zahl', frage: 'Wie viele Ecken hat ein Dreieck?', antwort: 3, einheit: 'Ecken' },
+        ]
+      },
+    ];
+
+    // ── Zustand ───────────────────────────────────────────────────
+    let progress = loadProgress();
+    // aufgabenStatus[i] = true wenn Aufgabe i korrekt beantwortet
+    let aufgabenStatus = [];
+    // aktuelle Lektion Index
+    let aktiveLektionIdx = progress.current;
+
+    // ── Initialisierung ───────────────────────────────────────────
+    function init() {
+      progress = loadProgress();
+      aktiveLektionIdx = progress.current;
+      // Wenn alle abgeschlossen → Abschluss-Screen
+      if (progress.completed.length === LEKTIONEN.length) {
+        renderAbschluss();
+      } else {
+        // Aktuell aktive Lektion anzeigen
+        if (!isUnlocked(aktiveLektionIdx)) {
+          // Ersten nicht-abgeschlossenen finden
+          for (let i = 0; i < LEKTIONEN.length; i++) {
+            if (!progress.completed.includes(i)) {
+              aktiveLektionIdx = i;
+              break;
+            }
+          }
+        }
+        renderStepper();
+        renderLektion(aktiveLektionIdx);
+        aktualisiereFortschritt();
+      }
+    }
+
+    // ── Fortschrittsbalken aktualisieren ─────────────────────────
+    function aktualisiereFortschritt() {
+      const n = progress.completed.length;
+      const gesamt = LEKTIONEN.length;
+      const proz = Math.round((n / gesamt) * 100);
+      document.getElementById('fortschritt-text').textContent = `${n} von ${gesamt} Lektionen abgeschlossen`;
+      document.getElementById('fortschritt-prozent').textContent = `${proz}%`;
+      document.getElementById('fortschritt-balken').style.width = `${proz}%`;
+    }
+
+    // ── Stepper rendern ───────────────────────────────────────────
+    function renderStepper() {
+      const container = document.getElementById('stepper');
+      container.innerHTML = '';
+
+      LEKTIONEN.forEach((lek, idx) => {
+        const istAbgeschlossen = progress.completed.includes(idx);
+        const istAktuell = idx === aktiveLektionIdx && !istAbgeschlossen;
+        const istFreigeschaltet = isUnlocked(idx);
+
+        const btn = document.createElement('button');
+        btn.setAttribute('aria-label', lek.titel);
+        btn.title = lek.titel;
+
+        // Stepper-Kreis mit Nummer oder Haken
+        if (istAbgeschlossen) {
+          // Abgeschlossen: grüner Kreis mit Haken
+          btn.className = 'w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm bg-emerald-400 text-slate-950 cursor-pointer';
+          btn.innerHTML = '✓';
+          btn.onclick = () => wechsleLektion(idx);
+        } else if (istAktuell) {
+          // Aktuell aktiv: umrandeter grüner Kreis
+          btn.className = 'w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm bg-emerald-400/20 border-2 border-emerald-400 text-emerald-300 cursor-pointer';
+          btn.innerHTML = `${idx + 1}`;
+          btn.onclick = () => wechsleLektion(idx);
+        } else if (istFreigeschaltet) {
+          // Freigeschaltet aber nicht aktuell
+          btn.className = 'w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm bg-slate-800 border border-slate-600 text-slate-300 cursor-pointer hover:border-slate-400 transition-colors';
+          btn.innerHTML = `${idx + 1}`;
+          btn.onclick = () => wechsleLektion(idx);
+        } else {
+          // Gesperrt
+          btn.className = 'w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm bg-slate-900 border border-slate-800 text-slate-600 cursor-not-allowed opacity-50';
+          btn.innerHTML = '🔒';
+          btn.disabled = true;
+        }
+
+        container.appendChild(btn);
+
+        // Verbindungslinie zwischen Schritten
+        if (idx < LEKTIONEN.length - 1) {
+          const linie = document.createElement('div');
+          linie.className = 'flex-1 h-0.5 self-center ' + (progress.completed.includes(idx) ? 'bg-emerald-400' : 'bg-slate-800');
+          linie.style.minWidth = '8px';
+          container.appendChild(linie);
+        }
+      });
+    }
+
+    // ── Lektion wechseln ──────────────────────────────────────────
+    function wechsleLektion(idx) {
+      if (!isUnlocked(idx)) return;
+      aktiveLektionIdx = idx;
+      aufgabenStatus = [];
+      renderStepper();
+      renderLektion(idx);
+    }
+
+    // ── Lektion rendern ───────────────────────────────────────────
+    function renderLektion(idx) {
+      const lek = LEKTIONEN[idx];
+      const istAbgeschlossen = progress.completed.includes(idx);
+
+      // Aufgaben-Status zurücksetzen
+      aufgabenStatus = new Array(lek.aufgaben.length).fill(false);
+
+      const inhalt = document.getElementById('haupt-inhalt');
+      inhalt.innerHTML = '';
+      inhalt.className = 'fade-in';
+
+      // ── Lektions-Karte ──
+      const karte = document.createElement('div');
+      karte.className = 'rounded-3xl border border-slate-800 bg-slate-900/30 p-6 mb-6';
+
+      // Lektions-Titel
+      const titelBereich = document.createElement('div');
+      titelBereich.className = 'flex items-center gap-3 mb-6';
+      titelBereich.innerHTML = `
+        <span class="w-10 h-10 rounded-full bg-emerald-400/20 flex items-center justify-center text-emerald-400 font-bold text-sm">${idx + 1}</span>
+        <h2 class="text-2xl font-bold">${lek.titel}</h2>
+      `;
+      karte.appendChild(titelBereich);
+
+      // Theorie-Bereich
+      const theorieBereich = document.createElement('div');
+      theorieBereich.className = 'mb-8 p-5 rounded-2xl bg-slate-800/50 border border-slate-700';
+      const theorieLabel = document.createElement('p');
+      theorieLabel.className = 'text-xs font-semibold uppercase tracking-widest text-emerald-400 mb-3';
+      theorieLabel.textContent = 'Was du lernst 📖';
+      const theorieText = document.createElement('p');
+      theorieText.className = 'theorie-text text-slate-200';
+      theorieText.textContent = lek.theorie;
+      theorieBereich.appendChild(theorieLabel);
+      theorieBereich.appendChild(theorieText);
+      karte.appendChild(theorieBereich);
+
+      inhalt.appendChild(karte);
+
+      // ── Aufgaben ──
+      const aufgabenBereich = document.createElement('div');
+      aufgabenBereich.id = 'aufgaben-bereich';
+      aufgabenBereich.className = 'space-y-6';
+      inhalt.appendChild(aufgabenBereich);
+
+      lek.aufgaben.forEach((aufgabe, aIdx) => {
+        const aufgabeEl = erstelleAufgabe(aufgabe, aIdx, idx);
+        aufgabenBereich.appendChild(aufgabeEl);
+      });
+
+      // ── Abschließen-Button ──
+      const abschliessenBereich = document.createElement('div');
+      abschliessenBereich.className = 'mt-8 text-center';
+
+      const abschliessenBtn = document.createElement('button');
+      abschliessenBtn.id = 'abschliessen-btn';
+      abschliessenBtn.className = 'px-8 py-4 rounded-2xl font-bold text-lg transition-all ' +
+        (istAbgeschlossen
+          ? 'bg-emerald-400 text-slate-950 cursor-pointer'
+          : 'bg-slate-800 text-slate-500 cursor-not-allowed opacity-50');
+      abschliessenBtn.textContent = istAbgeschlossen ? '✓ Lektion abgeschlossen' : 'Lektion abschließen';
+      abschliessenBtn.disabled = !istAbgeschlossen;
+
+      if (istAbgeschlossen) {
+        // Bereits abgeschlossen: alle als korrekt markieren
+        aufgabenStatus.fill(true);
+      }
+
+      abschliessenBtn.onclick = () => {
+        if (alleKorrekt()) {
+          lektionAbschliessen(idx);
+        }
+      };
+
+      abschliessenBereich.appendChild(abschliessenBtn);
+
+      // Hinweis wenn noch nicht alle gelöst
+      const hinweis = document.createElement('p');
+      hinweis.id = 'abschliessen-hinweis';
+      hinweis.className = 'text-slate-500 text-sm mt-3';
+      hinweis.textContent = istAbgeschlossen ? '' : 'Beantworte alle Aufgaben richtig! 💪';
+      abschliessenBereich.appendChild(hinweis);
+
+      inhalt.appendChild(abschliessenBereich);
+
+      // Falls bereits abgeschlossen: alle Aufgaben als richtig markieren
+      if (istAbgeschlossen) {
+        aufgabenStatus.fill(true);
+        aktualisiereAbschliessenBtn();
+      }
+    }
+
+    // ── Einzelne Aufgabe erstellen ────────────────────────────────
+    function erstelleAufgabe(aufgabe, aIdx, lektionsIdx) {
+      const karte = document.createElement('div');
+      karte.id = `aufgabe-${aIdx}`;
+      karte.className = 'rounded-3xl border border-slate-800 bg-slate-900/30 p-6';
+
+      // Aufgaben-Nummer und Frage
+      const frageBereich = document.createElement('div');
+      frageBereich.className = 'flex items-start gap-3 mb-5';
+      frageBereich.innerHTML = `
+        <span class="w-7 h-7 rounded-full bg-slate-700 flex-shrink-0 flex items-center justify-center text-xs font-bold text-slate-300 mt-0.5">${aIdx + 1}</span>
+        <p class="text-lg font-semibold text-slate-100 leading-snug">${aufgabe.frage}</p>
+      `;
+      karte.appendChild(frageBereich);
+
+      // Feedback-Bereich
+      const feedback = document.createElement('div');
+      feedback.id = `feedback-${aIdx}`;
+      feedback.className = 'mb-4 hidden';
+      karte.appendChild(feedback);
+
+      if (aufgabe.typ === 'mc') {
+        // Multiple-Choice Buttons
+        const btnGrid = document.createElement('div');
+        btnGrid.className = 'grid grid-cols-2 gap-3';
+
+        aufgabe.optionen.forEach((option, oIdx) => {
+          const btn = document.createElement('button');
+          btn.className = 'mc-btn px-4 py-4 rounded-2xl border border-slate-700 bg-slate-800 text-slate-100 font-medium text-base hover:border-emerald-400/50 hover:bg-slate-700 transition-all text-left';
+          btn.textContent = option;
+          btn.onclick = () => pruefeAntwortMC(aIdx, oIdx, aufgabe.richtig, btn, btnGrid, feedback);
+          btnGrid.appendChild(btn);
+        });
+
+        karte.appendChild(btnGrid);
+
+      } else if (aufgabe.typ === 'zahl') {
+        // Zahlen-Eingabe
+        const eingabeBereich = document.createElement('div');
+        eingabeBereich.className = 'flex items-center gap-4 flex-wrap';
+
+        const input = document.createElement('input');
+        input.type = 'number';
+        input.min = '0';
+        input.max = '99';
+        input.id = `input-${aIdx}`;
+        input.className = 'zahl-input rounded-2xl border border-slate-700 bg-slate-800 text-slate-100 px-4 py-3 focus:outline-none focus:border-emerald-400 transition-colors';
+        input.placeholder = '?';
+
+        const einheit = document.createElement('span');
+        einheit.className = 'text-slate-400 text-lg';
+        einheit.textContent = aufgabe.einheit;
+
+        const pruefeBtn = document.createElement('button');
+        pruefeBtn.className = 'px-6 py-3 rounded-2xl bg-emerald-400/20 border border-emerald-400/50 text-emerald-300 font-semibold hover:bg-emerald-400/30 transition-all';
+        pruefeBtn.textContent = 'Prüfen ✓';
+        pruefeBtn.onclick = () => pruefeAntwortZahl(aIdx, input, aufgabe.antwort, feedback, pruefeBtn);
+
+        // Enter-Taste auch akzeptieren
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') pruefeBtn.click();
+        });
+
+        eingabeBereich.appendChild(input);
+        eingabeBereich.appendChild(einheit);
+        eingabeBereich.appendChild(pruefeBtn);
+        karte.appendChild(eingabeBereich);
+      }
+
+      return karte;
+    }
+
+    // ── Multiple-Choice prüfen ────────────────────────────────────
+    function pruefeAntwortMC(aIdx, gewaehlt, richtig, btn, btnGrid, feedback) {
+      // Wenn bereits korrekt: nichts tun
+      if (aufgabenStatus[aIdx]) return;
+
+      const alleButtons = btnGrid.querySelectorAll('button');
+
+      if (gewaehlt === richtig) {
+        // Richtig! ✅
+        aufgabenStatus[aIdx] = true;
+        btn.className = 'mc-btn px-4 py-4 rounded-2xl border-2 border-emerald-400 bg-emerald-400/20 text-emerald-300 font-bold text-base text-left cursor-default';
+
+        // Alle anderen deaktivieren
+        alleButtons.forEach(b => {
+          if (b !== btn) {
+            b.disabled = true;
+            b.className = 'mc-btn px-4 py-4 rounded-2xl border border-slate-800 bg-slate-900 text-slate-600 font-medium text-base text-left cursor-not-allowed opacity-40';
+          }
+        });
+
+        // Positives Feedback
+        zeigeFeedback(feedback, true);
+        aktualisiereAbschliessenBtn();
+
+      } else {
+        // Falsch! — kurz rot aufleuchten
+        btn.className = 'mc-btn px-4 py-4 rounded-2xl border-2 border-red-400 bg-red-400/20 text-red-300 font-bold text-base text-left';
+        zeigeFeedback(feedback, false);
+
+        // Nach kurzer Zeit zurücksetzen
+        setTimeout(() => {
+          if (!aufgabenStatus[aIdx]) {
+            btn.className = 'mc-btn px-4 py-4 rounded-2xl border border-slate-700 bg-slate-800 text-slate-100 font-medium text-base hover:border-emerald-400/50 hover:bg-slate-700 transition-all text-left';
+          }
+        }, 1200);
+      }
+    }
+
+    // ── Zahlen-Antwort prüfen ─────────────────────────────────────
+    function pruefeAntwortZahl(aIdx, input, richtig, feedback, pruefeBtn) {
+      // Wenn bereits korrekt: nichts tun
+      if (aufgabenStatus[aIdx]) return;
+
+      const eingabe = parseInt(input.value, 10);
+
+      if (!isNaN(eingabe) && eingabe === richtig) {
+        // Richtig! ✅
+        aufgabenStatus[aIdx] = true;
+        input.disabled = true;
+        input.className = 'zahl-input rounded-2xl border-2 border-emerald-400 bg-emerald-400/10 text-emerald-300 px-4 py-3 cursor-default';
+        pruefeBtn.disabled = true;
+        pruefeBtn.className = 'px-6 py-3 rounded-2xl bg-slate-800 text-slate-500 cursor-not-allowed opacity-50';
+        zeigeFeedback(feedback, true);
+        aktualisiereAbschliessenBtn();
+      } else {
+        // Falsch!
+        input.className = 'zahl-input rounded-2xl border-2 border-red-400 bg-red-400/10 text-red-300 px-4 py-3 focus:outline-none focus:border-red-400 transition-colors';
+        zeigeFeedback(feedback, false);
+
+        // Nach kurzer Zeit zurücksetzen
+        setTimeout(() => {
+          if (!aufgabenStatus[aIdx]) {
+            input.className = 'zahl-input rounded-2xl border border-slate-700 bg-slate-800 text-slate-100 px-4 py-3 focus:outline-none focus:border-emerald-400 transition-colors';
+          }
+        }, 1200);
+      }
+    }
+
+    // ── Feedback anzeigen ─────────────────────────────────────────
+    const RICHTIG_TEXTE = [
+      'Super! 🌟',
+      'Toll gemacht! 🎉',
+      'Wunderbar! ⭐',
+      'Genau richtig! 🏆',
+      'Klasse! 🌈',
+    ];
+    const FALSCH_TEXTE = [
+      'Fast! Versuch es nochmal! 💪',
+      'Noch einmal! Du schaffst das! 💪',
+      'Versuche es nochmal! 🤔',
+    ];
+
+    function zeigeFeedback(feedbackEl, richtig) {
+      feedbackEl.classList.remove('hidden');
+      if (richtig) {
+        const text = RICHTIG_TEXTE[Math.floor(Math.random() * RICHTIG_TEXTE.length)];
+        feedbackEl.className = 'mb-4 px-4 py-3 rounded-2xl bg-emerald-400/15 border border-emerald-400/40 text-emerald-300 font-semibold text-base';
+        feedbackEl.textContent = text;
+      } else {
+        const text = FALSCH_TEXTE[Math.floor(Math.random() * FALSCH_TEXTE.length)];
+        feedbackEl.className = 'mb-4 px-4 py-3 rounded-2xl bg-red-400/15 border border-red-400/40 text-red-300 font-semibold text-base';
+        feedbackEl.textContent = text;
+
+        // Falsches Feedback nach kurzer Zeit ausblenden
+        setTimeout(() => {
+          feedbackEl.classList.add('hidden');
+        }, 1500);
+      }
+    }
+
+    // ── Abschließen-Button aktualisieren ──────────────────────────
+    function alleKorrekt() {
+      return aufgabenStatus.every(s => s === true);
+    }
+
+    function aktualisiereAbschliessenBtn() {
+      const btn = document.getElementById('abschliessen-btn');
+      const hinweis = document.getElementById('abschliessen-hinweis');
+      if (!btn) return;
+
+      if (alleKorrekt()) {
+        btn.disabled = false;
+        btn.className = 'px-8 py-4 rounded-2xl font-bold text-lg transition-all bg-emerald-400 text-slate-950 cursor-pointer hover:bg-emerald-300 active:scale-95';
+        btn.textContent = 'Lektion abschließen 🎉';
+        if (hinweis) hinweis.textContent = '';
+      }
+    }
+
+    // ── Lektion abschließen ───────────────────────────────────────
+    function lektionAbschliessen(idx) {
+      if (!progress.completed.includes(idx)) {
+        progress.completed.push(idx);
+      }
+
+      // Nächste Lektion als aktuell setzen
+      const naechste = idx + 1;
+      if (naechste < LEKTIONEN.length) {
+        progress.current = naechste;
+      }
+
+      saveProgress(progress);
+
+      // Kurze Freude-Animation, dann weiter
+      const btn = document.getElementById('abschliessen-btn');
+      if (btn) {
+        btn.textContent = 'Toll gemacht! 🌟';
+        btn.disabled = true;
+      }
+
+      setTimeout(() => {
+        if (progress.completed.length === LEKTIONEN.length) {
+          // Alles abgeschlossen!
+          renderAbschluss();
+        } else {
+          // Nächste Lektion
+          aktiveLektionIdx = naechste;
+          aufgabenStatus = [];
+          renderStepper();
+          renderLektion(naechste);
+          aktualisiereFortschritt();
+          // Nach oben scrollen
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      }, 800);
+    }
+
+    // ── Abschluss-Screen rendern ──────────────────────────────────
+    function renderAbschluss() {
+      // Stepper ausblenden
+      document.getElementById('stepper').innerHTML = '';
+
+      // Fortschritt auf 100%
+      document.getElementById('fortschritt-text').textContent = '6 von 6 Lektionen abgeschlossen';
+      document.getElementById('fortschritt-prozent').textContent = '100%';
+      document.getElementById('fortschritt-balken').style.width = '100%';
+
+      const inhalt = document.getElementById('haupt-inhalt');
+      inhalt.innerHTML = '';
+      inhalt.className = 'fade-in';
+
+      inhalt.innerHTML = `
+        <div class="rounded-3xl border border-emerald-400/30 bg-slate-900/50 p-10 text-center">
+          <!-- Großes Pokal-Emoji -->
+          <div class="text-8xl mb-6 animate-bounce">🏆</div>
+
+          <h2 class="text-3xl font-bold text-emerald-400 mb-4">Du kennst alle Formen!</h2>
+          <p class="text-2xl text-slate-200 mb-2">Wunderschön gemacht! 🎉</p>
+          <p class="text-slate-400 mb-8">Du hast alle 6 Lektionen abgeschlossen!</p>
+
+          <!-- Statistik -->
+          <div class="grid grid-cols-3 gap-4 mb-10 max-w-sm mx-auto">
+            <div class="rounded-2xl bg-slate-800/60 p-4">
+              <div class="text-3xl font-bold text-emerald-400">6</div>
+              <div class="text-xs text-slate-400 mt-1">Lektionen</div>
+            </div>
+            <div class="rounded-2xl bg-slate-800/60 p-4">
+              <div class="text-3xl font-bold text-emerald-400">30</div>
+              <div class="text-xs text-slate-400 mt-1">Aufgaben</div>
+            </div>
+            <div class="rounded-2xl bg-slate-800/60 p-4">
+              <div class="text-3xl font-bold text-emerald-400">3</div>
+              <div class="text-xs text-slate-400 mt-1">Formen</div>
+            </div>
+          </div>
+
+          <!-- Gelernte Formen -->
+          <div class="flex justify-center gap-8 mb-10 flex-wrap">
+            <div class="text-center">
+              <div class="text-5xl mb-2">⭕</div>
+              <div class="text-sm text-slate-400">Kreis</div>
+            </div>
+            <div class="text-center">
+              <div class="text-5xl mb-2">🔺</div>
+              <div class="text-sm text-slate-400">Dreieck</div>
+            </div>
+            <div class="text-center">
+              <div class="text-5xl mb-2">🟦</div>
+              <div class="text-sm text-slate-400">Viereck</div>
+            </div>
+            <div class="text-center">
+              <div class="text-5xl mb-2">🔄</div>
+              <div class="text-sm text-slate-400">Muster</div>
+            </div>
+          </div>
+
+          <!-- Zurück-Button -->
+          <a
+            href="../../academy.html"
+            class="inline-block px-8 py-4 rounded-2xl bg-emerald-400 text-slate-950 font-bold text-lg hover:bg-emerald-300 transition-all active:scale-95"
+          >
+            Zur Akademie 🏠
+          </a>
+        </div>
+      `;
+    }
+
+    // ── Neu starten ───────────────────────────────────────────────
+    function neustarten() {
+      const bestaetigt = window.confirm('Möchtest du wirklich neu starten? Dein Fortschritt wird gelöscht.');
+      if (bestaetigt) {
+        localStorage.removeItem(PROGRESS_KEY);
+        window.location.reload();
+      }
+    }
+
+    // ── Start ─────────────────────────────────────────────────────
+    init();
+  </script>
+
+</body>
+</html>

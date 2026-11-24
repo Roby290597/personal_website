@@ -1,2 +1,7 @@
 academy.html
 media.html
+
+# Lesbare Jobliste nie committen, nur data/jobs.enc.json
+data/jobs.json
+.claude/
+Claude outputs/

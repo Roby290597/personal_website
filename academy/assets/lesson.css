@@ -1,0 +1,237 @@
+/* ============================================================================
+   lesson.css — gemeinsames Design aller Akademie-Lektionen
+   Wird von academy/assets/lesson-engine.js vorausgesetzt.
+   Einbinden mit:  <link rel="stylesheet" href="../../assets/lesson.css" />
+   ========================================================================== */
+
+:root {
+  --ak-bg:            #020617;
+  --ak-text:          #f1f5f9;
+  --ak-muted:         #94a3b8;
+  --ak-accent:        #34d399;
+  --ak-accent-hell:   #6ee7b7;
+  --ak-accent-dunkel: #059669;
+  --ak-fehler:        #ef4444;
+  --ak-karte:         rgba(15, 23, 42, 0.5);
+  --ak-rand:          #1e293b;
+  --ak-rand-hell:     #334155;
+  --ak-radius:        1rem;
+  --ak-radius-gross:  1.5rem;
+}
+
+body {
+  background-color: var(--ak-bg);
+  color: var(--ak-text);
+  font-family: system-ui, sans-serif;
+}
+
+/* ─── Theorie ───────────────────────────────────────────────────────────── */
+
+.theorie-text {
+  white-space: pre-wrap;
+  font-size: 1.2rem;
+  line-height: 1.9;
+}
+
+/* Theorie als HTML (theorieHtml) — hier ist pre-wrap unerwünscht */
+.theorie-html {
+  font-size: 1.15rem;
+  line-height: 1.8;
+}
+
+.theorie-html p       { margin-bottom: 1rem; }
+.theorie-html ul,
+.theorie-html ol      { margin: 1rem 0 1rem 1.5rem; }
+.theorie-html li      { margin-bottom: 0.4rem; }
+.theorie-html strong  { color: var(--ak-accent); font-weight: 700; }
+.theorie-html svg     { display: block; margin: 1.25rem auto; max-width: 100%; height: auto; }
+
+/* ─── Karten ────────────────────────────────────────────────────────────── */
+
+.card {
+  border-radius: var(--ak-radius-gross);
+  border: 1px solid var(--ak-rand);
+  background: var(--ak-karte);
+  padding: 1.5rem;
+}
+
+.card.geloest {
+  border-color: var(--ak-accent-dunkel);
+}
+
+/* ─── Buttons ───────────────────────────────────────────────────────────── */
+
+.btn-primary {
+  background: var(--ak-accent);
+  color: var(--ak-bg);
+  font-weight: 700;
+  padding: 1rem 2rem;
+  border-radius: var(--ak-radius);
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  border: none;
+}
+
+.btn-primary:hover:not(:disabled) { background: var(--ak-accent-hell); }
+
+.btn-primary:disabled {
+  background: #1e3a30;
+  color: #4b5563;
+  cursor: not-allowed;
+}
+
+.btn-option {
+  background: #1e293b;
+  border: 2px solid var(--ak-rand-hell);
+  color: var(--ak-text);
+  font-weight: 600;
+  padding: 1rem 1.5rem;
+  border-radius: var(--ak-radius);
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: center;
+}
+
+.btn-option:hover:not(:disabled) {
+  border-color: var(--ak-accent);
+  color: var(--ak-accent);
+}
+
+.btn-option.correct {
+  background: #064e3b;
+  border-color: var(--ak-accent);
+  color: var(--ak-accent);
+}
+
+.btn-option.wrong {
+  background: #450a0a;
+  border-color: var(--ak-fehler);
+  color: var(--ak-fehler);
+}
+
+.btn-option:disabled { cursor: not-allowed; }
+
+/* ─── Stepper ───────────────────────────────────────────────────────────── */
+
+.step-btn {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 9999px;
+  font-weight: 700;
+  font-size: 1rem;
+  transition: all 0.15s;
+}
+
+.step-complete {
+  background: var(--ak-accent);
+  color: var(--ak-bg);
+  font-weight: 700;
+  border: none;
+}
+
+.step-current {
+  background: rgba(52, 211, 153, 0.15);
+  border: 2px solid var(--ak-accent);
+  color: var(--ak-accent-hell);
+  font-weight: 700;
+}
+
+.step-next {
+  background: #1e293b;
+  border: 1px solid #475569;
+  color: #cbd5e1;
+  cursor: pointer;
+}
+
+.step-next:hover { border-color: var(--ak-muted); }
+
+.step-locked {
+  background: #0f172a;
+  border: 1px solid var(--ak-rand);
+  color: #4b5563;
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* ─── Eingaben ──────────────────────────────────────────────────────────── */
+
+.number-input,
+.text-input {
+  background: #0f172a;
+  border: 2px solid var(--ak-rand-hell);
+  color: var(--ak-text);
+  text-align: center;
+  font-size: 1.75rem;
+  font-weight: 700;
+  border-radius: var(--ak-radius);
+  padding: 0.75rem 1rem;
+  width: 120px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.text-input {
+  width: 260px;
+  font-size: 1.25rem;
+}
+
+.number-input:focus,
+.text-input:focus { border-color: var(--ak-accent); }
+
+.number-input.falsch,
+.text-input.falsch { border-color: var(--ak-fehler); }
+
+.number-input.richtig,
+.text-input.richtig { border-color: var(--ak-accent); }
+
+/* ─── Feedback ──────────────────────────────────────────────────────────── */
+
+.feedback-ok {
+  background: #064e3b;
+  border: 1px solid var(--ak-accent);
+  color: var(--ak-accent);
+  border-radius: var(--ak-radius);
+  padding: 0.75rem 1.25rem;
+  font-weight: 600;
+}
+
+.feedback-err {
+  background: #3f0f0f;
+  border: 1px solid var(--ak-fehler);
+  color: #fca5a5;
+  border-radius: var(--ak-radius);
+  padding: 0.75rem 1.25rem;
+  font-weight: 600;
+}
+
+/* ─── Sonstiges ─────────────────────────────────────────────────────────── */
+
+.badge {
+  background: rgba(52, 211, 153, 0.15);
+  color: var(--ak-accent);
+  border: 1px solid rgba(52, 211, 153, 0.3);
+  border-radius: 9999px;
+  padding: 0.25rem 0.9rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.widget-host {
+  margin: 0.5rem 0 1rem;
+}
+
+/* Kurze Aufmerksamkeits-Animation bei falscher Antwort */
+@keyframes ak-shake {
+  0%, 100% { transform: translateX(0); }
+  25%      { transform: translateX(-6px); }
+  75%      { transform: translateX(6px); }
+}
+
+.ak-shake { animation: ak-shake 0.35s ease-in-out; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ak-shake { animation: none; }
+}

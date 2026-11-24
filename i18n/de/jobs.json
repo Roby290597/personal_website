@@ -1,0 +1,10 @@
+{
+  "jobs_lock_title": "Geschützter Bereich",
+  "jobs_lock_text": "Bitte Passwort eingeben.",
+  "jobs_unlock": "Öffnen",
+  "jobs_wrong_pw": "Falsches Passwort.",
+  "jobs_title": "Jobs",
+  "jobs_lock_again": "Sperren",
+  "jobs_applied": "Beworben",
+  "jobs_planned": "Noch bewerben"
+}

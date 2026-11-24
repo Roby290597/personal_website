@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Plus und Minus bis 20 – Klasse 1</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../../style.css?v=1.0" />
+  <style>
+    /* Theorie-Text mit Zeilenumbrüchen */
+    .theorie-text {
+      white-space: pre-wrap;
+      font-size: 1.125rem;
+      line-height: 1.75rem;
+    }
+    /* Große Zahl-Eingabe */
+    .zahl-input {
+      font-size: 1.5rem;
+      text-align: center;
+      width: 6rem;
+      padding: 0.5rem;
+      border-radius: 0.75rem;
+      background: #1e293b;
+      border: 2px solid #475569;
+      color: #f1f5f9;
+      outline: none;
+    }
+    .zahl-input:focus {
+      border-color: #34d399;
+    }
+    /* Sanfter Übergang bei Feedback */
+    .feedback-box {
+      transition: all 0.3s ease;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen">
+
+  <!-- Topbar wird dynamisch geladen -->
+  <div id="topbar-container"></div>
+
+  <main class="max-w-3xl mx-auto px-4 py-8">
+
+    <!-- Zurück-Link -->
+    <div class="mb-6">
+      <a href="../../academy.html" class="text-slate-400 hover:text-emerald-400 transition-colors text-sm">
+        ← Zurück zur Akademie
+      </a>
+    </div>
+
+    <!-- Kurs-Kopfzeile -->
+    <div class="mb-8">
+      <div class="flex items-center gap-3 mb-2">
+        <span class="text-xs font-semibold px-3 py-1 rounded-full bg-emerald-400/10 text-emerald-400 border border-emerald-400/20">
+          Klasse 1 · Rechnen
+        </span>
+      </div>
+      <h1 class="text-3xl font-bold text-white mb-2">Plus und Minus bis 20 ➕➖</h1>
+      <p class="text-slate-400">8 Lektionen · Für Kinder ab 6 Jahren</p>
+    </div>
+
+    <!-- Fortschritts-Stepper -->
+    <div id="stepper" class="mb-8"></div>
+
+    <!-- Haupt-Inhaltsbereich -->
+    <div id="content-area"></div>
+
+    <!-- Neu-starten-Link -->
+    <div class="mt-10 text-center">
+      <button
+        onclick="resetFortschritt()"
+        class="text-slate-600 hover:text-slate-400 text-sm transition-colors underline"
+      >
+        Neu starten
+      </button>
+    </div>
+
+  </main>
+
+  <script>
+    // ─────────────────────────────────────────────
+    // Topbar laden
+    // ─────────────────────────────────────────────
+    window.__i18nBase = '../../';
+    fetch('../../topbar.html')
+      .then(r => r.text())
+      .then(html => {
+        document.getElementById('topbar-container').innerHTML = html;
+      })
+      .catch(() => {
+        // Topbar nicht gefunden – kein Problem
+      });
+
+    // ─────────────────────────────────────────────
+    // LocalStorage-Schlüssel
+    // ─────────────────────────────────────────────
+    const PROGRESS_KEY = 'k1_plusminus_progress';
+
+    function loadProgress() {
+      try {
+        return JSON.parse(localStorage.getItem(PROGRESS_KEY)) || { completed: [], current: 0 };
+      } catch (e) {
+        return { completed: [], current: 0 };
+      }
+    }
+
+    function saveProgress(p) {
+      localStorage.setItem(PROGRESS_KEY, JSON.stringify(p));
+    }
+
+    function isUnlocked(idx) {
+      return idx === 0 || progress.completed.includes(idx - 1);
+    }
+
+    // Globaler Fortschritt
+    let progress = loadProgress();
+
+    // ─────────────────────────────────────────────
+    // Lektionsdaten
+    // ─────────────────────────────────────────────
+    const LEKTIONEN = [
+      {
+        id: 0,
+        titel: "Was bedeutet Plus? ➕",
+        theorie: `Plus bedeutet: dazuzählen! ➕
+
+Wenn du etwas dazubekommst, wird es MEHR! 🎉
+
+Beispiel:
+🍎 + 🍎 = 🍎🍎
+1  +  1  =  2
+
+Noch ein Beispiel:
+🌟🌟 + 🌟 = 🌟🌟🌟
+  2  +  1  =   3
+
+Das Zeichen für Plus ist: ➕`,
+        aufgaben: [
+          { typ: 'mc', frage: '🍎 + 🍎🍎 = ?', optionen: ['1', '2', '3', '4'], richtig: 2 },
+          { typ: 'zahl', frage: '⭐ + ⭐⭐⭐ = ?', antwort: 4, einheit: '' },
+          { typ: 'mc', frage: 'Was bedeutet das + Zeichen?', optionen: ['Wegnehmen', 'Dazuzählen', 'Teilen', 'Gleich'], richtig: 1 },
+          { typ: 'zahl', frage: '2 + 2 = ?', antwort: 4, einheit: '' },
+          { typ: 'mc', frage: '1 + 1 = ?', optionen: ['0', '1', '2', '3'], richtig: 2 },
+        ]
+      },
+      {
+        id: 1,
+        titel: "Plus bis 5 ➕",
+        theorie: `Jetzt rechnen wir zusammen! 🧮
+
+2 + 1 = 3  (zähl die Finger! 🖐️)
+3 + 2 = 5
+4 + 1 = 5
+1 + 4 = 5
+
+Tipp: Zähl auf deinen Fingern! 🤚
+Fang bei der ersten Zahl an.
+Dann zähl die zweite Zahl weiter!`,
+        aufgaben: [
+          { typ: 'zahl', frage: '2 + 3 = ?', antwort: 5, einheit: '' },
+          { typ: 'mc', frage: '4 + 1 = ?', optionen: ['3', '4', '5', '6'], richtig: 2 },
+          { typ: 'zahl', frage: '1 + 2 = ?', antwort: 3, einheit: '' },
+          { typ: 'mc', frage: '3 + 2 = ?', optionen: ['4', '5', '6', '7'], richtig: 1 },
+          { typ: 'zahl', frage: '0 + 5 = ?', antwort: 5, einheit: '' },
+        ]
+      },
+      {
+        id: 2,
+        titel: "Plus bis 10 ➕",
+        theorie: `Jetzt wird es etwas größer! 💪
+
+5 + 3 = 8
+6 + 4 = 10
+7 + 2 = 9
+8 + 1 = 9
+
+Tipp: Fang bei der größeren Zahl an!
+Beispiel: 3 + 7
+→ Fang bei 7 an, zähl 3 weiter
+→ 8, 9, 10 ✅`,
+        aufgaben: [
+          { typ: 'zahl', frage: '5 + 4 = ?', antwort: 9, einheit: '' },
+          { typ: 'mc', frage: '6 + 3 = ?', optionen: ['7', '8', '9', '10'], richtig: 2 },
+          { typ: 'zahl', frage: '4 + 6 = ?', antwort: 10, einheit: '' },
+          { typ: 'mc', frage: '7 + 2 = ?', optionen: ['8', '9', '10', '11'], richtig: 1 },
+          { typ: 'zahl', frage: '3 + 5 = ?', antwort: 8, einheit: '' },
+        ]
+      },
+      {
+        id: 3,
+        titel: "Plus bis 20 ➕",
+        theorie: `Super! Jetzt bis 20! 🚀
+
+10 + 5 = 15
+11 + 3 = 14
+12 + 4 = 16
+13 + 7 = 20
+
+Tipp: Zähl ab 10 weiter! 🔢
+Beispiel: 10 + 6
+→ 11, 12, 13, 14, 15, 16 ✅
+
+Du schaffst das! 🏆`,
+        aufgaben: [
+          { typ: 'zahl', frage: '10 + 5 = ?', antwort: 15, einheit: '' },
+          { typ: 'mc', frage: '11 + 4 = ?', optionen: ['14', '15', '16', '17'], richtig: 1 },
+          { typ: 'zahl', frage: '10 + 9 = ?', antwort: 19, einheit: '' },
+          { typ: 'mc', frage: '12 + 6 = ?', optionen: ['16', '17', '18', '19'], richtig: 2 },
+          { typ: 'zahl', frage: '10 + 10 = ?', antwort: 20, einheit: '' },
+        ]
+      },
+      {
+        id: 4,
+        titel: "Was bedeutet Minus? ➖",
+        theorie: `Minus bedeutet: wegnehmen! ➖
+
+Wenn etwas weggenommen wird, wird es WENIGER! 😢
+
+Beispiel:
+🍎🍎🍎 − 🍎 = 🍎🍎
+   3   −  1  =   2
+
+Noch ein Beispiel:
+🌟🌟🌟🌟🌟 − 🌟🌟 = 🌟🌟🌟
+      5     −   2  =    3
+
+Das Zeichen für Minus ist: ➖`,
+        aufgaben: [
+          { typ: 'mc', frage: '🍎🍎🍎 − 🍎 = ?', optionen: ['1', '2', '3', '4'], richtig: 1 },
+          { typ: 'zahl', frage: '⭐⭐⭐⭐ − ⭐⭐ = ?', antwort: 2, einheit: '' },
+          { typ: 'mc', frage: 'Was bedeutet das − Zeichen?', optionen: ['Dazuzählen', 'Wegnehmen', 'Teilen', 'Gleich'], richtig: 1 },
+          { typ: 'zahl', frage: '4 − 1 = ?', antwort: 3, einheit: '' },
+          { typ: 'mc', frage: '3 − 3 = ?', optionen: ['1', '2', '3', '0'], richtig: 3 },
+        ]
+      },
+      {
+        id: 5,
+        titel: "Minus bis 5 ➖",
+        theorie: `Los geht's! Wir nehmen weg! ✂️
+
+5 − 1 = 4
+5 − 2 = 3
+4 − 3 = 1
+3 − 2 = 1
+
+Tipp: Zähl rückwärts! ⬅️
+Beispiel: 5 − 2
+→ Fang bei 5 an, zähl 2 zurück
+→ 4, 3 ✅`,
+        aufgaben: [
+          { typ: 'zahl', frage: '5 − 2 = ?', antwort: 3, einheit: '' },
+          { typ: 'mc', frage: '4 − 1 = ?', optionen: ['2', '3', '4', '5'], richtig: 1 },
+          { typ: 'zahl', frage: '5 − 5 = ?', antwort: 0, einheit: '' },
+          { typ: 'mc', frage: '3 − 1 = ?', optionen: ['1', '2', '3', '4'], richtig: 1 },
+          { typ: 'zahl', frage: '4 − 2 = ?', antwort: 2, einheit: '' },
+        ]
+      },
+      {
+        id: 6,
+        titel: "Minus bis 10 ➖",
+        theorie: `Größere Zahlen wegnehmen! 💪
+
+10 − 3 = 7
+ 9 − 4 = 5
+ 8 − 2 = 6
+ 7 − 5 = 2
+
+Tipp: Stell dir eine Zahlenreihe vor! 📏
+Fang rechts an und geh nach links zurück!
+
+Du wirst immer besser! 🌟`,
+        aufgaben: [
+          { typ: 'zahl', frage: '10 − 4 = ?', antwort: 6, einheit: '' },
+          { typ: 'mc', frage: '9 − 3 = ?', optionen: ['5', '6', '7', '8'], richtig: 1 },
+          { typ: 'zahl', frage: '8 − 5 = ?', antwort: 3, einheit: '' },
+          { typ: 'mc', frage: '7 − 2 = ?', optionen: ['4', '5', '6', '7'], richtig: 1 },
+          { typ: 'zahl', frage: '10 − 10 = ?', antwort: 0, einheit: '' },
+        ]
+      },
+      {
+        id: 7,
+        titel: "Abschlusstest: Plus und Minus ➕➖",
+        theorie: `Du hast Plus und Minus gelernt! 🏆
+
+Du kannst jetzt:
+✅ Plus rechnen bis 20
+✅ Minus rechnen bis 10
+✅ Finger zum Zählen nutzen
+✅ Vorwärts und rückwärts zählen
+
+Jetzt zeigst du was du kannst! 💪🌟`,
+        aufgaben: [
+          { typ: 'zahl', frage: '6 + 4 = ?', antwort: 10, einheit: '' },
+          { typ: 'mc', frage: '10 − 5 = ?', optionen: ['4', '5', '6', '7'], richtig: 1 },
+          { typ: 'zahl', frage: '10 + 7 = ?', antwort: 17, einheit: '' },
+          { typ: 'mc', frage: '8 − 3 = ?', optionen: ['4', '5', '6', '7'], richtig: 1 },
+          { typ: 'zahl', frage: '9 + 9 = ?', antwort: 18, einheit: '' },
+        ]
+      },
+    ];
+
+    // ─────────────────────────────────────────────
+    // Zustand der aktuellen Lektion
+    // ─────────────────────────────────────────────
+    let aktiveLektionIdx = progress.current;   // Welche Lektion ist offen?
+    let aufgabenStatus = [];                    // true/false pro Aufgabe
+    let zeigeTheorie = true;                    // Theorie oder Aufgaben?
+
+    // ─────────────────────────────────────────────
+    // Stepper rendern
+    // ─────────────────────────────────────────────
+    function renderStepper() {
+      const el = document.getElementById('stepper');
+      let html = '<div class="flex flex-wrap gap-2 mb-4">';
+
+      LEKTIONEN.forEach((lek, idx) => {
+        const abgeschlossen = progress.completed.includes(idx);
+        const istAktiv = idx === aktiveLektionIdx;
+        const freigeschaltet = isUnlocked(idx);
+
+        let klassen = '';
+        let label = (idx + 1).toString();
+        let clickAttr = '';
+        let titelAttr = `title="${lek.titel}"`;
+
+        if (abgeschlossen) {
+          // Grün + Häkchen
+          klassen = 'bg-emerald-400 text-slate-950 font-bold';
+          label = '✓';
+          clickAttr = `onclick="lektionOeffnen(${idx})"`;
+        } else if (istAktiv && freigeschaltet) {
+          // Aktuelle Lektion
+          klassen = 'bg-emerald-400/20 border-2 border-emerald-400 text-emerald-300 font-bold';
+          clickAttr = `onclick="lektionOeffnen(${idx})"`;
+        } else if (freigeschaltet) {
+          // Nächste freigeschaltete Lektion
+          klassen = 'bg-slate-800 border border-slate-600 text-slate-300 cursor-pointer hover:border-slate-400';
+          clickAttr = `onclick="lektionOeffnen(${idx})"`;
+        } else {
+          // Gesperrt
+          klassen = 'bg-slate-900 border border-slate-800 text-slate-600 cursor-not-allowed opacity-50';
+          titelAttr = 'title="Noch gesperrt 🔒"';
+        }
+
+        html += `
+          <button
+            ${clickAttr}
+            ${titelAttr}
+            class="w-10 h-10 rounded-xl text-sm transition-all ${klassen}"
+          >${label}</button>
+        `;
+      });
+
+      html += '</div>';
+
+      // Fortschrittsanzeige
+      const anzahlFertig = progress.completed.length;
+      html += `
+        <p class="text-slate-500 text-sm">
+          ${anzahlFertig} von ${LEKTIONEN.length} Lektionen abgeschlossen
+        </p>
+      `;
+
+      el.innerHTML = html;
+    }
+
+    // ─────────────────────────────────────────────
+    // Lektion öffnen
+    // ─────────────────────────────────────────────
+    function lektionOeffnen(idx) {
+      if (!isUnlocked(idx)) return; // Gesperrt – nichts tun
+
+      aktiveLektionIdx = idx;
+      zeigeTheorie = true;
+      aufgabenStatus = new Array(LEKTIONEN[idx].aufgaben.length).fill(false);
+
+      // Aktuellen Fortschritt speichern
+      progress.current = idx;
+      saveProgress(progress);
+
+      renderStepper();
+      renderInhalt();
+
+      // Nach oben scrollen
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ─────────────────────────────────────────────
+    // Inhaltsbereich rendern
+    // ─────────────────────────────────────────────
+    function renderInhalt() {
+      const el = document.getElementById('content-area');
+
+      // Alle Lektionen abgeschlossen?
+      if (progress.completed.length === LEKTIONEN.length) {
+        renderAbschluss();
+        return;
+      }
+
+      const lek = LEKTIONEN[aktiveLektionIdx];
+
+      if (zeigeTheorie) {
+        renderTheorie(lek);
+      } else {
+        renderAufgaben(lek);
+      }
+    }
+
+    // ─────────────────────────────────────────────
+    // Theorie-Ansicht
+    // ─────────────────────────────────────────────
+    function renderTheorie(lek) {
+      const el = document.getElementById('content-area');
+      el.innerHTML = `
+        <div class="rounded-3xl border border-slate-800 bg-slate-900/30 p-6 mb-6">
+          <div class="flex items-center gap-3 mb-4">
+            <span class="text-2xl">📖</span>
+            <h2 class="text-xl font-bold text-white">${lek.titel}</h2>
+          </div>
+          <div class="theorie-text text-slate-200 mb-6">${escapeHtml(lek.theorie)}</div>
+          <button
+            onclick="zuAufgaben()"
+            class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-8 py-4 rounded-2xl text-lg transition-colors"
+          >
+            Weiter zu den Aufgaben! 🚀
+          </button>
+        </div>
+      `;
+    }
+
+    // Theorie → Aufgaben wechseln
+    function zuAufgaben() {
+      zeigeTheorie = false;
+      renderInhalt();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ─────────────────────────────────────────────
+    // Aufgaben-Ansicht
+    // ─────────────────────────────────────────────
+    function renderAufgaben(lek) {
+      const el = document.getElementById('content-area');
+      const alleFertig = aufgabenStatus.every(Boolean);
+
+      let html = `
+        <div class="mb-4">
+          <button
+            onclick="zurueckZurTheorie()"
+            class="text-slate-400 hover:text-emerald-400 transition-colors text-sm"
+          >
+            ← Zurück zur Erklärung
+          </button>
+        </div>
+        <h2 class="text-xl font-bold text-white mb-6">${lek.titel}</h2>
+      `;
+
+      // Jede Aufgabe rendern
+      lek.aufgaben.forEach((aufgabe, i) => {
+        html += renderAufgabeKarte(aufgabe, i, lek.id);
+      });
+
+      // Lektion abschließen – nur wenn alle richtig
+      html += `
+        <div class="mt-6">
+          <button
+            id="abschluss-btn"
+            onclick="lektionAbschliessen()"
+            ${alleFertig ? '' : 'disabled'}
+            class="w-full font-bold px-8 py-4 rounded-2xl text-lg transition-all ${
+              alleFertig
+                ? 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 cursor-pointer'
+                : 'bg-slate-800 text-slate-600 cursor-not-allowed opacity-50'
+            }"
+          >
+            ${alleFertig ? 'Lektion abschließen! 🏆' : `Noch ${aufgabenStatus.filter(Boolean).length} / ${lek.aufgaben.length} Aufgaben richtig`}
+          </button>
+        </div>
+      `;
+
+      el.innerHTML = html;
+    }
+
+    // Einzelne Aufgaben-Karte als HTML-String
+    function renderAufgabeKarte(aufgabe, idx, lektionId) {
+      const istRichtig = aufgabenStatus[idx];
+      const rahmen = istRichtig
+        ? 'border-emerald-500 bg-emerald-950/20'
+        : 'border-slate-800 bg-slate-900/30';
+
+      let inhalt = '';
+
+      if (aufgabe.typ === 'mc') {
+        inhalt = renderMCOptionen(aufgabe, idx, lektionId, istRichtig);
+      } else if (aufgabe.typ === 'zahl') {
+        inhalt = renderZahlEingabe(aufgabe, idx, lektionId, istRichtig);
+      }
+
+      return `
+        <div class="rounded-3xl border ${rahmen} p-6 mb-4 feedback-box" id="karte-${idx}">
+          <p class="text-lg font-semibold text-white mb-4">
+            Aufgabe ${idx + 1}: ${escapeHtml(aufgabe.frage)}
+          </p>
+          ${inhalt}
+          <div id="feedback-${idx}" class="mt-3 text-base font-medium"></div>
+        </div>
+      `;
+    }
+
+    // Multiple-Choice-Optionen
+    function renderMCOptionen(aufgabe, idx, lektionId, istRichtig) {
+      let html = '<div class="grid grid-cols-2 gap-3">';
+      aufgabe.optionen.forEach((opt, oi) => {
+        let stil = 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700';
+        if (istRichtig && oi === aufgabe.richtig) {
+          stil = 'bg-emerald-500 text-slate-950 border border-emerald-400 font-bold';
+        }
+        const deaktiviert = istRichtig ? 'disabled' : '';
+        html += `
+          <button
+            ${deaktiviert}
+            onclick="pruefeMC(${idx}, ${oi}, ${aufgabe.richtig})"
+            class="px-6 py-4 rounded-2xl text-lg font-semibold transition-all ${stil}"
+          >
+            ${escapeHtml(opt)}
+          </button>
+        `;
+      });
+      html += '</div>';
+      return html;
+    }
+
+    // Zahleingabe
+    function renderZahlEingabe(aufgabe, idx, lektionId, istRichtig) {
+      const deaktiviert = istRichtig ? 'disabled' : '';
+      const wert = istRichtig ? aufgabe.antwort : '';
+      return `
+        <div class="flex items-center gap-4">
+          <input
+            type="number"
+            min="0"
+            max="20"
+            value="${wert}"
+            id="eingabe-${idx}"
+            ${deaktiviert}
+            class="zahl-input"
+            placeholder="?"
+            onkeydown="if(event.key==='Enter') pruefeZahl(${idx}, ${aufgabe.antwort})"
+          />
+          <button
+            ${deaktiviert}
+            onclick="pruefeZahl(${idx}, ${aufgabe.antwort})"
+            class="px-6 py-4 rounded-2xl text-lg font-semibold bg-emerald-600 hover:bg-emerald-500 text-white transition-all"
+          >
+            Prüfen ✓
+          </button>
+        </div>
+      `;
+    }
+
+    // ─────────────────────────────────────────────
+    // Antwort prüfen: Multiple Choice
+    // ─────────────────────────────────────────────
+    function pruefeMC(aufgabeIdx, gewaehlt, richtig) {
+      const feedbackEl = document.getElementById(`feedback-${aufgabeIdx}`);
+      const karteEl = document.getElementById(`karte-${aufgabeIdx}`);
+
+      if (gewaehlt === richtig) {
+        // Richtig!
+        aufgabenStatus[aufgabeIdx] = true;
+        feedbackEl.innerHTML = '<span class="text-emerald-400">Super! 🌟</span>';
+        karteEl.classList.add('border-emerald-500', 'bg-emerald-950/20');
+        karteEl.classList.remove('border-slate-800');
+
+        // Aufgabenkarte neu rendern (Buttons deaktivieren, richtigen markieren)
+        aktualisiereKarte(aufgabeIdx);
+        aktualisiereAbschlussBtn();
+      } else {
+        // Falsch – nochmal versuchen
+        feedbackEl.innerHTML = '<span class="text-amber-400">Nicht ganz — schau nochmal hin! 🤔</span>';
+
+        // Kurzes Zittern der Karte
+        karteEl.classList.add('border-red-500/50');
+        setTimeout(() => karteEl.classList.remove('border-red-500/50'), 800);
+      }
+    }
+
+    // ─────────────────────────────────────────────
+    // Antwort prüfen: Zahl
+    // ─────────────────────────────────────────────
+    function pruefeZahl(aufgabeIdx, richtigeAntwort) {
+      const eingabe = document.getElementById(`eingabe-${aufgabeIdx}`);
+      const feedbackEl = document.getElementById(`feedback-${aufgabeIdx}`);
+      const karteEl = document.getElementById(`karte-${aufgabeIdx}`);
+
+      const wert = parseInt(eingabe.value, 10);
+
+      if (isNaN(wert)) {
+        feedbackEl.innerHTML = '<span class="text-amber-400">Gib eine Zahl ein! 🔢</span>';
+        return;
+      }
+
+      if (wert === richtigeAntwort) {
+        // Richtig!
+        aufgabenStatus[aufgabeIdx] = true;
+        feedbackEl.innerHTML = '<span class="text-emerald-400">Toll gemacht! 🎉</span>';
+        karteEl.classList.add('border-emerald-500', 'bg-emerald-950/20');
+        karteEl.classList.remove('border-slate-800');
+        eingabe.disabled = true;
+
+        aktualisiereAbschlussBtn();
+      } else {
+        // Falsch – nochmal versuchen
+        feedbackEl.innerHTML = '<span class="text-amber-400">Fast! Versuch es nochmal! 💪</span>';
+        eingabe.focus();
+        eingabe.select();
+
+        karteEl.classList.add('border-red-500/50');
+        setTimeout(() => karteEl.classList.remove('border-red-500/50'), 800);
+      }
+    }
+
+    // Einzelne MC-Karte nach richtiger Antwort neu rendern
+    function aktualisiereKarte(aufgabeIdx) {
+      const lek = LEKTIONEN[aktiveLektionIdx];
+      const aufgabe = lek.aufgaben[aufgabeIdx];
+
+      if (aufgabe.typ !== 'mc') return;
+
+      // Buttons-Container neu bauen
+      const karteEl = document.getElementById(`karte-${aufgabeIdx}`);
+      const gridEl = karteEl.querySelector('.grid');
+      if (!gridEl) return;
+
+      let html = '';
+      aufgabe.optionen.forEach((opt, oi) => {
+        let stil = 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed';
+        if (oi === aufgabe.richtig) {
+          stil = 'bg-emerald-500 text-slate-950 border border-emerald-400 font-bold';
+        }
+        html += `
+          <button disabled class="px-6 py-4 rounded-2xl text-lg font-semibold ${stil}">
+            ${escapeHtml(opt)}
+          </button>
+        `;
+      });
+      gridEl.innerHTML = html;
+    }
+
+    // Abschluss-Button aktualisieren
+    function aktualisiereAbschlussBtn() {
+      const lek = LEKTIONEN[aktiveLektionIdx];
+      const alleFertig = aufgabenStatus.every(Boolean);
+      const btn = document.getElementById('abschluss-btn');
+      if (!btn) return;
+
+      if (alleFertig) {
+        btn.disabled = false;
+        btn.textContent = 'Lektion abschließen! 🏆';
+        btn.className = 'w-full font-bold px-8 py-4 rounded-2xl text-lg transition-all bg-emerald-500 hover:bg-emerald-400 text-slate-950 cursor-pointer';
+      } else {
+        const anzahl = aufgabenStatus.filter(Boolean).length;
+        btn.disabled = true;
+        btn.textContent = `Noch ${anzahl} / ${lek.aufgaben.length} Aufgaben richtig`;
+        btn.className = 'w-full font-bold px-8 py-4 rounded-2xl text-lg transition-all bg-slate-800 text-slate-600 cursor-not-allowed opacity-50';
+      }
+    }
+
+    // ─────────────────────────────────────────────
+    // Lektion abschließen
+    // ─────────────────────────────────────────────
+    function lektionAbschliessen() {
+      // Als abgeschlossen markieren
+      if (!progress.completed.includes(aktiveLektionIdx)) {
+        progress.completed.push(aktiveLektionIdx);
+      }
+
+      // Nächste Lektion freischalten
+      const naechste = aktiveLektionIdx + 1;
+      if (naechste < LEKTIONEN.length) {
+        progress.current = naechste;
+      }
+
+      saveProgress(progress);
+
+      // Alle Lektionen fertig?
+      if (progress.completed.length === LEKTIONEN.length) {
+        renderStepper();
+        renderAbschluss();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+
+      // Nächste Lektion öffnen
+      lektionOeffnen(naechste);
+    }
+
+    // Zurück zur Theorie
+    function zurueckZurTheorie() {
+      zeigeTheorie = true;
+      renderInhalt();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ─────────────────────────────────────────────
+    // Abschluss-Bildschirm
+    // ─────────────────────────────────────────────
+    function renderAbschluss() {
+      const el = document.getElementById('content-area');
+      el.innerHTML = `
+        <div class="rounded-3xl border border-emerald-500/40 bg-emerald-950/20 p-8 text-center">
+          <div class="text-7xl mb-6">🏆</div>
+          <h2 class="text-3xl font-bold text-white mb-4">
+            Du kannst jetzt Plus und Minus!
+          </h2>
+          <p class="text-xl text-emerald-400 mb-6">Fantastisch! 🎉</p>
+
+          <div class="rounded-2xl bg-slate-800/50 p-6 mb-8 text-left">
+            <h3 class="text-lg font-bold text-white mb-4">Das hast du gelernt: ✅</h3>
+            <ul class="space-y-2 text-slate-300">
+              <li>✅ Was Plus bedeutet</li>
+              <li>✅ Plus bis 5 rechnen</li>
+              <li>✅ Plus bis 10 rechnen</li>
+              <li>✅ Plus bis 20 rechnen</li>
+              <li>✅ Was Minus bedeutet</li>
+              <li>✅ Minus bis 5 rechnen</li>
+              <li>✅ Minus bis 10 rechnen</li>
+              <li>✅ Abschlusstest bestanden! 🌟</li>
+            </ul>
+          </div>
+
+          <div class="rounded-2xl bg-slate-800/50 p-4 mb-8">
+            <p class="text-slate-400 text-sm">Abgeschlossen</p>
+            <p class="text-3xl font-bold text-emerald-400">${LEKTIONEN.length} / ${LEKTIONEN.length} Lektionen 🌟</p>
+          </div>
+
+          <a
+            href="../../academy.html"
+            class="inline-block bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-10 py-4 rounded-2xl text-lg transition-colors"
+          >
+            Zur Akademie 🚀
+          </a>
+        </div>
+      `;
+    }
+
+    // ─────────────────────────────────────────────
+    // Fortschritt zurücksetzen
+    // ─────────────────────────────────────────────
+    function resetFortschritt() {
+      const bestaetigt = confirm('Wirklich neu starten? Dein Fortschritt wird gelöscht! 😮');
+      if (bestaetigt) {
+        localStorage.removeItem(PROGRESS_KEY);
+        location.reload();
+      }
+    }
+
+    // ─────────────────────────────────────────────
+    // Hilfsfunktion: HTML escapen
+    // ─────────────────────────────────────────────
+    function escapeHtml(str) {
+      // Emojis und Sonderzeichen sicher darstellen
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    // ─────────────────────────────────────────────
+    // App starten
+    // ─────────────────────────────────────────────
+    function init() {
+      progress = loadProgress();
+
+      // Aktuelle Lektion ermitteln
+      aktiveLektionIdx = progress.current || 0;
+
+      // Falls aktuelle Lektion schon abgeschlossen, nächste wählen
+      // (Schutz gegen inkonsistenten Zustand)
+      if (progress.completed.includes(aktiveLektionIdx) && aktiveLektionIdx < LEKTIONEN.length - 1) {
+        // Finde die erste nicht abgeschlossene Lektion
+        for (let i = 0; i < LEKTIONEN.length; i++) {
+          if (!progress.completed.includes(i)) {
+            aktiveLektionIdx = i;
+            break;
+          }
+        }
+      }
+
+      aufgabenStatus = new Array(LEKTIONEN[aktiveLektionIdx].aufgaben.length).fill(false);
+
+      renderStepper();
+      renderInhalt();
+    }
+
+    init();
+  </script>
+</body>
+</html>

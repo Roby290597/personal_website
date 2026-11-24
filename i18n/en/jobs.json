@@ -1,0 +1,10 @@
+{
+  "jobs_lock_title": "Protected area",
+  "jobs_lock_text": "Please enter the password.",
+  "jobs_unlock": "Open",
+  "jobs_wrong_pw": "Wrong password.",
+  "jobs_title": "Jobs",
+  "jobs_lock_again": "Lock",
+  "jobs_applied": "Applied",
+  "jobs_planned": "To apply"
+}

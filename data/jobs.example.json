@@ -1,0 +1,23 @@
+{
+  "applied": [
+    {
+      "title": "Beispiel: Data Scientist (m/w/d)",
+      "company": "Beispiel GmbH",
+      "location": "Köln",
+      "applied_on": "2026-11-20",
+      "status": "Offen",
+      "link": "https://example.com/job/123",
+      "notes": "Status z. B. Offen, Einladung, Gespräch, Test, Absage, Zusage"
+    }
+  ],
+  "planned": [
+    {
+      "title": "Beispiel: ML Engineer",
+      "company": "Muster AG",
+      "location": "Aachen",
+      "deadline": "2026-12-15",
+      "link": "https://example.com/job/456",
+      "notes": "Anschreiben noch anpassen"
+    }
+  ]
+}
